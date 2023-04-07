@@ -4,7 +4,7 @@ library(tidyverse)
 #### Prepping final species list ####
 
 # read in raw IDE cover data
-data=read.csv("IDE_cover_2023-01-02.csv")
+data=read.csv("./Raw.Data/IDE_cover_2023-01-02.csv")
 
 # get taxon list
 taxon.df=as.data.frame(table(data$Taxon))
@@ -44,7 +44,7 @@ data.2=subset(data, !(data$Taxon %in% c("ADESMIA SP.(eea.br)","AGOSERIS SP.(OREA
                                 "HYMENOPAPPUS SP. (cdpt_drt.us)","HYPOCHAERIS SP.","HYPOCHAERIS SP.(SCRUZH.US)","HYPOCHAERIS SP.(SCRUZM.US)",
                                 "IPOMOEA SP.(BIVENSARM.US)","JUNCUS SP.","JUNCUS SP.(BIVENSARM.US)","JUNCUS SP.(LYGRAINT.NO)","JUNCUS SP.(SLP.US)",
                                 "JUNELLIA SP.(CHACRA.AR)","LATHYRUS SP.(BROOKDALE.CA)","LEONTODON SP.","LEPIDIUM SP.(NNSS.US)","LESQUERELLA SP.",
-                                "LEUCOCORYNE SP1.(QDTNORTH.CL)","LEUCOCORYNE SP2.(QDTNORTH.CL)","LICHEN","LICHEN SP.(LYGRAINT.NO)","LICHEN SP.(lygraold.no)",
+                                "LEUCOCORYNE SP1.(QDTNORTH.CL)","LEUCOCORYNE SP2.(QDTNORTH.CL)","LICHEN ","LICHEN","LICHEN SP.(LYGRAINT.NO)","LICHEN SP.(lygraold.no)",
                                 "LICHEN SP.1(lygraold.no)","LINUM SP.(BFL.US)","LITHOPHRAGMA SP.(OREAA.US)","LITHOPHRAGMA SP.(OREAC.US)","LOLIUM SP.(CHACRA.AR)",
                                 "LOMATIUM SP.(OREAA.US)","LOMATIUM SP.(OREAC.US)","LOTUS","LOTUS SP.","LUZULA SP.","LUZULA SP.(FALLS.AU)","MADIA SP.(OREAC.US)",
                                 "MALVA SP.","MALVA SP.(SCRUZL.US)","MELILOTUS SP.(ESW.CA)","MINURIA SP.(credoj.au)","MINURIA SP.(CREDOM.AU)","MONTIA SP.(OREAA.US)",
@@ -74,7 +74,7 @@ data.2=subset(data, !(data$Taxon %in% c("ADESMIA SP.(eea.br)","AGOSERIS SP.(OREA
                                 "UNKNOWN POACEAE SP3.(qdtsouth.cl)","UNKNOWN POLEMONIACEAE SP.(OREAA.US)","UNKNOWN POLEMONIACEAE SP.(OREAC.US)",
                                 "UNKNOWN SCLEROLAENA ","UNKNOWN SP.","UNKNOWN SP.(CERRILLOS.AR)","UNKNOWN SP.(GUARIBAS.BR)","UNKNOWN SP.(HARD.US)",
                                 "UNKNOWN sp.(jilpanger.au)","UNKNOWN SP.(JRNCHI.US)","UNKNOWN SP.(KONZADRT.US)","UNKNOWN SP.(LCNORTH.CL)",
-                                "UNKNOWN SP.(LYGRAINT.NO)","UNKNOWN SP.(MATADOR.CA)","UNKNOWN SP.(NNSS.US)","UNKNOWN SP.(OKLAH.US)",
+                                "UNKNOWN SP.(LYGRAINT.NO)","UNKNOWN SP.(MATADOR.CA)","UNKNOWN SP.(NNSS.US)","UNKNOWN SP.(OKLAH.US)","SELAGINELLA DENSA",
                                 "UNKNOWN SP.(OREAA.US)","UNKNOWN SP.(OREAC.US)","UNKNOWN SP.(SCRUZH.US)","UNKNOWN SP.(SLP.US)","UNKNOWN SP.1(OKLAH.US)",
                                 "UNKNOWN SP.11(OKLAH.US)","UNKNOWN SP.2(MILPARINKA.AU)","UNKNOWN SP.2(OKLAH.US)","UNKNOWN SP.4(OKLAH.US)","UNKNOWN SP.4(SPVDRT.AR)",
                                 "UNKNOWN SP.5(SPVDRT.AR)","UNKNOWN SP.6(OKLAH.US)","UNKNOWN SP.6(SPVDRT.AR)","UNKNOWN SP.7(OKLAH.US)","UNKNOWN SP.9(OKLAH.US)",
@@ -85,8 +85,8 @@ data.2=subset(data, !(data$Taxon %in% c("ADESMIA SP.(eea.br)","AGOSERIS SP.(OREA
 
 # get taxon list
 taxon.2=as.data.frame(table(data.2$Taxon))
-# 1607 species, but some are sp. so will need to be excluded
-# 33997 rows
+# 1605 species, but some are sp. so will need to be excluded
+# 33973 rows
 
 # write.csv(taxon.2, "IDE.species.check.csv")
 
@@ -152,5 +152,37 @@ trait.species=as.data.frame(unique(cover.trt.y1$Taxon))
 
 # write.csv(trait.species, file="trait.species.trt.yr1.csv")
 
+# subset for other treatment years
 
+cover.response.all=read.csv("./Formatted.Data/cover.response.all.csv")
 
+cover.trt.y2=subset(cover.response.all, cover.response.all$n_treat_years == 2)
+cover.trt.y3=subset(cover.response.all, cover.response.all$n_treat_years == 3)
+cover.trt.y4=subset(cover.response.all, cover.response.all$n_treat_years == 4)
+cover.trt.y5=subset(cover.response.all, cover.response.all$n_treat_years == 5)
+cover.trt.y6=subset(cover.response.all, cover.response.all$n_treat_years == 6)
+cover.trt.y7=subset(cover.response.all, cover.response.all$n_treat_years == 7)
+cover.trt.y8=subset(cover.response.all, cover.response.all$n_treat_years == 8)
+
+# get trait species for other year
+
+trait.species.trt.2=as.data.frame(unique(cover.trt.y2$Taxon))
+trait.species.trt.3=as.data.frame(unique(cover.trt.y3$Taxon))
+trait.species.trt.4=as.data.frame(unique(cover.trt.y4$Taxon))
+trait.species.trt.5=as.data.frame(unique(cover.trt.y5$Taxon))
+trait.species.trt.6=as.data.frame(unique(cover.trt.y6$Taxon))
+trait.species.trt.7=as.data.frame(unique(cover.trt.y7$Taxon))
+trait.species.trt.8=as.data.frame(unique(cover.trt.y8$Taxon))
+
+# get number of trt years for each site
+
+trt.yrs.site = as.data.frame(unclass(table(cover.response.all$site_code, cover.response.all$n_treat_years)))
+
+write.csv(trt.yrs.site, file="./Formatted.Data/trt.years.per.site.csv")
+
+# species metadata
+data.3=data.2[,c(1,4,12,13,16,17,18)]
+
+data.4=unique(data.3)
+
+write.csv(data.4, file="./Formatted.Data/species.metadata.csv")
