@@ -1,5 +1,6 @@
 library(Taxonstand)
 library(tidyverse)
+library(stringr)
 
 #### Prepping final species list ####
 
@@ -186,3 +187,37 @@ data.3=data.2[,c(1,4,12,13,16,17,18)]
 data.4=unique(data.3)
 
 write.csv(data.4, file="./Formatted.Data/species.metadata.csv")
+
+#### Austraits ####
+
+install.packages("remotes")
+remotes::install_github("traitecoevo/austraits", dependencies = TRUE, upgrade = "ask")
+library(austraits) 
+austraits <- load_austraits(version = "4.1.0", path = "austraits")
+
+setwd("/Users/sjworthy/Documents/Courses/ECL271/austraits")
+austraits.2=readRDS("austraits-4.1.0.rds")
+
+taxon.df=as.data.frame(unique(austraits.2$traits$taxon_name))
+
+# read in species names
+setwd("/Users/sjworthy/Documents/GitHub/Drought.Traits/Formatted.Data")
+
+cover.response.all=read.csv("cover.response.all.csv")
+cover.species=as.data.frame(unique(cover.response.all$Taxon))
+
+cover.species.list=as.vector(cover.species$`unique(cover.response.all$Taxon)`)
+cover.species.list.2=str_to_sentence(cover.species.list)
+
+austraits.subset <- extract_taxa(austraits.2, taxon_name = cover.species.list.2)
+austraits.traits <- extract_trait(austraits.subset, c("leaf_area","leaf_C_per_dry_mass",
+                                                      "leaf_dry_matter_content","leaf_N_per_dry_mass",
+                                                      "leaf_thickness","plant_height","root_C_per_dry_mass",
+                                                      "root_diameter","root_N_per_dry_mass","root_shoot_ratio",
+                                                      "root_specific_root_length","seed_dry_mass",
+                                                      "leaf_mass_per_area"))
+austraits.subset.traits=austraits.traits$traits
+write.csv(austraits.subset.traits, file="AusTraits.subset.traits.csv")
+
+
+
