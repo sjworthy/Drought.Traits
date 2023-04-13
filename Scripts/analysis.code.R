@@ -1,12 +1,8 @@
 # Script for analysis of Drought Net data
 
-install.packages("rpart")
 library(rpart)
-install.packages("rpart.plot")
 library(rpart.plot)
-install.packages("dismo")
 library(dismo)
-install.packages("gbm")
 library(gbm)
 
 # read in test data frame

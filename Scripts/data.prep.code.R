@@ -165,6 +165,14 @@ cover.trt.y6=subset(cover.response.all, cover.response.all$n_treat_years == 6)
 cover.trt.y7=subset(cover.response.all, cover.response.all$n_treat_years == 7)
 cover.trt.y8=subset(cover.response.all, cover.response.all$n_treat_years == 8)
 
+write.csv(cover.trt.y2, file="./Formatted.Data/cover.trt.y2.csv")
+write.csv(cover.trt.y3, file="./Formatted.Data/cover.trt.y3.csv")
+write.csv(cover.trt.y4, file="./Formatted.Data/cover.trt.y4.csv")
+write.csv(cover.trt.y5, file="./Formatted.Data/cover.trt.y5.csv")
+write.csv(cover.trt.y6, file="./Formatted.Data/cover.trt.y6.csv")
+write.csv(cover.trt.y7, file="./Formatted.Data/cover.trt.y7.csv")
+write.csv(cover.trt.y8, file="./Formatted.Data/cover.trt.y8.csv")
+
 # get trait species for other year
 
 trait.species.trt.2=as.data.frame(unique(cover.trt.y2$Taxon))
