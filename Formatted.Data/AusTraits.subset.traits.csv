@@ -1049,8 +1049,8 @@
 500,Dong_2017,Calytrix tetragona,172,leaf_C_per_dry_mass,512.626276,mg/g,,population,mean,measurement,6-May,field,adult,22,NA,NA,NA,22,NA,NA,NA,2011/2012,NA,NA,Calytrix tetragona
 503,Dong_2017,Calytrix tetragona,173,leaf_C_per_dry_mass,521.5451018,mg/g,,population,mean,measurement,6-May,field,adult,23,NA,NA,NA,23,NA,NA,NA,2011/2012,NA,NA,Calytrix tetragona
 556,Duncan_1998,Calytrix tetragona,17,leaf_dry_matter_content,0.33,g/g,,individual,mean,measurement,5,field,adult,8,1,NA,NA,8,NA,NA,NA,1998/1998,NA,NA,Calytrix tetragona
-264,Burrows_2001,Calytrix tetragona,98,leaf_mass_per_area,247,g/m2,,individual,raw,measurement,1,field,adult,1,1,NA,NA,1,NA,NA,NA,unknown/2001,NA,NA,Calytrix tetragona
-266,Burrows_2001,Calytrix tetragona,99,leaf_mass_per_area,239,g/m2,,individual,raw,measurement,1,field,adult,1,2,NA,NA,1,NA,NA,NA,unknown/2001,NA,NA,Calytrix tetragona
+264,Burrows_2001,Calytrix tetragona,98,leaf_mass_per_area,247,g/m2,405.4812144,individual,raw,measurement,1,field,adult,1,1,NA,NA,1,NA,NA,NA,unknown/2001,NA,NA,Calytrix tetragona
+266,Burrows_2001,Calytrix tetragona,99,leaf_mass_per_area,239,g/m2,0.002466205,individual,raw,measurement,1,field,adult,1,2,NA,NA,1,NA,NA,NA,unknown/2001,NA,NA,Calytrix tetragona
 268,Burrows_2001,Calytrix tetragona,100,leaf_mass_per_area,256,g/m2,,individual,raw,measurement,1,field,adult,1,3,NA,NA,1,NA,NA,NA,unknown/2001,NA,NA,Calytrix tetragona
 270,Burrows_2001,Calytrix tetragona,101,leaf_mass_per_area,228,g/m2,,individual,raw,measurement,1,field,adult,1,4,NA,NA,1,NA,NA,NA,unknown/2001,NA,NA,Calytrix tetragona
 272,Burrows_2001,Calytrix tetragona,102,leaf_mass_per_area,306,g/m2,,individual,raw,measurement,1,field,adult,1,5,NA,NA,1,NA,NA,NA,unknown/2001,NA,NA,Calytrix tetragona
