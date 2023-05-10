@@ -5,7 +5,8 @@ library(rpart.plot)
 library(dismo)
 library(gbm)
 
-# read in test data frame
+# read in test data framex.var.pred.frame
+
 
 test.data = read.csv("./Formatted.Data/analysis.test.data.csv")
 cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
@@ -643,6 +644,7 @@ sort(rowMeans(importancePred.all.variables[[3]]), decreasing = T)
 # examine shape of cover.change to root tissue density using partial dependence plot
 # all other explanatory variables are fixed
 
+#### Final models ####
 BRT.final.all.variable <- gbm.step(data=all.data,
                         gbm.x = c(19,20,21,22,23,24,25,26),
                         gbm.y = 10,
@@ -651,7 +653,7 @@ BRT.final.all.variable <- gbm.step(data=all.data,
                         learning.rate = 0.0001,
                         bag.fraction = 0.75,
                         n.trees = 50,
-                        plot.main=F, plot.folds=F, site.weights = all.data$site.id)
+                        plot.main=T, plot.folds=F, site.weights = all.data$site.id)
 
 summary(BRT.final.all.variable)
 
@@ -710,7 +712,7 @@ BRT.final.sub.1.5 <- gbm.step(data=all.data,
                                    learning.rate = 0.00001,
                                    bag.fraction = 0.75,
                                    n.trees = 50,
-                                   plot.main=F, plot.folds=F, site.weights = all.data$site.id)
+                                   plot.main=T, plot.folds=F, site.weights = all.data$site.id)
 
 summary(BRT.final.sub.1.5)
 
@@ -731,7 +733,7 @@ BRT.final.sub.2.5 <- gbm.step(data=all.data,
                               learning.rate = 0.00001,
                               bag.fraction = 0.75,
                               n.trees = 50,
-                              plot.main=F, plot.folds=F, site.weights = all.data$site.id)
+                              plot.main=T, plot.folds=F, site.weights = all.data$site.id)
 
 summary(BRT.final.sub.2.5)
 
@@ -752,7 +754,7 @@ BRT.final.sub.3.4 <- gbm.step(data=all.data,
                               learning.rate = 0.0001,
                               bag.fraction = 0.75,
                               n.trees = 50,
-                              plot.main=F, plot.folds=F, site.weights = all.data$site.id)
+                              plot.main=T, plot.folds=F, site.weights = all.data$site.id)
 
 summary(BRT.final.sub.3.4)
 
@@ -795,7 +797,7 @@ BRT.final.complete.5<- gbm.step(data=all.complete,
                               learning.rate = 0.00001,
                               bag.fraction = 0.75,
                               n.trees = 50,
-                              plot.main=F, plot.folds=F, site.weights = all.complete$site.id,
+                              plot.main=T, plot.folds=F, site.weights = all.complete$site.id,
                               interaction.depth = 3)
 
 summary(BRT.final.complete.5)
