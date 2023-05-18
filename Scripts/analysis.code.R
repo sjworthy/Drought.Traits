@@ -660,7 +660,7 @@ summary(BRT.final.all.variable)
 gbm.plot(BRT.final.all.variable)
 gbm.plot.fits(BRT.final.all.variable)
 
-plot.gbm(BRT.final.all.variable, i.var = c("log.SLA"))
+plot.gbm(BRT.final.all.variable, i.var = c("log.RTD"))
 # cover change increases with root tissue density
 
 # investigation of interactions
@@ -794,7 +794,7 @@ BRT.final.complete.5<- gbm.step(data=all.complete,
                               gbm.y = 10,
                               family = "gaussian",
                               tree.complexity = 8,
-                              learning.rate = 0.00001,
+                              learning.rate = 0.000000001,
                               bag.fraction = 0.75,
                               n.trees = 50,
                               plot.main=T, plot.folds=F, site.weights = all.complete$site.id,
