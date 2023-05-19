@@ -5,10 +5,8 @@ library(rpart.plot)
 library(dismo)
 library(gbm)
 
-# read in test data framex.var.pred.frame
 
-
-test.data = read.csv("./Formatted.Data/analysis.test.data.csv")
+trait.data = read.csv("./Formatted.Data/trait.species.trt.yr1.final.csv")
 cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
 
 # subset traits to only those of interest
@@ -111,17 +109,27 @@ all.complete$site.id = as.numeric(as.factor(all.complete$site_code))
 # page 84
 
 # all variables
-reg.tree.1=rpart(mean.cover.response ~ log.leafN+log.height+log.rootN+
-                   log.SLA+log.root.depth+log.RTD+log.SRL+log.root.diam,data=all.data)
-rpart.plot(reg.tree.1)
-summary(reg.tree.1)
-# RTD only important variable
-
-reg.tree.1.site=rpart(mean.cover.response ~ log.leafN+log.height+log.rootN+
+all.reg.tree=rpart(mean.cover.response ~ log.leafN+log.height+log.rootN+
                    log.SLA+log.root.depth+log.RTD+log.SRL+log.root.diam,
-                   weights = all.data$site.id, data=all.data)
-rpart.plot(reg.tree.1.site)
-summary(reg.tree.1.site)
+                   data=all.data, weights = all.data$site.id)
+rpart.plot(all.reg.tree)
+summary(all.reg.tree)
+
+# complete variables
+comp.reg.tree=rpart(mean.cover.response ~ log.leafN+log.height+log.rootN+
+                     log.SLA+log.root.depth+log.RTD+log.SRL+log.root.diam,
+                   data=all.complete, weights = all.complete$site.id)
+rpart.plot(comp.reg.tree)
+summary(comp.reg.tree)
+
+# no trees variables
+no.tree.reg.tree=rpart(mean.cover.response ~ log.leafN+log.height+log.rootN+
+                      log.SLA+log.root.depth+log.RTD+log.SRL+log.root.diam,
+                    data=no.trees, weights = no.trees$site.id)
+rpart.plot(no.tree.reg.tree)
+summary(no.tree.reg.tree)
+
+
 
 # variable subset
 reg.tree.2=rpart(mean.cover.response ~ log.leafN+log.root.depth+log.root.diam, data=all.data)
