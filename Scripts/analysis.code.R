@@ -837,7 +837,20 @@ gbm.perspec(BRT.final.complete.5,
             perspective = TRUE,
             z.range = c(-1.22,-1.15))
 
+#### species coverage per site #####
 
+# for each site how many taxon do we have traits for, how many total taxon per site
+trait.site = all.data %>%
+  group_by(site_code) %>%
+  summarise(taxon_site = length(unique(Taxon)))
 
+total.species = cover.data %>%
+  group_by(site_code) %>%
+  summarise(taxon_total = length(unique(Taxon)))
 
+# merge df
 
+sites.for.soil = cbind(trait.site, total.species)
+sites.for.soil$percent.species = sites.for.soil$taxon_site/sites.for.soil$taxon_total
+
+write.csv(sites.for.soil, file="./Formatted.Data/species.site.coverage.yr1.csv")
