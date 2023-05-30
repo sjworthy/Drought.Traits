@@ -9,10 +9,6 @@ library(gbm)
 trait.data = read.csv("./Formatted.Data/trait.species.trt.yr1.final.csv")
 cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
 
-# subset traits to only those of interest
-
-trait.data = test.data[,c(1,7,8,10,12,14,15,18,20)]
-
 # subset traits so they must have SLA
 
 trait.data.2 = subset(trait.data, trait.data$SLA_m2.kg > 0 ) # 640 species

@@ -3,16 +3,96 @@
 library(dismo)
 library(gbm)
 
-trait.data = read.csv("./Formatted.Data/trait.species.trt.yr1.final.csv")
-cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
+trait.data = read.csv("./Formatted.Data/trait.species.trt.yr1.final.new.csv")
 
 # subset traits to only those of interest
 
 trait.data.2 = trait.data[,c(1,7,8,10,12,14,15,18,20,27:29)]
 
-# subset traits so they must have SLA
+#### checking for outliers ####
+# all outliers removed manually from trait.species.trt.yr1.final.new and made new file trait.species.trt.yr1.outlier
+hist(trait.data.2$leafN.mg.g)
+boxplot(trait.data.2$leafN.mg.g)
+mean = mean(trait.data.2$leafN.mg.g, na.rm = TRUE)
+std = sd(trait.data.2$leafN.mg.g, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$leafN.mg.g[which(trait.data.2$leafN.mg.g <Tmin | trait.data.2$leafN.mg.g > Tmax)]
+# removed leafN 58.30000 and 67.58333
 
-trait.data.3 = subset(trait.data.2, trait.data.2$SLA_m2.kg > 0 ) # 657 species
+hist(trait.data.2$height.m)
+boxplot(trait.data.2$height.m)
+mean = mean(trait.data.2$height.m, na.rm = TRUE)
+std = sd(trait.data.2$height.m, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$height.m[which(trait.data.2$height.m <Tmin | trait.data.2$height.m > Tmax)]
+# removed height > 14.37587 16.68757 19.05000 20.17067 20.42708 20.46877 20.50100 20.83333 
+# 21.00000 21.58000 22.64920 23.39467 23.60517 24.86933 25.75100 27.10186 28.99781 32.57366 46.30267
+
+hist(trait.data.2$rootN.mg.g)
+boxplot(trait.data.2$rootN.mg.g)
+mean = mean(trait.data.2$rootN.mg.g, na.rm = TRUE)
+std = sd(trait.data.2$rootN.mg.g, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$rootN.mg.g[which(trait.data.2$rootN.mg.g <Tmin | trait.data.2$rootN.mg.g > Tmax)]
+# remove rootN 33.34667 34.39000 39.26274
+
+hist(trait.data.2$SLA_m2.kg)
+boxplot(trait.data.2$SLA_m2.kg)
+mean = mean(trait.data.2$SLA_m2.kg, na.rm = TRUE)
+std = sd(trait.data.2$SLA_m2.kg, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$SLA_m2.kg[which(trait.data.2$SLA_m2.kg <Tmin | trait.data.2$SLA_m2.kg > Tmax)]
+# remove SLA 53.50000 57.70000 61.28000 63.13000 64.32508 66.41054 68.90000 75.90000 86.00000 96.66667 98.20000
+
+hist(trait.data.2$root.depth_m)
+boxplot(trait.data.2$root.depth_m)
+mean = mean(trait.data.2$root.depth_m, na.rm = TRUE)
+std = sd(trait.data.2$root.depth_m, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$root.depth_m[which(trait.data.2$root.depth_m <Tmin | trait.data.2$root.depth_m > Tmax)]
+# remove depth 3.352800  3.500000  3.709333  3.828571  6.451600 11.625000
+
+hist(trait.data.2$RTD.g.cm3)
+boxplot(trait.data.2$RTD.g.cm3)
+mean = mean(trait.data.2$RTD.g.cm3, na.rm = TRUE)
+std = sd(trait.data.2$RTD.g.cm3, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$RTD.g.cm3[which(trait.data.2$RTD.g.cm3 <Tmin | trait.data.2$RTD.g.cm3 > Tmax)]
+# remove RTD 0.9167417 1.1945504
+
+hist(trait.data.2$SRL_m.g)
+boxplot(trait.data.2$SRL_m.g)
+mean = mean(trait.data.2$SRL_m.g, na.rm = TRUE)
+std = sd(trait.data.2$SRL_m.g, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$SRL_m.g[which(trait.data.2$SRL_m.g <Tmin | trait.data.2$SRL_m.g > Tmax)]
+# remove SRL 601.5858 627.5050 630.3000 657.7263 760.8500 833.5418 929.9185
+
+hist(trait.data.2$rootDiam.mm)
+boxplot(trait.data.2$rootDiam.mm)
+mean = mean(trait.data.2$rootDiam.mm, na.rm = TRUE)
+std = sd(trait.data.2$rootDiam.mm, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+trait.data.2$rootDiam.mm[which(trait.data.2$rootDiam.mm <Tmin | trait.data.2$rootDiam.mm > Tmax)]
+# remove diam 81.81050 27.13865
+
+#### read in new trait data without outliers and cover data ####
+
+trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.csv")
+cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
+
+
+# subset traits so they must have SLA
+trait.data.2 = trait.data.new[,c(1,7,8,10,12,14,15,18,20,27:29)]
+trait.data.3 = subset(trait.data.2, trait.data.2$SLA_m2.kg > 0 ) # 646 data points, 
 
 table(is.na(trait.data.3$leafN.mg.g))
 table(is.na(trait.data.3$height.m))
@@ -24,119 +104,48 @@ table(is.na(trait.data.3$rootDiam.mm))
 
 # merge trait data and cover data
 
-all.data = merge(cover.data, trait.data.3, by="Taxon") # 1096 data points with site
+all.data = merge(cover.data, trait.data.3, by="Taxon") # 1077 data points with site
 
-# test for correlation
+#### test for correlation ####
 cor.test(all.data$leafN.mg.g, all.data$height.m)
-cor.test(all.data$leafN.mg.g, all.data$rootN.mg.g) # correlated
-cor.test(all.data$leafN.mg.g, all.data$SLA_m2.kg) # correlated
+cor.test(all.data$leafN.mg.g, all.data$rootN.mg.g) # correlated r = 0.49
+cor.test(all.data$leafN.mg.g, all.data$SLA_m2.kg) # correlated r = 0.34
 cor.test(all.data$leafN.mg.g, all.data$root.depth_m)
-cor.test(all.data$leafN.mg.g, all.data$RTD.g.cm3) # correlated
-cor.test(all.data$leafN.mg.g, all.data$SRL_m.g) # correlated
+cor.test(all.data$leafN.mg.g, all.data$RTD.g.cm3) # correlated r = -0.20
+cor.test(all.data$leafN.mg.g, all.data$SRL_m.g) # correlated r = 0.24
 cor.test(all.data$leafN.mg.g, all.data$rootDiam.mm)
 cor.test(all.data$height.m, all.data$rootN.mg.g)
-cor.test(all.data$height.m, all.data$SLA_m2.kg)
+cor.test(all.data$height.m, all.data$SLA_m2.kg) # correlated r = -0.08
 cor.test(all.data$height.m, all.data$root.depth_m)
 cor.test(all.data$height.m, all.data$RTD.g.cm3)
-cor.test(all.data$height.m, all.data$SRL_m.g) # correlated
-cor.test(all.data$height.m, all.data$rootDiam.mm)
-cor.test(all.data$rootN.mg.g, all.data$SLA_m2.kg)
+cor.test(all.data$height.m, all.data$SRL_m.g) # correlated r = -0.10
+cor.test(all.data$height.m, all.data$rootDiam.mm) # correlated r = 0.14
+cor.test(all.data$rootN.mg.g, all.data$SLA_m2.kg) # correlated r = 0.22
 cor.test(all.data$rootN.mg.g, all.data$root.depth_m)
-cor.test(all.data$rootN.mg.g, all.data$RTD.g.cm3) # correlated
-cor.test(all.data$rootN.mg.g, all.data$SRL_m.g) # correlated
+cor.test(all.data$rootN.mg.g, all.data$RTD.g.cm3) # correlated r = -0.16
+cor.test(all.data$rootN.mg.g, all.data$SRL_m.g)
 cor.test(all.data$rootN.mg.g, all.data$rootDiam.mm)
-cor.test(all.data$SLA_m2.kg, all.data$root.depth_m)
-cor.test(all.data$SLA_m2.kg, all.data$RTD.g.cm3) # correlated
-cor.test(all.data$SLA_m2.kg, all.data$SRL_m.g) # correlated
+cor.test(all.data$SLA_m2.kg, all.data$root.depth_m) # correlated r = -0.15
+cor.test(all.data$SLA_m2.kg, all.data$RTD.g.cm3) # correlated r = -0.24
+cor.test(all.data$SLA_m2.kg, all.data$SRL_m.g) # correlated r = 0.42
 cor.test(all.data$SLA_m2.kg, all.data$rootDiam.mm)
-cor.test(all.data$root.depth_m, all.data$RTD.g.cm3) # correlated
-cor.test(all.data$root.depth_m, all.data$SRL_m.g) # correlated
-cor.test(all.data$root.depth_m, all.data$rootDiam.mm)
-cor.test(all.data$RTD.g.cm3, all.data$SRL_m.g) # correlated
-cor.test(all.data$RTD.g.cm3, all.data$rootDiam.mm)
-cor.test(all.data$SRL_m.g, all.data$rootDiam.mm)
+cor.test(all.data$root.depth_m, all.data$RTD.g.cm3) # correlated r = 0.13
+cor.test(all.data$root.depth_m, all.data$SRL_m.g) # correlated r =-0.15
+cor.test(all.data$root.depth_m, all.data$rootDiam.mm) #  correlated r = 0.15
+cor.test(all.data$RTD.g.cm3, all.data$SRL_m.g) # correlated r = -0.27
+cor.test(all.data$RTD.g.cm3, all.data$rootDiam.mm) # correlated r = 0.13
+cor.test(all.data$SRL_m.g, all.data$rootDiam.mm) #  correlated r = -0.09
 
-# checking for outliers
-# all outliers removed manually from trait.species.trt.yr1.final
-shapiro.test(all.data$leafN.mg.g)
-hist(all.data$leafN.mg.g)
-boxplot(all.data$leafN.mg.g)
-mean = mean(all.data$leafN.mg.g, na.rm = TRUE)
-std = sd(all.data$leafN.mg.g, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$leafN.mg.g[which(all.data$leafN.mg.g <Tmin | all.data$leafN.mg.g > Tmax)]
-# removed leafN > 46.26
+#### correlation between response and predictors ####
 
-shapiro.test(all.data$height.m)
-hist(all.data$height.m)
-boxplot(all.data$height.m)
-mean = mean(all.data$height.m, na.rm = TRUE)
-std = sd(all.data$height.m, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$height.m[which(all.data$height.m <Tmin | all.data$height.m > Tmax)]
-# removed height > 12.2
-
-shapiro.test(all.data$rootN.mg.g)
-hist(all.data$rootN.mg.g)
-boxplot(all.data$rootN.mg.g)
-mean = mean(all.data$rootN.mg.g, na.rm = TRUE)
-std = sd(all.data$rootN.mg.g, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$rootN.mg.g[which(all.data$rootN.mg.g <Tmin | all.data$rootN.mg.g > Tmax)]
-# remove rootN > 33.33
-
-shapiro.test(all.data$SLA_m2.kg)
-hist(all.data$SLA_m2.kg)
-boxplot(all.data$SLA_m2.kg)
-mean = mean(all.data$SLA_m2.kg, na.rm = TRUE)
-std = sd(all.data$SLA_m2.kg, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$SLA_m2.kg[which(all.data$SLA_m2.kg <Tmin | all.data$SLA_m2.kg > Tmax)]
-# remove SLA > 52.3
-
-shapiro.test(all.data$root.depth_m)
-hist(all.data$root.depth_m)
-boxplot(all.data$root.depth_m)
-mean = mean(all.data$root.depth_m, na.rm = TRUE)
-std = sd(all.data$root.depth_m, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$root.depth_m[which(all.data$root.depth_m <Tmin | all.data$root.depth_m > Tmax)]
-# remove depth > 3.02
-
-shapiro.test(all.data$RTD.g.cm3)
-hist(all.data$RTD.g.cm3)
-boxplot(all.data$RTD.g.cm3)
-mean = mean(all.data$RTD.g.cm3, na.rm = TRUE)
-std = sd(all.data$RTD.g.cm3, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$RTD.g.cm3[which(all.data$RTD.g.cm3 <Tmin | all.data$RTD.g.cm3 > Tmax)]
-# remove RTD > 0.77
-
-shapiro.test(all.data$SRL_m.g)
-hist(all.data$SRL_m.g)
-boxplot(all.data$SRL_m.g)
-mean = mean(all.data$SRL_m.g, na.rm = TRUE)
-std = sd(all.data$SRL_m.g, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$SRL_m.g[which(all.data$SRL_m.g <Tmin | all.data$SRL_m.g > Tmax)]
-# remove SRL > 527
-
-shapiro.test(all.data$rootDiam.mm)
-hist(all.data$rootDiam.mm)
-boxplot(all.data$rootDiam.mm)
-mean = mean(all.data$rootDiam.mm, na.rm = TRUE)
-std = sd(all.data$rootDiam.mm, na.rm = TRUE)
-Tmin = mean-(3*std)
-Tmax = mean+(3*std)
-all.data$rootDiam.mm[which(all.data$rootDiam.mm <Tmin | all.data$rootDiam.mm > Tmax)]
-# remove diam > 27
+cor.test(all.data$mean.cover.response, all.data$leafN.mg.g) # r = 0.07
+cor.test(all.data$mean.cover.response, all.data$height.m) # r = -0.01
+cor.test(all.data$mean.cover.response, all.data$rootN.mg.g) # r = -0.01
+cor.test(all.data$mean.cover.response, all.data$SLA_m2.kg) # r = 0.04
+cor.test(all.data$mean.cover.response, all.data$root.depth_m) # r = 0.04
+cor.test(all.data$mean.cover.response, all.data$RTD.g.cm3) # r = 0.06
+cor.test(all.data$mean.cover.response, all.data$SRL_m.g) # r = -0.04
+cor.test(all.data$mean.cover.response, all.data$rootDiam.mm) # r = 0.06
 
 shapiro.test(all.data$mean.cover.response)
 hist(all.data$mean.cover.response)
@@ -151,7 +160,7 @@ all.data$log.RTD = as.vector(scale(log(all.data$RTD.g.cm3)))
 all.data$log.SRL = as.vector(scale(log(all.data$SRL_m.g)))
 all.data$log.root.diam = as.vector(scale(log(all.data$rootDiam.mm)))
 
-# get data set of only complete trait cases
+#### get data set of only complete trait cases ####
 
 all.complete = all.data[complete.cases(all.data),]
 
@@ -165,7 +174,7 @@ all.complete$log.RTD = as.vector(scale(log(all.complete$RTD.g.cm3)))
 all.complete$log.SRL = as.vector(scale(log(all.complete$SRL_m.g)))
 all.complete$log.root.diam = as.vector(scale(log(all.complete$rootDiam.mm)))
 
-# data set with trees and shrubs removed
+#### data set with trees and shrubs removed ####
 
 no.trees = subset(all.data, !all.data$functional_group == "WOODY")
 
@@ -178,7 +187,7 @@ no.trees$log.RTD = as.vector(scale(log(no.trees$RTD.g.cm3)))
 no.trees$log.SRL = as.vector(scale(log(no.trees$SRL_m.g)))
 no.trees$log.root.diam = as.vector(scale(log(no.trees$rootDiam.mm)))
 
-# change site code to numeric, continuous vector
+#### change site code to numeric, continuous vector ####
 all.data$site.id = as.numeric(as.factor(all.data$site_code))
 all.complete$site.id = as.numeric(as.factor(all.complete$site_code))
 no.trees$site.id = as.numeric(as.factor(no.trees$site_code))
@@ -187,9 +196,9 @@ no.trees$site.id = as.numeric(as.factor(no.trees$site_code))
 
 # need to read out data anf fix the lifespan to particular sites since some species have different lifespan at different sites
 
-# write.csv(all.data, file="./Formatted.Data/all.data.csv")
+# write.csv(all.data, file="./Formatted.Data/all.data.response.0.csv")
 
-all.data.ls = read.csv("./Formatted.Data/all.data.csv", row.names = 1)
+all.data.ls = read.csv("./Formatted.Data/all.data.lifespan.csv", row.names = 1)
 table(all.data.ls$local_lifespan)
 
 annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL")
@@ -266,13 +275,6 @@ perennial.brt.1=gbm.step(data=perennial.data, gbm.x = c(11:18), gbm.y=10,
                       family = "gaussian", tree.complexity = 1, learning.rate = 0.000000000000000001,
                       bag.fraction = 0.75, n.trees = 50, verbose = FALSE, site.weights = perennial.data$site.id)
 # the standard deviation is zero
-
-# trying to get range of mean cover change decreased
-
-perennial.tree$log.mean.ctrl.cover = log(perennial.tree$mean.ctrl.cover + 0.1)
-perennial.tree$log.mean.drt.cover = log(perennial.tree$mean.drt.cover + 0.1)
-perennial.tree$log.mean.cover.response = perennial.tree$log.mean.drt.cover - perennial.tree$log.mean.ctrl.cover
-perennial.tree$scale.mean.cover.response = as.vector(scale(perennial.tree$log.mean.cover.response))
 
 set.seed(2023)
 perennial.tree.brt.1=gbm.step(data=perennial.tree, gbm.x = c(11:18), gbm.y=10,
@@ -650,7 +652,7 @@ for (i in 1:length(R2Obs.perennial.tree.variables)) {
 # 1 complexity is best for all variables model with lr = 0.000000000000000001
 
 
-# final models
+#### final models ####
 
 set.seed(2023)
 all.final.brt <- gbm.step(data=all.data,
@@ -665,7 +667,7 @@ all.final.brt <- gbm.step(data=all.data,
 summary(all.final.brt)
 # RTD 30%
 
-gbm.plot(all.final.brt)
+gbm.plot(all.final.brt, common.scale = FALSE)
 gbm.plot.fits(all.final.brt)
 
 plot.gbm(all.final.brt, i.var = c("RTD.g.cm3"))
@@ -691,7 +693,9 @@ gbm.interactions(all.final.brt)$rank.list
 all.brt.simple = gbm.simplify(all.final.brt)
 # keep only SLA and RTD
 
-# final complete cases model
+
+
+#### final complete cases model ####
 set.seed(2023)
 comp.final.brt <- gbm.step(data=all.complete,
 gbm.x = c(11:18),
@@ -729,7 +733,7 @@ R2.comp.brt = 1-(comp.final.brt$self.statistics$mean.resid/comp.final.brt$self.s
 # investigation of interactions
 gbm.interactions(comp.final.brt)$rank.list
 
-# model without trees
+#### model without trees ####
 set.seed(2023)
 tree.final.brt <- gbm.step(data=no.trees,
 gbm.x = c(11:18),
@@ -793,7 +797,7 @@ gbm.perspec(tree.final.brt,
             z.range = c(-0.9,0.82))
 
 
-# annual final model
+#### annual final model ####
 set.seed(2023)
 annual.final.brt <- gbm.step(data=annual.data,
                           gbm.x = c(11:18),
@@ -893,7 +897,7 @@ gbm.perspec(annual.final.brt,
             perspective = FALSE,
             z.range = c(-0.9,0.22))
 
-# perennial final model
+#### perennial final model ####
 set.seed(2023)
 perennial.final.brt <- gbm.step(data=perennial.data,
                              gbm.x = c(11:18),
@@ -931,7 +935,7 @@ R2.perennail.brt = 1-(perennial.final.brt$self.statistics$mean.resid/perennial.f
 # investigation of interactions
 gbm.interactions(perennial.final.brt)$rank.list
 
-# perennial without tree final model
+#### perennial without tree final model ####
 set.seed(2023)
 perennial.tree.final.brt <- gbm.step(data=perennial.tree,
                                 gbm.x = c(11:18),
@@ -971,5 +975,46 @@ R2.perennail.brt = 1-(perennial.tree.final.brt$self.statistics$mean.resid/perenn
 # investigation of interactions
 gbm.interactions(perennial.tree.final.brt)$rank.list
 
+#### ggBRT ####
 
+install.packages("devtools") # in case "devtools" has not already been installed
+devtools::install_github("JBjouffray/ggBRT") # will take several minutes to install
+library(ggBRT)
+# https://jbjouffray.github.io/ggBRT/ggBRT_Tutorial.html
+
+ggPerformance(all=all.final.brt,complete=comp.final.brt,no.trees.all=tree.final.brt,annual=annual.final.brt,
+              perennial=perennial.final.brt, perennial.no.tree=perennial.tree.final.brt)
+
+ggInfluence(all.final.brt, signif = TRUE)
+ggInfluence(comp.final.brt, signif = TRUE)
+ggInfluence(tree.final.brt, signif = TRUE)
+ggInfluence(annual.final.brt, signif = TRUE)
+ggInfluence(perennial.final.brt, signif = TRUE)
+ggInfluence(perennial.tree.final.brt, signif = TRUE)
+
+
+ggMultiInfluence(all=all.final.brt,complete=comp.final.brt,no.trees.all=tree.final.brt,annual=annual.final.brt,
+                 perennial=perennial.final.brt, perennial.no.tree=perennial.tree.final.brt)
+
+ggPD(all.final.brt,rug = T)
+ggPD(annual.final.brt,rug = T)
+ggPDfit(all.final.brt)
+ggPDfit(annual.final.brt)
+
+ggInteract_list(all.final.brt,index = F)
+ggInteract_list(comp.final.brt,index = F)
+ggInteract_list(tree.final.brt,index = F)
+ggInteract_list(annual.final.brt,index = F)
+ggInteract_list(perennial.final.brt,index = F)
+ggInteract_list(perennial.tree.final.brt,index = F)
+
+
+ggInteract_2D(gbm.object = annual.final.brt,x="SRL_m.g",y="leafN.mg.g",col.gradient = c("white","#5576AF"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,
+              label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+
+ggInteract_3D(annual.final.brt,x="SRL_m.g",y="leafN.mg.g")
+ggInteract_3D(annual.final.brt,x="leafN.mg.g",y="root.depth_m")
+ggInteract_3D(annual.final.brt,x="rootDiam.mm",y="SRL_m.g")
 
