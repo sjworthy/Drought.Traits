@@ -2,6 +2,7 @@
 
 library(dismo)
 library(gbm)
+library(ggBRT)
 
 trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.csv")
 
@@ -1416,10 +1417,10 @@ ggPerformance(all.1 = all.final.brt.1,all.10 = all.final.brt.10)
 1-(all.final.brt.1$self.statistics$mean.resid/all.final.brt.1$self.statistics$mean.null)
 # 0.0004
 1-(all.final.brt.10$self.statistics$mean.resid/all.final.brt.10$self.statistics$mean.null)
-# 0.02
-
+# 0.002
 
 summary(all.final.brt.10)
+ggInfluence(all.final.brt.10)
 
 gbm.plot(all.final.brt.10, common.scale = FALSE)
 gbm.plot.fits(all.final.brt.10)
@@ -1439,14 +1440,12 @@ plot(all.predict.brt~observed.all)
 abline(0, 1, col = 2)
 
 R2.all.brt = 1-(all.final.brt.10$self.statistics$mean.resid/all.final.brt.10$self.statistics$mean.null)
-# 0.02
+# 0.002
 
 # investigation of interactions
 gbm.interactions(all.final.brt.10)$rank.list
-# 3 weak interactions
-# RTD x height 0.45
-# diam x RTD 0.31
-# SLA x height 0.23
+# no interactions
+
 
 #### final model with all data without site ####
 # not done
@@ -1501,6 +1500,7 @@ tree.final.brt <- gbm.step(data=no.trees,
                            plot.main=T, plot.folds=T, site.weights = no.trees$site.id)
 
 summary(tree.final.brt)
+ggInfluence(tree.final.brt)
 
 gbm.plot(tree.final.brt, common.scale = FALSE)
 gbm.plot.fits(tree.final.brt)
@@ -1529,6 +1529,19 @@ gbm.interactions(tree.final.brt)$rank.list
 # RTD x height size = 16.55
 # RTD x SLA = 2.29
 # diam x RTD size = 2.14
+
+ggInteract_2D(gbm.object = tree.final.brt,x="RTD.g.cm3",y="height.m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = tree.final.brt,x="RTD.g.cm3",y="SLA_m2.kg",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = tree.final.brt,x="rootDiam.mm",y="RTD.g.cm3",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(tree.final.brt,x="RTD.g.cm3",y="height.m")
+ggInteract_3D(tree.final.brt,x="RTD.g.cm3",y="SLA_m2.kg")
+ggInteract_3D(tree.final.brt,x="rootDiam.mm",y="RTD.g.cm3")
+
+
 
 #### model without trees without site ####
 # not done
@@ -1584,6 +1597,7 @@ annual.final.brt <- gbm.step(data=annual.data,
                              plot.main=T, plot.folds=T, site.weights = annual.data$site.id)
 
 summary(annual.final.brt)
+ggInfluence(annual.final.brt)
 
 gbm.plot(annual.final.brt, common.scale = FALSE)
 gbm.plot.fits(annual.final.brt)
@@ -1612,6 +1626,18 @@ gbm.interactions(annual.final.brt)$rank.list
 # SRL x leafN, size = 44.94
 # height x leafN size = 8.43
 # SRL x depth, size = 3.44
+
+ggInteract_2D(gbm.object = annual.final.brt,x="SRL_m.g",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = annual.final.brt,x="height.m",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = annual.final.brt,x="SRL_m.g",y="root.depth_m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(annual.final.brt,x="SRL_m.g",y="leafN.mg.g")
+ggInteract_3D(annual.final.brt,x="height.m",y="leafN.mg.g")
+ggInteract_3D(annual.final.brt,x="SRL_m.g",y="root.depth_m")
+
 
 #### annual final model without site ####
 # not done
@@ -1664,13 +1690,14 @@ perennial.final.brt <- gbm.step(data=perennial.data,
                                 gbm.x = c(11:18),
                                 gbm.y = 10,
                                 family = "gaussian",
-                                tree.complexity = 6,
+                                tree.complexity = 10,
                                 learning.rate = 0.0001,
                                 bag.fraction = 0.75,
                                 n.trees = 50,
                                 plot.main=T, plot.folds=T)
                                 
 summary(perennial.final.brt)
+ggInfluence(perennial.final.brt)
 
 gbm.plot(perennial.final.brt, common.scale = FALSE)
 gbm.plot.fits(perennial.final.brt)
@@ -1690,11 +1717,23 @@ plot(annual.predict.brt~observed.perennial)
 abline(0, 1, col = 2)
 
 R2.perennail.brt = 1-(perennial.final.brt$self.statistics$mean.resid/perennial.final.brt$self.statistics$mean.null)
-# 0.0
+# 0.01
 
 # investigation of interactions
 gbm.interactions(perennial.final.brt)$rank.list
 # none
+
+ggInteract_2D(gbm.object = perennial.final.brt,x="SRL_m.g",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = perennial.final.brt,x="SLA_m2.kg",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = perennial.final.brt,x="height.m",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(perennial.final.brt,x="SRL_m.g",y="leafN.mg.g")
+ggInteract_3D(perennial.final.brt,x="SLA_m2.kg",y="leafN.mg.g")
+ggInteract_3D(perennial.final.brt,x="height.m",y="leafN.mg.g")
+
 
 #### perennial without tree final model ####
 # won't fit with site.id
@@ -1710,6 +1749,7 @@ perennial.tree.final.brt <- gbm.step(data=perennial.tree,
                                      plot.main=T, plot.folds=T)
                                      
 summary(perennial.tree.final.brt)
+ggInfluence(perennial.tree.final.brt)
 
 gbm.plot(perennial.tree.final.brt, common.scale = FALSE)
 gbm.plot.fits(perennial.tree.final.brt)
@@ -1728,12 +1768,24 @@ observed.perennial.tree = perennial.tree$mean.cover.response
 plot(perennial.tree.predict.brt~observed.perennial.tree)
 abline(0, 1, col = 2)
 
-R2.perennail.brt = 1-(perennial.tree.final.brt$self.statistics$mean.resid/perennial.tree.final.brt$self.statistics$mean.null)
+R2.perennail.brt.tree = 1-(perennial.tree.final.brt$self.statistics$mean.resid/perennial.tree.final.brt$self.statistics$mean.null)
 # 0.02
 
 # investigation of interactions
 gbm.interactions(perennial.tree.final.brt)$rank.list
 # three weak interactions
+
+ggInteract_2D(gbm.object = perennial.tree.final.brt,x="SRL_m.g",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = perennial.tree.final.brt,x="height.m",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = perennial.tree.final.brt,x="SRL_m.g",y="height.m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(perennial.tree.final.brt,x="SRL_m.g",y="leafN.mg.g")
+ggInteract_3D(perennial.tree.final.brt,x="height.m",y="leafN.mg.g")
+ggInteract_3D(perennial.tree.final.brt,x="SRL_m.g",y="height.m")
+
 
 #### grass final model with site ####
 
@@ -1749,6 +1801,7 @@ grass.final.brt <- gbm.step(data=grass,
                             plot.main=T, plot.folds=T, 
                             site.weights = grass$site.id)
 summary(grass.final.brt)
+ggInfluence(grass.final.brt)
 
 gbm.plot(grass.final.brt, common.scale = FALSE)
 gbm.plot.fits(grass.final.brt)
@@ -1774,6 +1827,18 @@ R2.grass.brt = 1-(grass.final.brt$self.statistics$mean.resid/grass.final.brt$sel
 gbm.interactions(grass.final.brt)$rank.list
 # three weak interactions
 
+ggInteract_2D(gbm.object = grass.final.brt,x="RTD.g.cm3",y="SLA_m2.kg",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = grass.final.brt,x="rootDiam.mm",y="RTD.g.cm3",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = grass.final.brt,x="RTD.g.cm3",y="rootN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(grass.final.brt,x="RTD.g.cm3",y="SLA_m2.kg")
+ggInteract_3D(grass.final.brt,x="rootDiam.mm",y="RTD.g.cm3")
+ggInteract_3D(grass.final.brt,x="RTD.g.cm3",y="rootN.mg.g")
+
+
 #### forb final model with site ####
 
 set.seed(2023)
@@ -1788,6 +1853,7 @@ forb.final.brt <- gbm.step(data=forb,
                            plot.main=T, plot.folds=T, 
                            site.weights = forb$site.id)
 summary(forb.final.brt)
+ggInfluence(forb.final.brt)
 
 gbm.plot(forb.final.brt, common.scale = FALSE)
 gbm.plot.fits(forb.final.brt)
@@ -1815,6 +1881,18 @@ gbm.interactions(forb.final.brt)$rank.list
 # height x leafN 38.51
 # RTD x height 8.30
 
+ggInteract_2D(gbm.object = forb.final.brt,x="root.depth_m",y="SLA_m2.kg",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = forb.final.brt,x="height.m",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = forb.final.brt,x="RTD.g.cm3",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(forb.final.brt,x="root.depth_m",y="SLA_m2.kg")
+ggInteract_3D(forb.final.brt,x="height.m",y="leafN.mg.g")
+ggInteract_3D(forb.final.brt,x="RTD.g.cm3",y="leafN.mg.g")
+
+
 #### annual.grass final model with site ####
 
 set.seed(2023)
@@ -1829,6 +1907,7 @@ annual.grass.final.brt <- gbm.step(data=annual.grass,
                                    plot.main=T, plot.folds=T, 
                                    site.weights = annual.grass$site.id)
 summary(annual.grass.final.brt)
+ggInfluence(annual.grass.final.brt)
 
 gbm.plot(annual.grass.final.brt, common.scale = FALSE)
 gbm.plot.fits(annual.grass.final.brt)
@@ -1854,6 +1933,18 @@ R2.annual.grass.brt = 1-(annual.grass.final.brt$self.statistics$mean.resid/annua
 gbm.interactions(annual.grass.final.brt)$rank.list
 # three weak interactions
 
+ggInteract_2D(gbm.object = annual.grass.final.brt,x="SLA_m2.kg",y="height.m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = annual.grass.final.brt,x="height.m",y="leafN.mg.g",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = annual.grass.final.brt,x="root.depth_m",y="height.m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(annual.grass.final.brt,x="SLA_m2.kg",y="height.m")
+ggInteract_3D(annual.grass.final.brt,x="height.m",y="leafN.mg.g")
+ggInteract_3D(annual.grass.final.brt,x="root.depth_m",y="height.m")
+
+
 #### annual.forb final model with site ####
 
 set.seed(2023)
@@ -1868,6 +1959,7 @@ annual.forb.final.brt <- gbm.step(data=annual.forb,
                                   plot.main=T, plot.folds=T, 
                                   site.weights = annual.forb$site.id)
 summary(annual.forb.final.brt)
+ggInfluence(annual.forb.final.brt)
 
 gbm.plot(annual.forb.final.brt, common.scale = FALSE)
 gbm.plot.fits(annual.forb.final.brt)
@@ -1895,6 +1987,18 @@ gbm.interactions(annual.forb.final.brt)$rank.list
 # RTD x height 3.20
 # SLA x leafN 1.54 
 
+ggInteract_2D(gbm.object = annual.forb.final.brt,x="SLA_m2.kg",y="height.m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = annual.forb.final.brt,x="RTD.g.cm3",y="height.m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+ggInteract_2D(gbm.object = annual.forb.final.brt,x="SLA_m2.kg",y="height.m",
+              col.gradient = c("white","#5576AF"),show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
+
+ggInteract_3D(annual.forb.final.brt,x="SLA_m2.kg",y="height.m")
+ggInteract_3D(annual.forb.final.brt,x="RTD.g.cm3",y="leafN.mg.g")
+ggInteract_3D(annual.forb.final.brt,x="SLA_m2.kg",y="leafN.mg.g")
+
+
 #### perennial.grass final model with site ####
 
 set.seed(2023)
@@ -1909,6 +2013,7 @@ perennial.grass.final.brt <- gbm.step(data=perennial.grass,
                                       plot.main=T, plot.folds=T, 
                                       site.weights = perennial.grass$site.id)
 summary(perennial.grass.final.brt)
+ggInfluence(perennial.grass.final.brt)
 
 gbm.plot(perennial.grass.final.brt, common.scale = FALSE)
 gbm.plot.fits(perennial.grass.final.brt)
@@ -1948,6 +2053,7 @@ perennial.forb.final.brt <- gbm.step(data=perennial.forb,
                                      plot.main=T, plot.folds=T, 
                                      site.weights = perennial.forb$site.id)
 summary(perennial.forb.final.brt)
+ggInfluence(perennial.forb.final.brt)
 
 gbm.plot(perennial.forb.final.brt, common.scale = FALSE)
 gbm.plot.fits(perennial.forb.final.brt)
@@ -1972,13 +2078,5 @@ R2.perennial.forb.brt = 1-(perennial.forb.final.brt$self.statistics$mean.resid/p
 # investigation of interactions
 gbm.interactions(perennial.forb.final.brt)$rank.list
 # three weak interactions
-
-
-
-
-
-
-
-
 
 
