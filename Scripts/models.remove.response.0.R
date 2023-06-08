@@ -1,4 +1,5 @@
 # Script for analysis of Drought Net data
+# https://github.com/JBjouffray/Hawaii_RegimesPredictors for visuals and plotting
 
 library(dismo)
 library(gbm)
@@ -178,9 +179,9 @@ ggPerformance(perennial.brt.1)
 
 set.seed(2023)
 perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y=10,
-                         family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                         bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 25)
-# NA
+                         family = "gaussian", tree.complexity = 10, learning.rate = 0.000005,
+                         bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(perennial.brt.1.no.site)
 
 set.seed(2023)
 perennial.tree.brt.1=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
@@ -280,8 +281,140 @@ perennial.forb.brt.1.no.site=gbm.step(data=perennial.forb, gbm.x = c(11:18,23), 
 
 ggPerformance(perennial.forb.brt.1.no.site)
 
-#### Best fit models ####
+#### Best Models ####
 
+set.seed(2023)
+all.brt.no.site.map=gbm.step(data=all.data, gbm.x = c(11:18,22), gbm.y=10,
+                           family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                           bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(all.brt.no.site.map)
+# 1150 trees Per.Expl = 9.68788975
+1-(all.brt.no.site.map$self.statistics$mean.resid/all.brt.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(all.brt.no.site.map)
+
+ggPD(all.brt.no.site.map, rug = T) # partial dependency plots
+gbm.plot(all.brt.no.site.map, common.scale = FALSE)
+gbm.plot.fits(all.brt.no.site.map)
+
+# investigation of interactions
+gbm.interactions(all.brt.no.site.map)$rank.list
+ggInteract_list(all.brt.no.site.map)
+# RTD x height 4.46
+# height x leafN 3.29
+# SRL x leafN 2.56
+# precip x SRL 1.86
+
+ggInteract_3D(all.brt.no.site.map, x = 6, y = 2, z.range = c(-1.5, 1))
+ggInteract_3D(all.brt.no.site.map, x = 2, y = 1,z.range = c(-1, 1.1))
+ggInteract_3D(all.brt.no.site.map, x = 7, y = 1, z.range = c(-0.5, 1.5))
+ggInteract_3D(all.brt.no.site.map, x = 9, y = 7, z.range = c(0, 1.2))
+
+set.seed(2023)
+tree.no.site.map=gbm.step(data=no.trees, gbm.x = c(11:18,22), gbm.y=10,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(tree.no.site.map)
+# 1650 trees Per.Expl = 14.71%
+1-(tree.no.site.map$self.statistics$mean.resid/tree.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(tree.no.site.map)
+
+ggPD(tree.no.site.map, rug = T) # partial dependency plots
+gbm.plot(tree.no.site.map, common.scale = FALSE)
+gbm.plot.fits(tree.no.site.map)
+
+# investigation of interactions
+gbm.interactions(tree.no.site.map)$rank.list
+ggInteract_list(tree.no.site.map)
+# RTD x height 15.35
+# height x leafN 8.64
+# precip x SLA 4.05
+# SRL x leafN 3.67
+
+ggInteract_3D(tree.no.site.map, x = 6, y = 2, z.range = c(-2.5, 1.2))
+ggInteract_3D(tree.no.site.map, x = 2, y = 1,z.range = c(-2.5, 1.75))
+ggInteract_3D(tree.no.site.map, x = 9, y = 4, z.range = c(0, 1.2))
+ggInteract_3D(tree.no.site.map, x = 7, y = 1, z.range = c(-1, 1.2))
+
+set.seed(2023)
+annual.no.site.map=gbm.step(data=annual.data, gbm.x = c(11:18,23), gbm.y=10,
+                              family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(annual.no.site.map)
+# 2050 trees Per.Expl = 37.13%
+1-(annual.no.site.map$self.statistics$mean.resid/annual.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(annual.no.site.map)
+
+ggPD(annual.no.site.map, rug = T) # partial dependency plots
+gbm.plot(annual.no.site.map, common.scale = FALSE)
+gbm.plot.fits(annual.no.site.map)
+
+# investigation of interactions
+gbm.interactions(annual.no.site.map)$rank.list
+ggInteract_list(annual.no.site.map)
+# SRL x leafN 40.56
+# precip x leafN 28.86
+# diam x SRL 14.01
+# precip x root.depth 10.55
+
+ggInteract_3D(annual.no.site.map, x = 7, y = 1, z.range = c(-2.5, 1.5))
+ggInteract_3D(annual.no.site.map, x = 9, y = 1,z.range = c(-1.5, 1.5))
+ggInteract_3D(annual.no.site.map, x = 8, y = 7, z.range = c(-1.5, 1))
+ggInteract_3D(annual.no.site.map, x = 9, y = 5, z.range = c(-1, 0.8))
+
+set.seed(2023)
+perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y=10,
+                                 family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
+                                 bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 25)
+# NA
+
+set.seed(2023)
+perennial.tree.brt.1.no.site=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
+                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(perennial.tree.brt.1.no.site)
+
+set.seed(2023)
+grass.brt.1.no.site=gbm.step(data=grass, gbm.x = c(11:18,22), gbm.y=10,
+                             family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(grass.brt.1.no.site)
+
+set.seed(2023)
+forb.brt.1.no.site=gbm.step(data=forb, gbm.x = c(11:18,22), gbm.y=10,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(forb.brt.1.no.site)
+
+set.seed(2023)
+annual.grass.brt.1.no.site=gbm.step(data=annual.grass, gbm.x = c(11:18,23), gbm.y=10,
+                                    family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(annual.grass.brt.1.no.site)
+
+set.seed(2023)
+annual.forb.brt.1.no.site=gbm.step(data=annual.forb, gbm.x = c(11:18,23), gbm.y=10,
+                                   family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                                   bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(annual.forb.brt.1.no.site)
+
+set.seed(2023)
+perennial.grass.brt.1.no.site=gbm.step(data=perennial.grass, gbm.x = c(11:18,23), gbm.y=10,
+                                       family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(perennial.grass.brt.1.no.site)
+
+set.seed(2023)
+perennial.forb.brt.1.no.site=gbm.step(data=perennial.forb, gbm.x = c(11:18,23), gbm.y=10,
+                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(perennial.forb.brt.1.no.site)
 
 
 #### initial model evaluation ####
@@ -521,22 +654,24 @@ nreps <- 10 #number of simulations
 set.seed(2023)
 for (tcomp in 1:10) {
   R2Obs.all.variables[[tcomp]] <- numeric(nreps)
-  importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
+  importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:9),
                                                              ncol = nreps))
   for(i in 1:nreps){
     if (i == 1) {
       cat(paste("Starting tc =", tcomp, "\n"))
     }
-    BRT.all.variables <- gbm.step(data=all.data,
-                                  gbm.x = c(11:18),
+    set.seed(2023)
+    BRT.all.variables <- gbm.step(data=perennial.forb,
+                                  gbm.x = c(11:18,23),
                                   gbm.y = 10,
                                   family = "gaussian",
                                   tree.complexity = tcomp,
-                                  learning.rate = 0.0001,
-                                  bag.fraction = 0.75,
+                                  learning.rate = 0.0005,
+                                  bag.fraction = 0.50,
                                   n.trees = 50,
-                                  plot.main=F, plot.folds=F,
-                                  site.weights = all.data$site.id)
+                                  step.size = 50,
+                                  plot.main=F, plot.folds=F)
+                                  
                                   
     #R2 adj:
     R2Obs.all.variables[[tcomp]][i] <- 1 - (BRT.all.variables$self.statistics$mean.resid /
@@ -559,6 +694,20 @@ for (i in 1:length(R2Obs.all.variables)) {
   arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
          angle = 90, code = 3, length = 0.1)
 }
+
+tcFactor <- as.factor(rep(1:10, each=nreps))
+R2Vector <- unlist(R2Obs.all.variables)
+model <- lm(R2Vector~tcFactor)
+library(multcomp)
+TukeyModel<-glht(model, linfct = mcp(tcFactor="Tukey"))
+TukeyLetters <- cld(TukeyModel)$mcletters$Letters
+
+plot(1:length(R2Obs.all.variables), means, ylim=c(0.63, 0.78))
+for (i in 1:length(R2Obs.all.variables)){
+  arrows(x0=i, x1=i, y0=means[i]-sds[i], y1=means[i]+sds[i], angle=90, code=3,
+         length=0.1)
+}
+text(x= 1:length(R2Obs.all.variables), y= 0.77, labels=TukeyLetters)
 
 # can't get past tc = 1
 
