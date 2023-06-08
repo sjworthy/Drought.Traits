@@ -151,8 +151,8 @@ ggPerformance(tree.brt.1)
 
 set.seed(2023)
 tree.brt.1.no.site=gbm.step(data=no.trees, gbm.x = c(11:18,22), gbm.y=10,
-                    family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                    bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+                    family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(tree.brt.1.no.site)
 
 
@@ -192,8 +192,8 @@ ggPerformance(perennial.tree.brt.1)
 
 set.seed(2023)
 perennial.tree.brt.1.no.site=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+                              family = "gaussian", tree.complexity = 11, learning.rate = 0.0001,
+                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(perennial.tree.brt.1.no.site)
 
 set.seed(2023)
@@ -205,8 +205,8 @@ ggPerformance(grass.brt.1)
 
 set.seed(2023)
 grass.brt.1.no.site=gbm.step(data=grass, gbm.x = c(11:18,22), gbm.y=10,
-                     family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                     bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+                     family = "gaussian", tree.complexity = 9, learning.rate = 0.0001,
+                     bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 
 ggPerformance(grass.brt.1.no.site)
 
@@ -370,38 +370,139 @@ perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y
 # NA
 
 set.seed(2023)
-perennial.tree.brt.1.no.site=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
+perennial.tree.no.site.map=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
                                       family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(perennial.tree.brt.1.no.site)
+                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(perennial.tree.no.site.map)
+# 1000 trees Per.Expl = 2.40%
+1-(perennial.tree.no.site.map$self.statistics$mean.resid/perennial.tree.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(perennial.tree.no.site.map)
+
+ggPD(perennial.tree.no.site.map, rug = T) # partial dependency plots
+gbm.plot(perennial.tree.no.site.map, common.scale = FALSE)
+gbm.plot.fits(perennial.tree.no.site.map)
+
+# investigation of interactions
+gbm.interactions(perennial.tree.no.site.map)$rank.list
+ggInteract_list(perennial.tree.no.site.map)
+# height x leafN 0.37
+# SRL x leafN 0.35
+# SRL x height 0.27
+# precip x SLA 0.19
+
+ggInteract_3D(perennial.tree.no.site.map, x = 2, y = 1, z.range = c(0, 0.75))
+ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 1,z.range = c(0, 0.75))
+ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 2, z.range = c(0, 0.75))
+ggInteract_3D(perennial.tree.no.site.map, x = 9, y = 4, z.range = c(0.2, 0.75))
 
 set.seed(2023)
-grass.brt.1.no.site=gbm.step(data=grass, gbm.x = c(11:18,22), gbm.y=10,
+grass.no.site.map=gbm.step(data=grass, gbm.x = c(11:18,22), gbm.y=10,
                              family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+                             bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
 
-ggPerformance(grass.brt.1.no.site)
+ggPerformance(grass.no.site.map)
+# 1000 trees Per.Expl = 1.84%
+1-(grass.no.site.map$self.statistics$mean.resid/grass.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(grass.no.site.map)
+
+ggPD(grass.no.site.map, rug = T) # partial dependency plots
+gbm.plot(grass.no.site.map, common.scale = FALSE)
+gbm.plot.fits(grass.no.site.map)
+
+# investigation of interactions
+gbm.interactions(grass.no.site.map)$rank.list
+ggInteract_list(grass.no.site.map)
+# precip x diam 0.09
+# precip x RTD 0.08
+# diam x RTD 0.08
+# diam x rootN 0.05
+
+ggInteract_3D(grass.no.site.map, x = 9, y = 8, z.range = c(-0.05, 0.20))
+ggInteract_3D(grass.no.site.map, x = 9, y = 6,z.range = c(-0.2, 0.20))
+ggInteract_3D(grass.no.site.map, x = 8, y = 6, z.range = c(-0.2, 0.30))
+ggInteract_3D(grass.no.site.map, x = 8, y = 3, z.range = c(-0.2, 0.20))
+
 
 set.seed(2023)
-forb.brt.1.no.site=gbm.step(data=forb, gbm.x = c(11:18,22), gbm.y=10,
-                            family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+forb.no.site.map=gbm.step(data=forb, gbm.x = c(11:18,22), gbm.y=10,
+                            family = "gaussian", tree.complexity = 9, learning.rate = 0.001,
+                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
-ggPerformance(forb.brt.1.no.site)
+ggPerformance(forb.no.site.map)
+# 2850 trees Per.Expl = 42.57%
+1-(forb.no.site.map$self.statistics$mean.resid/forb.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(forb.no.site.map)
+
+ggPD(forb.no.site.map, rug = T) # partial dependency plots
+gbm.plot(forb.no.site.map, common.scale = FALSE)
+gbm.plot.fits(forb.no.site.map)
+
+# investigation of interactions
+gbm.interactions(forb.no.site.map)$rank.list
+ggInteract_list(forb.no.site.map)
+# RTD x leafN 19.22
+# depth x SLA 14.26
+# precip x leafN 12.26
+# height x leafN 9.15
+
+ggInteract_3D(forb.no.site.map, x = 6, y = 1, z.range = c(-2.0, 7))
+ggInteract_3D(forb.no.site.map, x = 5, y = 4,z.range = c(3, 5))
+ggInteract_3D(forb.no.site.map, x = 9, y = 1, z.range = c(-0.5, 7))
+ggInteract_3D(forb.no.site.map, x = 2, y = 1, z.range = c(0, 7))
 
 set.seed(2023)
-annual.grass.brt.1.no.site=gbm.step(data=annual.grass, gbm.x = c(11:18,23), gbm.y=10,
-                                    family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+annual.grass.no.site.map=gbm.step(data=annual.grass, gbm.x = c(11:18,23), gbm.y=10,
+                                    family = "gaussian", tree.complexity = 2, learning.rate = 0.001,
                                     bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
-ggPerformance(annual.grass.brt.1.no.site)
+ggPerformance(annual.grass.no.site.map)
+# 1950 trees Per.Expl = 34.72%
+1-(annual.grass.no.site.map$self.statistics$mean.resid/annual.grass.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(annual.grass.no.site.map)
+
+ggPD(annual.grass.no.site.map, rug = T) # partial dependency plots
+gbm.plot(annual.grass.no.site.map, common.scale = FALSE)
+gbm.plot.fits(annual.grass.no.site.map)
+
+# investigation of interactions
+gbm.interactions(annual.grass.no.site.map)$rank.list
+ggInteract_list(annual.grass.no.site.map)
+# height x leafN 5.82
+# precip x height 5.33
+# precip x SLA 0.06
+# precip x depth 0.04
+
+ggInteract_3D(annual.grass.no.site.map, x = 2, y = 1, z.range = c(-0.1, 4))
+ggInteract_3D(annual.grass.no.site.map, x = 9, y = 2,z.range = c(-1, 4))
+ggInteract_3D(annual.grass.no.site.map, x = 9, y = 4, z.range = c(-2, 3))
+ggInteract_3D(annual.grass.no.site.map, x = 9, y = 5, z.range = c(-2, 3))
 
 set.seed(2023)
-annual.forb.brt.1.no.site=gbm.step(data=annual.forb, gbm.x = c(11:18,23), gbm.y=10,
-                                   family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                                   bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+annual.forb.no.site.map=gbm.step(data=annual.forb, gbm.x = c(11:18,23), gbm.y=10,
+                                   family = "gaussian", tree.complexity = 6, learning.rate = 0.001,
+                                   bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
-ggPerformance(annual.forb.brt.1.no.site)
+ggPerformance(annual.forb.no.site.map)
+# 1950 trees Per.Expl = 34.72%
+1-(annual.forb.no.site.map$self.statistics$mean.resid/annual.forb.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(annual.forb.no.site.map)
+
+ggPD(annual.forb.no.site.map, rug = T) # partial dependency plots
+gbm.plot(annual.forb.no.site.map, common.scale = FALSE)
+gbm.plot.fits(annual.forb.no.site.map)
+
+# investigation of interactions
+gbm.interactions(annual.forb.no.site.map)$rank.list
+ggInteract_list(annual.forb.no.site.map)
+# SLA x leafN 30.11
+# precip x SLA 15.70
+# precip x height 14.08
+# SLA x height 13.23
+
+ggInteract_3D(annual.forb.no.site.map, x = 4, y = 1, z.range = c(-2.5, 3.5))
+ggInteract_3D(annual.forb.no.site.map, x = 9, y = 4,z.range = c(-4, 2))
+ggInteract_3D(annual.forb.no.site.map, x = 9, y = 2, z.range = c(-2, 5.5))
+ggInteract_3D(annual.forb.no.site.map, x = 4, y = 2, z.range = c(-3.5, 5))
 
 set.seed(2023)
 perennial.grass.brt.1.no.site=gbm.step(data=perennial.grass, gbm.x = c(11:18,23), gbm.y=10,
