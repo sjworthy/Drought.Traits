@@ -17,7 +17,7 @@ cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
 # remove individuals where 0 in control or drought
 
 cover.2 = subset(cover.data, cover.data$mean.ctrl.cover > 0)
-cover.3 = subset(cover.data, cover.data$mean.drt.cover > 0)
+cover.3 = subset(cover.2, cover.2$mean.drt.cover > 0)
 
 # merge new cover data with traits
 

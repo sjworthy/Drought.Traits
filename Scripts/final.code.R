@@ -2,6 +2,7 @@
 
 library(dismo)
 library(gbm)
+library(corrplot)
 
 trait.data = read.csv("./Formatted.Data/trait.species.trt.yr1.final.new.csv")
 
@@ -86,935 +87,1520 @@ trait.data.2$rootDiam.mm[which(trait.data.2$rootDiam.mm <Tmin | trait.data.2$roo
 
 #### read in new trait data without outliers and cover data ####
 
-trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.csv")
+trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.2.csv")
 cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
-
 
 # subset traits so they must have SLA
 trait.data.2 = trait.data.new[,c(1,7,8,10,12,14,15,18,20,27:29)]
 trait.data.3 = subset(trait.data.2, trait.data.2$SLA_m2.kg > 0 ) # 646 data points, 
 
-table(is.na(trait.data.3$leafN.mg.g))
-table(is.na(trait.data.3$height.m))
-table(is.na(trait.data.3$rootN.mg.g))
-table(is.na(trait.data.3$root.depth_m))
-table(is.na(trait.data.3$RTD.g.cm3))
-table(is.na(trait.data.3$SRL_m.g))
-table(is.na(trait.data.3$rootDiam.mm))
+table(is.na(trait.data.3$leafN.mg.g)) # 204 missing
+table(is.na(trait.data.3$height.m)) # 93 missing
+table(is.na(trait.data.3$rootN.mg.g)) # 433 missing
+table(is.na(trait.data.3$root.depth_m)) # 270 missing
+table(is.na(trait.data.3$RTD.g.cm3)) # 386 missing
+table(is.na(trait.data.3$SRL_m.g)) # 334 missing
+table(is.na(trait.data.3$rootDiam.mm)) # 324 missing
+
+# remove individuals where 0 in control or drought
+
+cover.2 = subset(cover.data, cover.data$mean.ctrl.cover > 0)
+cover.3 = subset(cover.2, cover.2$mean.drt.cover > 0)
 
 # merge trait data and cover data
 
-all.data = merge(cover.data, trait.data.3, by="Taxon") # 1077 data points with site
+all.data = merge(cover.3, trait.data.3, by="Taxon") # 706 data points with site
 
-#### test for correlation ####
+#### Test for correlation of ALL data ####
 cor.test(all.data$leafN.mg.g, all.data$height.m)
-cor.test(all.data$leafN.mg.g, all.data$rootN.mg.g) # correlated r = 0.49
-cor.test(all.data$leafN.mg.g, all.data$SLA_m2.kg) # correlated r = 0.34
+cor.test(all.data$leafN.mg.g, all.data$rootN.mg.g) # correlated r = 0.52
+cor.test(all.data$leafN.mg.g, all.data$SLA_m2.kg) # correlated r = 0.37
 cor.test(all.data$leafN.mg.g, all.data$root.depth_m)
 cor.test(all.data$leafN.mg.g, all.data$RTD.g.cm3) # correlated r = -0.20
-cor.test(all.data$leafN.mg.g, all.data$SRL_m.g) # correlated r = 0.24
+cor.test(all.data$leafN.mg.g, all.data$SRL_m.g) # correlated r = 0.28
 cor.test(all.data$leafN.mg.g, all.data$rootDiam.mm)
 cor.test(all.data$height.m, all.data$rootN.mg.g)
-cor.test(all.data$height.m, all.data$SLA_m2.kg) # correlated r = -0.08
+cor.test(all.data$height.m, all.data$SLA_m2.kg)
 cor.test(all.data$height.m, all.data$root.depth_m)
-cor.test(all.data$height.m, all.data$RTD.g.cm3)
+cor.test(all.data$height.m, all.data$RTD.g.cm3) # correlated r = -0.11
 cor.test(all.data$height.m, all.data$SRL_m.g) # correlated r = -0.10
-cor.test(all.data$height.m, all.data$rootDiam.mm) # correlated r = 0.14
-cor.test(all.data$rootN.mg.g, all.data$SLA_m2.kg) # correlated r = 0.22
+cor.test(all.data$height.m, all.data$rootDiam.mm)
+cor.test(all.data$rootN.mg.g, all.data$SLA_m2.kg) # correlated r = 0.26
 cor.test(all.data$rootN.mg.g, all.data$root.depth_m)
-cor.test(all.data$rootN.mg.g, all.data$RTD.g.cm3) # correlated r = -0.16
+cor.test(all.data$rootN.mg.g, all.data$RTD.g.cm3) # correlated r = -0.13
 cor.test(all.data$rootN.mg.g, all.data$SRL_m.g)
 cor.test(all.data$rootN.mg.g, all.data$rootDiam.mm)
-cor.test(all.data$SLA_m2.kg, all.data$root.depth_m) # correlated r = -0.15
-cor.test(all.data$SLA_m2.kg, all.data$RTD.g.cm3) # correlated r = -0.24
-cor.test(all.data$SLA_m2.kg, all.data$SRL_m.g) # correlated r = 0.42
+cor.test(all.data$SLA_m2.kg, all.data$root.depth_m) # correlated r = -0.12
+cor.test(all.data$SLA_m2.kg, all.data$RTD.g.cm3) # correlated r = -0.26
+cor.test(all.data$SLA_m2.kg, all.data$SRL_m.g) # correlated r = 0.44
 cor.test(all.data$SLA_m2.kg, all.data$rootDiam.mm)
 cor.test(all.data$root.depth_m, all.data$RTD.g.cm3) # correlated r = 0.13
-cor.test(all.data$root.depth_m, all.data$SRL_m.g) # correlated r =-0.15
-cor.test(all.data$root.depth_m, all.data$rootDiam.mm) #  correlated r = 0.15
-cor.test(all.data$RTD.g.cm3, all.data$SRL_m.g) # correlated r = -0.27
-cor.test(all.data$RTD.g.cm3, all.data$rootDiam.mm) # correlated r = 0.13
-cor.test(all.data$SRL_m.g, all.data$rootDiam.mm) #  correlated r = -0.09
+cor.test(all.data$root.depth_m, all.data$SRL_m.g) # correlated r =-0.12
+cor.test(all.data$root.depth_m, all.data$rootDiam.mm) #  correlated r = 0.25
+cor.test(all.data$RTD.g.cm3, all.data$SRL_m.g) # correlated r = -0.28
+cor.test(all.data$RTD.g.cm3, all.data$rootDiam.mm)
+cor.test(all.data$SRL_m.g, all.data$rootDiam.mm)
 
-#### correlation between response and predictors ####
+cor.mat = cor(all.data[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
 
-cor.test(all.data$mean.cover.response, all.data$leafN.mg.g) # r = 0.07
-cor.test(all.data$mean.cover.response, all.data$height.m) # r = -0.01
+#### correlation between response and predictors for ALL data ####
+
+cor.test(all.data$mean.cover.response, all.data$leafN.mg.g) # r = 0.08
+cor.test(all.data$mean.cover.response, all.data$height.m) # r = -0.02
 cor.test(all.data$mean.cover.response, all.data$rootN.mg.g) # r = -0.01
 cor.test(all.data$mean.cover.response, all.data$SLA_m2.kg) # r = 0.04
-cor.test(all.data$mean.cover.response, all.data$root.depth_m) # r = 0.04
-cor.test(all.data$mean.cover.response, all.data$RTD.g.cm3) # r = 0.06
-cor.test(all.data$mean.cover.response, all.data$SRL_m.g) # r = -0.04
-cor.test(all.data$mean.cover.response, all.data$rootDiam.mm) # r = 0.06
+cor.test(all.data$mean.cover.response, all.data$root.depth_m) # r = 0.05
+cor.test(all.data$mean.cover.response, all.data$RTD.g.cm3) # r = 0.09
+cor.test(all.data$mean.cover.response, all.data$SRL_m.g) # r = -0.06
+cor.test(all.data$mean.cover.response, all.data$rootDiam.mm) # r = 0.07
 
-shapiro.test(all.data$mean.cover.response)
-hist(all.data$mean.cover.response)
+#### Data set with Woody removed ####
 
-# log and scale values to transform if non-normal, , mean of 0, sd = 1
-all.data$log.leafN = as.vector(scale(log(all.data$leafN.mg.g)))
-all.data$log.height = as.vector(scale(log(all.data$height.m)))
-all.data$log.rootN = as.vector(scale(log(all.data$rootN.mg.g)))
-all.data$log.SLA = as.vector(scale(log(all.data$SLA_m2.kg)))
-all.data$log.root.depth = as.vector(scale(log(all.data$root.depth_m)))
-all.data$log.RTD = as.vector(scale(log(all.data$RTD.g.cm3)))
-all.data$log.SRL = as.vector(scale(log(all.data$SRL_m.g)))
-all.data$log.root.diam = as.vector(scale(log(all.data$rootDiam.mm)))
+no.trees = subset(all.data, !all.data$functional_group == "WOODY") # 618 data points
 
-#### get data set of only complete trait cases ####
+#### test for correlation of ALL data WITHOUT WOODY ####
+cor.test(no.trees$leafN.mg.g, no.trees$height.m)
+cor.test(no.trees$leafN.mg.g, no.trees$rootN.mg.g) # correlated r = 0.52
+cor.test(no.trees$leafN.mg.g, no.trees$SLA_m2.kg) # correlated r = 0.36
+cor.test(no.trees$leafN.mg.g, no.trees$root.depth_m)
+cor.test(no.trees$leafN.mg.g, no.trees$RTD.g.cm3) # correlated r = -0.21
+cor.test(no.trees$leafN.mg.g, no.trees$SRL_m.g) # correlated r = 0.25
+cor.test(no.trees$leafN.mg.g, no.trees$rootDiam.mm)
+cor.test(no.trees$height.m, no.trees$rootN.mg.g)
+cor.test(no.trees$height.m, no.trees$SLA_m2.kg) # correlated r = -0.14
+cor.test(no.trees$height.m, no.trees$root.depth_m)
+cor.test(no.trees$height.m, no.trees$RTD.g.cm3) # correlated r = -0.15
+cor.test(no.trees$height.m, no.trees$SRL_m.g)
+cor.test(no.trees$height.m, no.trees$rootDiam.mm)
+cor.test(no.trees$rootN.mg.g, no.trees$SLA_m2.kg) # correlated r = 0.25
+cor.test(no.trees$rootN.mg.g, no.trees$root.depth_m)
+cor.test(no.trees$rootN.mg.g, no.trees$RTD.g.cm3) # correlated r = -0.15
+cor.test(no.trees$rootN.mg.g, no.trees$SRL_m.g)
+cor.test(no.trees$rootN.mg.g, no.trees$rootDiam.mm)
+cor.test(no.trees$SLA_m2.kg, no.trees$root.depth_m) # correlated r = -0.13
+cor.test(no.trees$SLA_m2.kg, no.trees$RTD.g.cm3) # correlated r = -0.24
+cor.test(no.trees$SLA_m2.kg, no.trees$SRL_m.g) # correlated r = 0.42
+cor.test(no.trees$SLA_m2.kg, no.trees$rootDiam.mm)
+cor.test(no.trees$root.depth_m, no.trees$RTD.g.cm3) # correlated r = 0.16
+cor.test(no.trees$root.depth_m, no.trees$SRL_m.g) # correlated r =-0.13
+cor.test(no.trees$root.depth_m, no.trees$rootDiam.mm) #  correlated r = 0.24
+cor.test(no.trees$RTD.g.cm3, no.trees$SRL_m.g) # correlated r = -0.23
+cor.test(no.trees$RTD.g.cm3, no.trees$rootDiam.mm)
+cor.test(no.trees$SRL_m.g, no.trees$rootDiam.mm)
 
-all.complete = all.data[complete.cases(all.data),]
+cor.mat = cor(no.trees[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
 
-# log and scale values to transform if non-normal, , mean of 0, sd = 1
-all.complete$log.leafN = as.vector(scale(log(all.complete$leafN.mg.g)))
-all.complete$log.height = as.vector(scale(log(all.complete$height.m)))
-all.complete$log.rootN = as.vector(scale(log(all.complete$rootN.mg.g)))
-all.complete$log.SLA = as.vector(scale(log(all.complete$SLA_m2.kg)))
-all.complete$log.root.depth = as.vector(scale(log(all.complete$root.depth_m)))
-all.complete$log.RTD = as.vector(scale(log(all.complete$RTD.g.cm3)))
-all.complete$log.SRL = as.vector(scale(log(all.complete$SRL_m.g)))
-all.complete$log.root.diam = as.vector(scale(log(all.complete$rootDiam.mm)))
+#### correlation between response and predictors of ALL data WITHOUT WOODY ####
 
-#### data set with trees and shrubs removed ####
+cor.test(no.trees$mean.cover.response, no.trees$leafN.mg.g) # r = 0.12
+cor.test(no.trees$mean.cover.response, no.trees$height.m) # r = -0.06
+cor.test(no.trees$mean.cover.response, no.trees$rootN.mg.g) # r = -0.004
+cor.test(no.trees$mean.cover.response, no.trees$SLA_m2.kg) # r = 0.05
+cor.test(no.trees$mean.cover.response, no.trees$root.depth_m) # r = 0.06
+cor.test(no.trees$mean.cover.response, no.trees$RTD.g.cm3) # r = 0.08
+cor.test(no.trees$mean.cover.response, no.trees$SRL_m.g) # r = -0.04
+cor.test(no.trees$mean.cover.response, no.trees$rootDiam.mm) # r = 0.06
 
-no.trees = subset(all.data, !all.data$functional_group == "WOODY")
+#### Data set with TREE removed ####
 
-no.trees$log.leafN = as.vector(scale(log(no.trees$leafN.mg.g)))
-no.trees$log.height = as.vector(scale(log(no.trees$height.m)))
-no.trees$log.rootN = as.vector(scale(log(no.trees$rootN.mg.g)))
-no.trees$log.SLA = as.vector(scale(log(no.trees$SLA_m2.kg)))
-no.trees$log.root.depth = as.vector(scale(log(no.trees$root.depth_m)))
-no.trees$log.RTD = as.vector(scale(log(no.trees$RTD.g.cm3)))
-no.trees$log.SRL = as.vector(scale(log(no.trees$SRL_m.g)))
-no.trees$log.root.diam = as.vector(scale(log(no.trees$rootDiam.mm)))
+trees = subset(all.data, !all.data$local_lifeform == "TREE") # 697 data points
 
-#### change site code to numeric, continuous vector ####
-all.data$site.id = as.numeric(as.factor(all.data$site_code))
-all.complete$site.id = as.numeric(as.factor(all.complete$site_code))
-no.trees$site.id = as.numeric(as.factor(no.trees$site_code))
+#### test for correlation WITHOUT TREES ####
 
-# data set split by lifespan
+cor.test(trees$leafN.mg.g, trees$height.m)
+cor.test(trees$leafN.mg.g, trees$rootN.mg.g) # correlated r = 0.53
+cor.test(trees$leafN.mg.g, trees$SLA_m2.kg) # correlated r = 0.36
+cor.test(trees$leafN.mg.g, trees$root.depth_m)
+cor.test(trees$leafN.mg.g, trees$RTD.g.cm3) # correlated r = -0.21
+cor.test(trees$leafN.mg.g, trees$SRL_m.g) # correlated r = 0.27
+cor.test(trees$leafN.mg.g, trees$rootDiam.mm)
+cor.test(trees$height.m, trees$rootN.mg.g)
+cor.test(trees$height.m, trees$SLA_m2.kg)
+cor.test(trees$height.m, trees$root.depth_m)
+cor.test(trees$height.m, trees$RTD.g.cm3) # correlated r = -0.11
+cor.test(trees$height.m, trees$SRL_m.g) # correlated r = -0.10
+cor.test(trees$height.m, trees$rootDiam.mm)
+cor.test(trees$rootN.mg.g, trees$SLA_m2.kg) # correlated r = 0.26
+cor.test(trees$rootN.mg.g, trees$root.depth_m)
+cor.test(trees$rootN.mg.g, trees$RTD.g.cm3) # correlated r = -0.12
+cor.test(trees$rootN.mg.g, trees$SRL_m.g)
+cor.test(trees$rootN.mg.g, trees$rootDiam.mm)
+cor.test(trees$SLA_m2.kg, trees$root.depth_m) # correlated r = -0.12
+cor.test(trees$SLA_m2.kg, trees$RTD.g.cm3) # correlated r = -0.26
+cor.test(trees$SLA_m2.kg, trees$SRL_m.g) # correlated r = 0.44
+cor.test(trees$SLA_m2.kg, trees$rootDiam.mm)
+cor.test(trees$root.depth_m, trees$RTD.g.cm3) # correlated r = 0.13
+cor.test(trees$root.depth_m, trees$SRL_m.g) # correlated r =-0.11
+cor.test(trees$root.depth_m, trees$rootDiam.mm) #  correlated r = 0.25
+cor.test(trees$RTD.g.cm3, trees$SRL_m.g) # correlated r = -0.28
+cor.test(trees$RTD.g.cm3, trees$rootDiam.mm)
+cor.test(trees$SRL_m.g, trees$rootDiam.mm)
 
-# need to read out data anf fix the lifespan to particular sites since some species have different lifespan at different sites
+
+cor.mat = cor(trees[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors WITHOUT TREES ####
+
+cor.test(trees$mean.cover.response, trees$leafN.mg.g) # r = 0.09
+cor.test(trees$mean.cover.response, trees$height.m) # r = -0.02
+cor.test(trees$mean.cover.response, trees$rootN.mg.g) # r = -0.02
+cor.test(trees$mean.cover.response, trees$SLA_m2.kg) # r = 0.04
+cor.test(trees$mean.cover.response, trees$root.depth_m) # r = 0.05
+cor.test(trees$mean.cover.response, trees$RTD.g.cm3) # r = 0.08
+cor.test(trees$mean.cover.response, trees$SRL_m.g) # r = -0.06
+cor.test(trees$mean.cover.response, trees$rootDiam.mm) # r = 0.07
+
+#### data set split by lifespan ####
+
+# need to read out data and fix the lifespan to particular sites since 
+# some species have different lifespan at different sites
 
 # write.csv(all.data, file="./Formatted.Data/all.data.response.0.csv")
 
-all.data.ls = read.csv("./Formatted.Data/all.data.lifespan.csv", row.names = 1)
+all.data.ls = read.csv("./Formatted.Data/all.data.response.0.lifespan.csv", row.names = 1)
 table(all.data.ls$local_lifespan)
 
-annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL")
-
-annual.data$log.leafN = as.vector(scale(log(annual.data$leafN.mg.g)))
-annual.data$log.height = as.vector(scale(log(annual.data$height.m)))
-annual.data$log.rootN = as.vector(scale(log(annual.data$rootN.mg.g)))
-annual.data$log.SLA = as.vector(scale(log(annual.data$SLA_m2.kg)))
-annual.data$log.root.depth = as.vector(scale(log(annual.data$root.depth_m)))
-annual.data$log.RTD = as.vector(scale(log(annual.data$RTD.g.cm3)))
-annual.data$log.SRL = as.vector(scale(log(annual.data$SRL_m.g)))
-annual.data$log.root.diam = as.vector(scale(log(annual.data$rootDiam.mm)))
-
-perennial.data = subset(all.data.ls, all.data.ls$local_lifespan == "PERENNIAL")
-
-perennial.data$log.leafN = as.vector(scale(log(perennial.data$leafN.mg.g)))
-perennial.data$log.height = as.vector(scale(log(perennial.data$height.m)))
-perennial.data$log.rootN = as.vector(scale(log(perennial.data$rootN.mg.g)))
-perennial.data$log.SLA = as.vector(scale(log(perennial.data$SLA_m2.kg)))
-perennial.data$log.root.depth = as.vector(scale(log(perennial.data$root.depth_m)))
-perennial.data$log.RTD = as.vector(scale(log(perennial.data$RTD.g.cm3)))
-perennial.data$log.SRL = as.vector(scale(log(perennial.data$SRL_m.g)))
-perennial.data$log.root.diam = as.vector(scale(log(perennial.data$rootDiam.mm)))
-
-annual.data$site.id = as.numeric(as.factor(annual.data$site_code))
-perennial.data$site.id = as.numeric(as.factor(perennial.data$site_code))
-
-# perennial data without woody functional group
-
-perennial.tree = subset(perennial.data, !perennial.data$functional_group == "WOODY")
-
-perennial.tree$log.leafN = as.vector(scale(log(perennial.tree$leafN.mg.g)))
-perennial.tree$log.height = as.vector(scale(log(perennial.tree$height.m)))
-perennial.tree$log.rootN = as.vector(scale(log(perennial.tree$rootN.mg.g)))
-perennial.tree$log.SLA = as.vector(scale(log(perennial.tree$SLA_m2.kg)))
-perennial.tree$log.root.depth = as.vector(scale(log(perennial.tree$root.depth_m)))
-perennial.tree$log.RTD = as.vector(scale(log(perennial.tree$RTD.g.cm3)))
-perennial.tree$log.SRL = as.vector(scale(log(perennial.tree$SRL_m.g)))
-perennial.tree$log.root.diam = as.vector(scale(log(perennial.tree$rootDiam.mm)))
-
-perennial.tree$site.id = as.numeric(as.factor(perennial.tree$site_code))
-
-# determining best learning rate to generate 1000 trees
-# start learning rate at 0.1
-set.seed(2023)
-all.brt.1=gbm.step(data=all.data, gbm.x = c(11:18), gbm.y=10,
-                   family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
-                   bag.fraction = 0.75, n.trees = 50, verbose = FALSE, site.weights = all.data$site.id)
-# 0.0001 worked
-# tolerance 0.0407
-
-set.seed(2023)
-comp.brt.1=gbm.step(data=all.complete, gbm.x = c(11:18), gbm.y=10,
-                   family = "gaussian", tree.complexity = 1, learning.rate = 0.00000000000000001,
-                   bag.fraction = 0.75, n.trees = 50, verbose = FALSE, site.weights = all.complete$site.id)
-# the standard deviation is zero
-
-set.seed(2023)
-tree.brt.1=gbm.step(data=no.trees, gbm.x = c(11:18), gbm.y=10,
-                   family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
-                   bag.fraction = 0.75, n.trees = 50, verbose = FALSE, site.weights = no.trees$site.id)
-# 0.0001 worked 
-# tolerance 0.0362
-
-set.seed(2023)
-annual.brt.1=gbm.step(data=annual.data, gbm.x = c(11:18), gbm.y=10,
-                    family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
-                    bag.fraction = 0.75, n.trees = 50, verbose = FALSE, site.weights = annual.data$site.id)
-# 0.001 worked 
-# tolerance 0.0256
-
-set.seed(2023)
-perennial.brt.1=gbm.step(data=perennial.data, gbm.x = c(11:18), gbm.y=10,
-                      family = "gaussian", tree.complexity = 1, learning.rate = 0.000000000000000001,
-                      bag.fraction = 0.75, n.trees = 50, verbose = FALSE, site.weights = perennial.data$site.id)
-# the standard deviation is zero
-
-set.seed(2023)
-perennial.tree.brt.1=gbm.step(data=perennial.tree, gbm.x = c(11:18), gbm.y=10,
-                         family = "gaussian", tree.complexity = 1, learning.rate = 0.000000000000000001,
-                         bag.fraction = 0.75, n.trees = 50, verbose = FALSE, site.weights = perennial.tree$site.id)
-# the standard deviation is zero
-
-# initial model evaluation
-# plots of predicted versus observed, estimate R2
-
-# which predictors are most important
-summary(all.brt.1)
-# RTD 95%
-
-all.predict.brt=predict(all.brt.1, n.trees = all.brt.1$n.trees)
-observed = all.data$mean.cover.response
-plot(all.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.all.brt = 1-(all.brt.1$self.statistics$mean.resid/all.brt.1$self.statistics$mean.null)
-# 0.0033
-
-# which predictors are most important
-summary(comp.brt.1)
-# rootDiam 46%, height: 34%
-
-comp.predict.brt=predict(comp.brt.1, n.trees = comp.brt.1$n.trees)
-observed = all.complete$mean.cover.response
-plot(comp.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.comp.brt = 1-(comp.brt.1$self.statistics$mean.resid/comp.brt.1$self.statistics$mean.null)
-# essentially nothing
-
-# which predictors are most important
-summary(tree.brt.1)
-# RTD 89%
-
-tree.predict.brt=predict(tree.brt.1, n.trees = tree.brt.1$n.trees)
-observed = no.trees$mean.cover.response
-plot(tree.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.tree.brt = 1-(tree.brt.1$self.statistics$mean.resid/tree.brt.1$self.statistics$mean.null)
-# 0.004
-
-# which predictors are most important
-summary(annual.brt.1)
-# RTD 29%, leafN 25 %
-
-annual.predict.brt=predict(annual.brt.1, n.trees = annual.brt.1$n.trees)
-observed = annual.data$mean.cover.response
-plot(annual.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.annual.brt = 1-(annual.brt.1$self.statistics$mean.resid/annual.brt.1$self.statistics$mean.null)
-# 0.12
-
-# which predictors are most important
-summary(perennial.brt.1)
-# RTD 87%
-
-perennial.predict.brt=predict(perennial.brt.1, n.trees = perennial.brt.1$n.trees)
-observed = perennial.data$mean.cover.response
-plot(perennial.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.perennial.brt = 1-(perennial.brt.1$self.statistics$mean.resid/perennial.brt.1$self.statistics$mean.null)
-# essentially nothing
-
-# which predictors are most important
-summary(perennial.tree.brt.1)
-# RTD 87%
-
-perennial.tree.predict.brt=predict(perennial.tree.brt.1, n.trees = perennial.tree.brt.1$n.trees)
-observed = perennial.tree$mean.cover.response
-plot(perennial.tree.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.perennial.brt = 1-(perennial.tree.brt.1$self.statistics$mean.resid/perennial.tree.brt.1$self.statistics$mean.null)
-# essentially nothing
-
-# determining best tree complexity
-# learning rate 0.001 only works with tree complexity = 1
-
-# all.data
-
-# all variables
-R2Obs.all.variables <- list()
-importancePred.all.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.all.variables[[tcomp]] <- numeric(nreps)
-  importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                             ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.all.variables <- gbm.step(data=all.data,
-                                  gbm.x = c(11:18),
-                                  gbm.y = 10,
-                                  family = "gaussian",
-                                  tree.complexity = tcomp,
-                                  learning.rate = 0.0001,
-                                  bag.fraction = 0.75,
-                                  n.trees = 50,
-                                  plot.main=F, plot.folds=F,
-                                  site.weights = all.data$site.id)
-    #R2 adj:
-    R2Obs.all.variables[[tcomp]][i] <- 1 - (BRT.all.variables$self.statistics$mean.resid /
-                                              BRT.all.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.all.variables[[tcomp]]) <- sort(rownames(summary(BRT.all.variables)))
-    }
-    importancePred.all.variables[[tcomp]][, i] <-
-      summary(BRT.all.variables)[rownames(importancePred.all.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.all.variables, mean)
-sds <- sapply(R2Obs.all.variables, sd)
-plot(1:length(R2Obs.all.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.all.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# 6 complexity is best for all variables model with lr = 0.0001
-
-# complete.data
-
-# comp variables
-R2Obs.comp.variables <- list()
-importancePred.comp.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.comp.variables[[tcomp]] <- numeric(nreps)
-  importancePred.comp.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                              ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.comp.variables <- gbm.step(data=all.complete,
-                                   gbm.x = c(11:18),
-                                   gbm.y = 10,
-                                   family = "gaussian",
-                                   tree.complexity = tcomp,
-                                   learning.rate = 0.00000000000000001,
-                                   bag.fraction = 0.75,
-                                   n.trees = 50,
-                                   plot.main=F, plot.folds=F,
-                                   site.weights = all.complete$site.id)
-    #R2 adj:
-    R2Obs.comp.variables[[tcomp]][i] <- 1 - (BRT.comp.variables$self.statistics$mean.resid /
-                                               BRT.comp.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.comp.variables[[tcomp]]) <- sort(rownames(summary(BRT.comp.variables)))
-    }
-    importancePred.comp.variables[[tcomp]][, i] <-
-      summary(BRT.comp.variables)[rownames(importancePred.comp.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.comp.variables, mean)
-sds <- sapply(R2Obs.comp.variables, sd)
-plot(1:length(R2Obs.comp.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.comp.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# complexity of 2 with lr = 0.00000000000000001
-
-
-# tree variables
-R2Obs.tree.variables <- list()
-importancePred.tree.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.tree.variables[[tcomp]] <- numeric(nreps)
-  importancePred.tree.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                              ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.tree.variables <- gbm.step(data=no.trees,
-                                   gbm.x = c(11:18),
-                                   gbm.y = 10,
-                                   family = "gaussian",
-                                   tree..complexity = tcomp,
-                                   learning.rate = 0.0001,
-                                   bag.fraction = 0.75,
-                                   n.tree.s = 50,
-                                   plot.main=F, plot.folds=F,
-                                   site.weights = no.trees$site.id)
-    #R2 adj:
-    R2Obs.tree.variables[[tcomp]][i] <- 1 - (BRT.tree.variables$self.statistics$mean.resid /
-                                               BRT.tree.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.tree.variables[[tcomp]]) <- sort(rownames(summary(BRT.tree.variables)))
-    }
-    importancePred.tree.variables[[tcomp]][, i] <-
-      summary(BRT.tree.variables)[rownames(importancePred.tree.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree. complexity, pag 105
-
-means <- sapply(R2Obs.tree.variables, mean)
-sds <- sapply(R2Obs.tree.variables, sd)
-plot(1:length(R2Obs.tree.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.tree.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# model complexity of 3, lr = 0.0001
-
-# annual.data
-
-R2Obs.annual.variables <- list()
-importancePred.annual.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.annual.variables[[tcomp]] <- numeric(nreps)
-  importancePred.annual.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.annual.variables <- gbm.step(data=annual.data,
-                                     gbm.x = c(11:18),
-                                     gbm.y = 10,
-                                     family = "gaussian",
-                                     tree.complexity = tcomp,
-                                     learning.rate = 0.001,
-                                     bag.fraction = 0.75,
-                                     n.trees = 50,
-                                     plot.main=F, plot.folds=F,
-                                     site.weights = annual.data$site.id)
-    #R2 adj:
-    R2Obs.annual.variables[[tcomp]][i] <- 1 - (BRT.annual.variables$self.statistics$mean.resid /
-                                                 BRT.annual.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.annual.variables[[tcomp]]) <- sort(rownames(summary(BRT.annual.variables)))
-    }
-    importancePred.annual.variables[[tcomp]][, i] <-
-      summary(BRT.annual.variables)[rownames(importancePred.annual.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.annual.variables, mean)
-sds <- sapply(R2Obs.annual.variables, sd)
-plot(1:length(R2Obs.annual.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.annual.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# 6 or 10 complexity is best for all variables model with lr = 0.001
-
-# perennial variables
-
-R2Obs.perennial.variables <- list()
-importancePred.perennial.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                   ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.variables <- gbm.step(data=perennial.data,
-                                        gbm.x = c(11:18),
-                                        gbm.y = 10,
-                                        family = "gaussian",
-                                        tree.complexity = tcomp,
-                                        learning.rate = 0.000000000000000001,
-                                        bag.fraction = 0.75,
-                                        n.trees = 50,
-                                        plot.main=F, plot.folds=F,
-                                        site.weights = perennial.data$site.id)
-    #R2 adj:
-    R2Obs.perennial.variables[[tcomp]][i] <- 1 - (BRT.perennial.variables$self.statistics$mean.resid /
-                                                    BRT.perennial.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.variables)))
-    }
-    importancePred.perennial.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.variables)[rownames(importancePred.perennial.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.variables, mean)
-sds <- sapply(R2Obs.perennial.variables, sd)
-plot(1:length(R2Obs.perennial.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# 1 or 2 complexity is best for all variables model with lr = 0.00000000000000001
-
-
-# perennial without tree variables
-
-R2Obs.perennial.tree.variables <- list()
-importancePred.perennial.tree.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.tree.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.tree.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                        ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.tree.variables <- gbm.step(data=perennial.tree,
-                                             gbm.x = c(11:18),
-                                             gbm.y = 10,
-                                             family = "gaussian",
-                                             tree.complexity = tcomp,
-                                             learning.rate = 0.000000000000000001,
-                                             bag.fraction = 0.75,
-                                             n.trees = 50,
-                                             plot.main=F, plot.folds=F,
-                                             site.weights = perennial.tree$site.id)
-    #R2 adj:
-    R2Obs.perennial.tree.variables[[tcomp]][i] <- 1 - (BRT.perennial.tree.variables$self.statistics$mean.resid /
-                                                         BRT.perennial.tree.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.tree.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.tree.variables)))
-    }
-    importancePred.perennial.tree.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.tree.variables)[rownames(importancePred.perennial.tree.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.tree.variables, mean)
-sds <- sapply(R2Obs.perennial.tree.variables, sd)
-plot(1:length(R2Obs.perennial.tree.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.tree.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# 1 complexity is best for all variables model with lr = 0.000000000000000001
-
-
-#### final models ####
-
-set.seed(2023)
-all.final.brt <- gbm.step(data=all.data,
-                                   gbm.x = c(11:18),
-                                   gbm.y = 10,
-                                   family = "gaussian",
-                                   tree.complexity = 6,
-                                   learning.rate = 0.0001,
-                                   bag.fraction = 0.75,
-                                   n.trees = 50,
-                                   plot.main=T, plot.folds=T, site.weights = all.data$site.id)
-summary(all.final.brt)
-# RTD 30%
-
-gbm.plot(all.final.brt, common.scale = FALSE)
-gbm.plot.fits(all.final.brt)
-
-plot.gbm(all.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(all.final.brt, i.var = c("root.depth_m"))
-plot.gbm(all.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(all.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(all.final.brt, i.var = c("height.m"))
-plot.gbm(all.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(all.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(all.final.brt, i.var = c("rootN.mg.g"))
-
-all.predict.brt=predict(all.final.brt, n.trees = all.final.brt$n.trees)
-observed.all = all.data$mean.cover.response
-plot(all.predict.brt~observed.all)
-abline(0, 1, col = 2)
-
-R2.all.brt = 1-(all.final.brt$self.statistics$mean.resid/all.final.brt$self.statistics$mean.null)
-# 0.01
-
-# investigation of interactions
-gbm.interactions(all.final.brt)$rank.list
-
-all.brt.simple = gbm.simplify(all.final.brt)
-# keep only SLA and RTD
-
-
-
-#### final complete cases model ####
-set.seed(2023)
-comp.final.brt <- gbm.step(data=all.complete,
-gbm.x = c(11:18),
-gbm.y = 10,
-family = "gaussian",
-tree.complexity = 1,
-learning.rate = 0.0000000000000001,
-bag.fraction = 0.75,
-n.trees = 50,
-plot.main=T, plot.folds=T, site.weights = all.complete$site.id)
-
-summary(comp.final.brt)
-# root diam 49%
-
-gbm.plot(comp.final.brt)
-gbm.plot.fits(comp.final.brt)
-
-plot.gbm(comp.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(comp.final.brt, i.var = c("root.depth_m"))
-plot.gbm(comp.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(comp.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(comp.final.brt, i.var = c("height.m"))
-plot.gbm(comp.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(comp.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(comp.final.brt, i.var = c("rootN.mg.g"))
-
-comp.predict.brt=predict(comp.final.brt, n.trees = comp.final.brt$n.trees)
-observed.comp = all.complete$mean.cover.response
-plot(comp.predict.brt~observed.comp)
-abline(0, 1, col = 2)
-
-R2.comp.brt = 1-(comp.final.brt$self.statistics$mean.resid/comp.final.brt$self.statistics$mean.null)
-# explains little of the variation
-
-# investigation of interactions
-gbm.interactions(comp.final.brt)$rank.list
-
-#### model without trees ####
-set.seed(2023)
-tree.final.brt <- gbm.step(data=no.trees,
-gbm.x = c(11:18),
-gbm.y = 10,
-family = "gaussian",
-tree.complexity = 3,
-learning.rate = 0.0001,
-bag.fraction = 0.75,
-n.trees = 50,
-plot.main=T, plot.folds=T, site.weights = no.trees$site.id)
-
-summary(tree.final.brt)
-# RTD 42%
-
-gbm.plot(tree.final.brt)
-gbm.plot.fits(tree.final.brt)
-
-plot.gbm(tree.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(tree.final.brt, i.var = c("root.depth_m"))
-plot.gbm(tree.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(tree.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(tree.final.brt, i.var = c("height.m"))
-plot.gbm(tree.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(tree.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(tree.final.brt, i.var = c("rootN.mg.g"))
-
-tree.predict.brt=predict(tree.final.brt, n.trees = tree.final.brt$n.trees)
-observed.tree = no.trees$mean.cover.response
-plot(tree.predict.brt~observed.tree)
-abline(0, 1, col = 2)
-
-R2.tree.brt = 1-(tree.final.brt$self.statistics$mean.resid/tree.final.brt$self.statistics$mean.null)
-# 0.02
-
-# investigation of interactions
-gbm.interactions(tree.final.brt)$rank.list
-
-# significant interactions
-# RTD x height
-
-
-gbm.perspec(tree.final.brt,
-            6, # log.RTD
-            2, # log.height
-            y.label = "height",
-            x.label = "RTD",
-            smooth = "average",
-            perspective = TRUE,
-            z.range = c(-0.9,0.82),
-            theta = 320)
-
-source("gbm.perspec2.R")
-
-gbm.perspec(tree.final.brt,
-            6, # log.RTD
-            2, # log.height
-            y.label = "height",
-            x.label = "RTD",
-            smooth = "average",
-            perspective = FALSE,
-            z.range = c(-0.9,0.82))
-
-
-#### annual final model ####
-set.seed(2023)
-annual.final.brt <- gbm.step(data=annual.data,
-                          gbm.x = c(11:18),
-                          gbm.y = 10,
-                          family = "gaussian",
-                          tree.complexity = 10,
-                          learning.rate = 0.0001,
-                          bag.fraction = 0.75,
-                          n.trees = 50,
-                          plot.main=T, plot.folds=T, site.weights = annual.data$site.id)
-summary(annual.final.brt)
-# leafN 26%
-# RTD 18%
-
-gbm.plot(annual.final.brt)
-gbm.plot.fits(annual.final.brt)
-
-plot.gbm(annual.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(annual.final.brt, i.var = c("root.depth_m"))
-plot.gbm(annual.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(annual.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(annual.final.brt, i.var = c("height.m"))
-plot.gbm(annual.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(annual.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(annual.final.brt, i.var = c("rootN.mg.g"))
-
-annual.predict.brt=predict(annual.final.brt, n.trees = annual.final.brt$n.trees)
-observed.annaul = annual.data$mean.cover.response
-plot(annual.predict.brt~observed.annaul)
-abline(0, 1, col = 2)
-
-R2.annual.brt = 1-(annual.final.brt$self.statistics$mean.resid/annual.final.brt$self.statistics$mean.null)
-# 0.16
-
-# investigation of interactions
-gbm.interactions(annual.final.brt)$rank.list
-
-# significant interactions
-# SRL x leafN
-# SRL x depth
-# diam x SRL
-
-gbm.perspec(annual.final.brt,
-            7, # SRL
-            1, # leafN
-            y.label = "leafN",
-            x.label = "SRL",
-            smooth = "average",
-            perspective = TRUE,
-            z.range = c(-1.5,0.93),
-            theta=50)
-
-gbm.perspec(annual.final.brt,
-            7, # SRL
-            1, # leafN
-            y.label = "leafN",
-            x.label = "SRL",
-            smooth = "average",
-            perspective = FALSE,
-            z.range = c(-1.5,0.93))
-
-gbm.perspec(annual.final.brt,
-            7, # SRL
-            5, # depth
-            y.label = "depth",
-            x.label = "SRL",
-            smooth = "average",
-            perspective = TRUE,
-            z.range = c(-0.9,0.90),
-            theta=30)
-
-gbm.perspec(annual.final.brt,
-            7, # SRL
-            5, # depth
-            y.label = "depth",
-            x.label = "SRL",
-            smooth = "average",
-            perspective = FALSE,
-            z.range = c(-0.9,0.90))
-
-gbm.perspec(annual.final.brt,
-            8, # diam
-            7, # SRL
-            y.label = "SRL",
-            x.label = "diam",
-            smooth = "average",
-            perspective = TRUE,
-            z.range = c(-0.9,0.22),
-            theta=100)
-
-gbm.perspec(annual.final.brt,
-            8, # diam
-            7, # SRL
-            y.label = "SRL",
-            x.label = "diam",
-            smooth = "average",
-            perspective = FALSE,
-            z.range = c(-0.9,0.22))
-
-#### perennial final model ####
-set.seed(2023)
-perennial.final.brt <- gbm.step(data=perennial.data,
-                             gbm.x = c(11:18),
-                             gbm.y = 10,
-                             family = "gaussian",
-                             tree.complexity = 1,
-                             learning.rate = 0.00000000000000001,
-                             bag.fraction = 0.75,
-                             n.trees = 50,
-                             plot.main=T, plot.folds=T, site.weights = perennial.data$site.id)
-summary(perennial.final.brt)
-# leafN 26%
-# RTD 18 %
-
-gbm.plot(perennial.final.brt)
-gbm.plot.fits(perennial.final.brt)
-
-plot.gbm(perennial.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(perennial.final.brt, i.var = c("root.depth_m"))
-plot.gbm(perennial.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(perennial.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(perennial.final.brt, i.var = c("height.m"))
-plot.gbm(perennial.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(perennial.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(perennial.final.brt, i.var = c("rootN.mg.g"))
-
-perennial.predict.brt=predict(perennial.final.brt, n.trees = perennial.final.brt$n.trees)
-observed.perennial = perennial.data$mean.cover.response
-plot(annual.predict.brt~observed.perennial)
-abline(0, 1, col = 2)
-
-R2.perennail.brt = 1-(perennial.final.brt$self.statistics$mean.resid/perennial.final.brt$self.statistics$mean.null)
-# 0.0
-
-# investigation of interactions
-gbm.interactions(perennial.final.brt)$rank.list
-
-#### perennial without tree final model ####
-set.seed(2023)
-perennial.tree.final.brt <- gbm.step(data=perennial.tree,
-                                gbm.x = c(11:18),
-                                gbm.y = 10,
-                                family = "gaussian",
-                                tree.complexity = 1,
-                                learning.rate = 0.00000000000000001,
-                                bag.fraction = 0.75,
-                                n.trees = 50,
-                                plot.main=T, plot.folds=T)
-summary(perennial.tree.final.brt)
-# SRL 27%
-# leafN 20 %
-# SLA 20%
-# height 17%
-
-gbm.plot(perennial.tree.final.brt)
-gbm.plot.fits(perennial.tree.final.brt)
-
-plot.gbm(perennial.tree.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(perennial.tree.final.brt, i.var = c("root.depth_m"))
-plot.gbm(perennial.tree.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(perennial.tree.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(perennial.tree.final.brt, i.var = c("height.m"))
-plot.gbm(perennial.tree.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(perennial.tree.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(perennial.tree.final.brt, i.var = c("rootN.mg.g"))
-
-perennial.tree.predict.brt=predict(perennial.tree.final.brt, n.trees = perennial.tree.final.brt$n.trees)
-observed.perennial.tree = perennial.tree$mean.cover.response
-plot(perennial.tree.predict.brt~observed.perennial.tree)
-abline(0, 1, col = 2)
-
-R2.perennail.brt = 1-(perennial.tree.final.brt$self.statistics$mean.resid/perennial.tree.final.brt$self.statistics$mean.null)
-# 0.0
-
-# investigation of interactions
-gbm.interactions(perennial.tree.final.brt)$rank.list
-
-#### ggBRT ####
-
-install.packages("devtools") # in case "devtools" has not already been installed
-devtools::install_github("JBjouffray/ggBRT") # will take several minutes to install
-library(ggBRT)
-# https://jbjouffray.github.io/ggBRT/ggBRT_Tutorial.html
-
-ggPerformance(all=all.final.brt,complete=comp.final.brt,no.trees.all=tree.final.brt,annual=annual.final.brt,
-              perennial=perennial.final.brt, perennial.no.tree=perennial.tree.final.brt)
-
-ggInfluence(all.final.brt, signif = TRUE)
-ggInfluence(comp.final.brt, signif = TRUE)
-ggInfluence(tree.final.brt, signif = TRUE)
-ggInfluence(annual.final.brt, signif = TRUE)
-ggInfluence(perennial.final.brt, signif = TRUE)
-ggInfluence(perennial.tree.final.brt, signif = TRUE)
-
-
-ggMultiInfluence(all=all.final.brt,complete=comp.final.brt,no.trees.all=tree.final.brt,annual=annual.final.brt,
-                 perennial=perennial.final.brt, perennial.no.tree=perennial.tree.final.brt)
-
-ggPD(all.final.brt,rug = T)
-ggPD(annual.final.brt,rug = T)
-ggPDfit(all.final.brt)
-ggPDfit(annual.final.brt)
-
-ggInteract_list(all.final.brt,index = F)
-ggInteract_list(comp.final.brt,index = F)
-ggInteract_list(tree.final.brt,index = F)
-ggInteract_list(annual.final.brt,index = F)
-ggInteract_list(perennial.final.brt,index = F)
-ggInteract_list(perennial.tree.final.brt,index = F)
-
-
-ggInteract_2D(gbm.object = annual.final.brt,x="SRL_m.g",y="leafN.mg.g",col.gradient = c("white","#5576AF"),
-              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,
-              label.contour = T,col.contour = "#254376",show.axis = T,legend = T)
-
-
-ggInteract_3D(annual.final.brt,x="SRL_m.g",y="leafN.mg.g")
-ggInteract_3D(annual.final.brt,x="leafN.mg.g",y="root.depth_m")
-ggInteract_3D(annual.final.brt,x="rootDiam.mm",y="SRL_m.g")
+#### Annual Data ####
+
+annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL") # 127 data points
+
+#### test for correlation with annual data ####
+cor.test(annual.data$leafN.mg.g, annual.data$height.m)
+cor.test(annual.data$leafN.mg.g, annual.data$rootN.mg.g) # correlated r = 0.43
+cor.test(annual.data$leafN.mg.g, annual.data$SLA_m2.kg) # correlated r = 0.28
+cor.test(annual.data$leafN.mg.g, annual.data$root.depth_m)
+cor.test(annual.data$leafN.mg.g, annual.data$RTD.g.cm3)
+cor.test(annual.data$leafN.mg.g, annual.data$SRL_m.g)
+cor.test(annual.data$leafN.mg.g, annual.data$rootDiam.mm)
+cor.test(annual.data$height.m, annual.data$rootN.mg.g)
+cor.test(annual.data$height.m, annual.data$SLA_m2.kg)
+cor.test(annual.data$height.m, annual.data$root.depth_m) # correlated r = 0.24
+cor.test(annual.data$height.m, annual.data$RTD.g.cm3)
+cor.test(annual.data$height.m, annual.data$SRL_m.g)
+cor.test(annual.data$height.m, annual.data$rootDiam.mm)
+cor.test(annual.data$rootN.mg.g, annual.data$SLA_m2.kg)
+cor.test(annual.data$rootN.mg.g, annual.data$root.depth_m)
+cor.test(annual.data$rootN.mg.g, annual.data$RTD.g.cm3)
+cor.test(annual.data$rootN.mg.g, annual.data$SRL_m.g)
+cor.test(annual.data$rootN.mg.g, annual.data$rootDiam.mm)
+cor.test(annual.data$SLA_m2.kg, annual.data$root.depth_m)
+cor.test(annual.data$SLA_m2.kg, annual.data$RTD.g.cm3)
+cor.test(annual.data$SLA_m2.kg, annual.data$SRL_m.g) # correlated r = 0.26
+cor.test(annual.data$SLA_m2.kg, annual.data$rootDiam.mm)  # correlated r = 0.27
+cor.test(annual.data$root.depth_m, annual.data$RTD.g.cm3)
+cor.test(annual.data$root.depth_m, annual.data$SRL_m.g) # correlated r =-0.24
+cor.test(annual.data$root.depth_m, annual.data$rootDiam.mm)
+cor.test(annual.data$RTD.g.cm3, annual.data$SRL_m.g) # correlated r = -0.30
+cor.test(annual.data$RTD.g.cm3, annual.data$rootDiam.mm)
+cor.test(annual.data$SRL_m.g, annual.data$rootDiam.mm)
+
+cor.mat = cor(annual.data[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(annual.data$mean.cover.response, annual.data$leafN.mg.g) # r = 0.25
+cor.test(annual.data$mean.cover.response, annual.data$height.m) # r = 0.05
+cor.test(annual.data$mean.cover.response, annual.data$rootN.mg.g) # r = 0.19
+cor.test(annual.data$mean.cover.response, annual.data$SLA_m2.kg) # r = 0.06
+cor.test(annual.data$mean.cover.response, annual.data$root.depth_m) # r = 0.21
+cor.test(annual.data$mean.cover.response, annual.data$RTD.g.cm3) # r = 0.18
+cor.test(annual.data$mean.cover.response, annual.data$SRL_m.g) # r = -0.22
+cor.test(annual.data$mean.cover.response, annual.data$rootDiam.mm) # r = 0.10
+
+#### Perennial Data ####
+
+perennial.data = subset(all.data.ls, all.data.ls$local_lifespan == "PERENNIAL") # 563 data points
+
+#### test for correlation with PERENNIAL data ####
+
+cor.test(perennial.data$leafN.mg.g, perennial.data$height.m)
+cor.test(perennial.data$leafN.mg.g, perennial.data$rootN.mg.g) # correlated r = 0.51
+cor.test(perennial.data$leafN.mg.g, perennial.data$SLA_m2.kg) # correlated r = 0.37
+cor.test(perennial.data$leafN.mg.g, perennial.data$root.depth_m)
+cor.test(perennial.data$leafN.mg.g, perennial.data$RTD.g.cm3) # correlated r = -0.22
+cor.test(perennial.data$leafN.mg.g, perennial.data$SRL_m.g) # correlated r = 0.30
+cor.test(perennial.data$leafN.mg.g, perennial.data$rootDiam.mm)
+cor.test(perennial.data$height.m, perennial.data$rootN.mg.g)
+cor.test(perennial.data$height.m, perennial.data$SLA_m2.kg)
+cor.test(perennial.data$height.m, perennial.data$root.depth_m)
+cor.test(perennial.data$height.m, perennial.data$RTD.g.cm3)
+cor.test(perennial.data$height.m, perennial.data$SRL_m.g) # correlated r = -0.14
+cor.test(perennial.data$height.m, perennial.data$rootDiam.mm)
+cor.test(perennial.data$rootN.mg.g, perennial.data$SLA_m2.kg) # correlated r = 0.28
+cor.test(perennial.data$rootN.mg.g, perennial.data$root.depth_m)
+cor.test(perennial.data$rootN.mg.g, perennial.data$RTD.g.cm3)
+cor.test(perennial.data$rootN.mg.g, perennial.data$SRL_m.g)
+cor.test(perennial.data$rootN.mg.g, perennial.data$rootDiam.mm)
+cor.test(perennial.data$SLA_m2.kg, perennial.data$root.depth_m) # correlated r = -0.12
+cor.test(perennial.data$SLA_m2.kg, perennial.data$RTD.g.cm3) # correlated r = -0.30
+cor.test(perennial.data$SLA_m2.kg, perennial.data$SRL_m.g) # correlated r = 0.47
+cor.test(perennial.data$SLA_m2.kg, perennial.data$rootDiam.mm) # correlated r = -0.15
+cor.test(perennial.data$root.depth_m, perennial.data$RTD.g.cm3) # correlated r = 0.13
+cor.test(perennial.data$root.depth_m, perennial.data$SRL_m.g)
+cor.test(perennial.data$root.depth_m, perennial.data$rootDiam.mm) #  correlated r = 0.31
+cor.test(perennial.data$RTD.g.cm3, perennial.data$SRL_m.g) # correlated r = -0.31
+cor.test(perennial.data$RTD.g.cm3, perennial.data$rootDiam.mm)
+cor.test(perennial.data$SRL_m.g, perennial.data$rootDiam.mm)
+
+cor.mat = cor(perennial.data[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors for PERENNIALS ####
+
+cor.test(perennial.data$mean.cover.response, perennial.data$leafN.mg.g) # r = 0.05
+cor.test(perennial.data$mean.cover.response, perennial.data$height.m) # r = -0.03
+cor.test(perennial.data$mean.cover.response, perennial.data$rootN.mg.g) # r = -0.04
+cor.test(perennial.data$mean.cover.response, perennial.data$SLA_m2.kg) # r = 0.02
+cor.test(perennial.data$mean.cover.response, perennial.data$root.depth_m) # r = 0.03
+cor.test(perennial.data$mean.cover.response, perennial.data$RTD.g.cm3) # r = 0.09
+cor.test(perennial.data$mean.cover.response, perennial.data$SRL_m.g) # r = -0.02
+cor.test(perennial.data$mean.cover.response, perennial.data$rootDiam.mm) # r = 0.07
+
+#### Perennial data without woody functional group ####
+
+perennial.tree = subset(perennial.data, !perennial.data$functional_group == "WOODY") # 478 data points
+
+#### test for correlation with PERENNIAL data WITHOUT WOODY ####
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$height.m)
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$rootN.mg.g) # correlated r = 0.52
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$SLA_m2.kg) # correlated r = 0.39
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$root.depth_m)
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$RTD.g.cm3) # correlated r = -0.25
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$SRL_m.g) # correlated r = 0.29
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$height.m, perennial.tree$rootN.mg.g)
+cor.test(perennial.tree$height.m, perennial.tree$SLA_m2.kg) # correlated r = -0.16
+cor.test(perennial.tree$height.m, perennial.tree$root.depth_m)
+cor.test(perennial.tree$height.m, perennial.tree$RTD.g.cm3) # correlated r = -0.13
+cor.test(perennial.tree$height.m, perennial.tree$SRL_m.g) # correlated r = -0.12
+cor.test(perennial.tree$height.m, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$SLA_m2.kg) # correlated r = 0.27
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$root.depth_m)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$RTD.g.cm3)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$SRL_m.g)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$rootDiam.mm) # correlated r = 0.14
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$root.depth_m) # correlated r = -0.14
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$RTD.g.cm3) # correlated r = -0.29
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$SRL_m.g) # correlated r = 0.46
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$rootDiam.mm) # correlated r = -0.12
+cor.test(perennial.tree$root.depth_m, perennial.tree$RTD.g.cm3) # correlated r = 0.18
+cor.test(perennial.tree$root.depth_m, perennial.tree$SRL_m.g) # correlated r =-0.12
+cor.test(perennial.tree$root.depth_m, perennial.tree$rootDiam.mm) #  correlated r = 0.29
+cor.test(perennial.tree$RTD.g.cm3, perennial.tree$SRL_m.g) # correlated r = -0.27
+cor.test(perennial.tree$RTD.g.cm3, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$SRL_m.g, perennial.tree$rootDiam.mm)
+
+cor.mat = cor(perennial.tree[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.tree$mean.cover.response, perennial.tree$leafN.mg.g) # r = 0.08
+cor.test(perennial.tree$mean.cover.response, perennial.tree$height.m) # r = -0.09
+cor.test(perennial.tree$mean.cover.response, perennial.tree$rootN.mg.g) # r = -0.03
+cor.test(perennial.tree$mean.cover.response, perennial.tree$SLA_m2.kg) # r = 0.04
+cor.test(perennial.tree$mean.cover.response, perennial.tree$root.depth_m) # r = 0.04
+cor.test(perennial.tree$mean.cover.response, perennial.tree$RTD.g.cm3) # r = 0.09
+cor.test(perennial.tree$mean.cover.response, perennial.tree$SRL_m.g) # r = 0.003
+cor.test(perennial.tree$mean.cover.response, perennial.tree$rootDiam.mm) # r = 0.06
+
+#### PERENNIAL without TREE ####
+
+perennial.no.tree = subset(perennial.data, !perennial.data$local_lifeform == "TREE") # 554 data points
+
+#### test for correlation of PERENNIAL data without TREE ####
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$height.m)
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$rootN.mg.g) # correlated r = 0.51
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$SLA_m2.kg) # correlated r = 0.37
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$RTD.g.cm3) # correlated r = -0.23
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$SRL_m.g) # correlated r = 0.30
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$rootN.mg.g)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$SLA_m2.kg)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$SRL_m.g) # correlated r = -0.14
+cor.test(perennial.no.tree$height.m, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$SLA_m2.kg) # correlated r = 0.28
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$SRL_m.g)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$root.depth_m) # correlated r = -0.12
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$RTD.g.cm3) # correlated r = -0.30
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$SRL_m.g) # correlated r = 0.46
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$rootDiam.mm) # correlated r = -0.14
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$RTD.g.cm3) # correlated r = 0.13
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$SRL_m.g)
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$rootDiam.mm) #  correlated r = 0.30
+cor.test(perennial.no.tree$RTD.g.cm3, perennial.no.tree$SRL_m.g) # correlated r = -0.31
+cor.test(perennial.no.tree$RTD.g.cm3, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$SRL_m.g, perennial.no.tree$rootDiam.mm)
+
+cor.mat = cor(perennial.no.tree[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$leafN.mg.g) # r = 0.05
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$height.m) # r = -0.02
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$rootN.mg.g) # r = -0.04
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$SLA_m2.kg) # r = 0.03
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$root.depth_m) # r = 0.03
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$RTD.g.cm3) # r = 0.08
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$SRL_m.g) # r = -0.02
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$rootDiam.mm) # r = 0.07
+
+#### GRASS ####
+
+grass = subset(all.data, all.data$functional_group == "GRASS") # 223 data points
+
+#### test for correlation with GRASS ####
+cor.test(grass$leafN.mg.g, grass$height.m)
+cor.test(grass$leafN.mg.g, grass$rootN.mg.g) # correlated r = 0.21
+cor.test(grass$leafN.mg.g, grass$SLA_m2.kg) # correlated r = 0.43
+cor.test(grass$leafN.mg.g, grass$root.depth_m)
+cor.test(grass$leafN.mg.g, grass$RTD.g.cm3) # correlated r = -0.31
+cor.test(grass$leafN.mg.g, grass$SRL_m.g) # correlated r = 0.61
+cor.test(grass$leafN.mg.g, grass$rootDiam.mm)  # correlated r = -0.31
+cor.test(grass$height.m, grass$rootN.mg.g)  # correlated r = 0.18
+cor.test(grass$height.m, grass$SLA_m2.kg)
+cor.test(grass$height.m, grass$root.depth_m)
+cor.test(grass$height.m, grass$RTD.g.cm3)
+cor.test(grass$height.m, grass$SRL_m.g) # correlated r = 0.16
+cor.test(grass$height.m, grass$rootDiam.mm)  # correlated r = 0.16
+cor.test(grass$rootN.mg.g, grass$SLA_m2.kg)
+cor.test(grass$rootN.mg.g, grass$root.depth_m)
+cor.test(grass$rootN.mg.g, grass$RTD.g.cm3)
+cor.test(grass$rootN.mg.g, grass$SRL_m.g)
+cor.test(grass$rootN.mg.g, grass$rootDiam.mm)
+cor.test(grass$SLA_m2.kg, grass$root.depth_m) # correlated r = -0.23
+cor.test(grass$SLA_m2.kg, grass$RTD.g.cm3) # correlated r = -0.46
+cor.test(grass$SLA_m2.kg, grass$SRL_m.g) # correlated r = 0.42
+cor.test(grass$SLA_m2.kg, grass$rootDiam.mm)  # correlated r = -0.22
+cor.test(grass$root.depth_m, grass$RTD.g.cm3) # correlated r = 0.23
+cor.test(grass$root.depth_m, grass$SRL_m.g) # correlated r =-0.17
+cor.test(grass$root.depth_m, grass$rootDiam.mm) #  correlated r = 0.33
+cor.test(grass$RTD.g.cm3, grass$SRL_m.g) # correlated r = -0.40
+cor.test(grass$RTD.g.cm3, grass$rootDiam.mm)
+cor.test(grass$SRL_m.g, grass$rootDiam.mm)  # correlated r = -0.43
+
+cor.mat = cor(grass[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(grass$mean.cover.response, grass$leafN.mg.g) # r = 0.06
+cor.test(grass$mean.cover.response, grass$height.m) # r = -0.11
+cor.test(grass$mean.cover.response, grass$rootN.mg.g) # r = -0.02
+cor.test(grass$mean.cover.response, grass$SLA_m2.kg) # r = 0.01
+cor.test(grass$mean.cover.response, grass$root.depth_m) # r = 0.12
+cor.test(grass$mean.cover.response, grass$RTD.g.cm3) # r = 0.19
+cor.test(grass$mean.cover.response, grass$SRL_m.g) # r = -0.09
+cor.test(grass$mean.cover.response, grass$rootDiam.mm) # r = 0.12
+
+#### FORB ####
+
+forb = subset(all.data, all.data$functional_group == "FORB") # 317 data points
+
+#### test for correlation with FORB ####
+cor.test(forb$leafN.mg.g, forb$height.m)
+cor.test(forb$leafN.mg.g, forb$rootN.mg.g)
+cor.test(forb$leafN.mg.g, forb$SLA_m2.kg) # correlated r = 0.27
+cor.test(forb$leafN.mg.g, forb$root.depth_m) # correlated r = 0.17
+cor.test(forb$leafN.mg.g, forb$RTD.g.cm3)
+cor.test(forb$leafN.mg.g, forb$SRL_m.g) # correlated r = 0.19
+cor.test(forb$leafN.mg.g, forb$rootDiam.mm)
+cor.test(forb$height.m, forb$rootN.mg.g) # correlated r = 0.22
+cor.test(forb$height.m, forb$SLA_m2.kg) # correlated r = -0.17
+cor.test(forb$height.m, forb$root.depth_m)
+cor.test(forb$height.m, forb$RTD.g.cm3) # correlated r = -0.31
+cor.test(forb$height.m, forb$SRL_m.g) # correlated r = -0.24
+cor.test(forb$height.m, forb$rootDiam.mm)
+cor.test(forb$rootN.mg.g, forb$SLA_m2.kg) # correlated r = 0.23
+cor.test(forb$rootN.mg.g, forb$root.depth_m)
+cor.test(forb$rootN.mg.g, forb$RTD.g.cm3)
+cor.test(forb$rootN.mg.g, forb$SRL_m.g) # correlated r = 0.30
+cor.test(forb$rootN.mg.g, forb$rootDiam.mm)
+cor.test(forb$SLA_m2.kg, forb$root.depth_m)
+cor.test(forb$SLA_m2.kg, forb$RTD.g.cm3)
+cor.test(forb$SLA_m2.kg, forb$SRL_m.g) # correlated r = 0.40
+cor.test(forb$SLA_m2.kg, forb$rootDiam.mm)
+cor.test(forb$root.depth_m, forb$RTD.g.cm3)
+cor.test(forb$root.depth_m, forb$SRL_m.g)
+cor.test(forb$root.depth_m, forb$rootDiam.mm) #  correlated r = 0.21
+cor.test(forb$RTD.g.cm3, forb$SRL_m.g)
+cor.test(forb$RTD.g.cm3, forb$rootDiam.mm)
+cor.test(forb$SRL_m.g, forb$rootDiam.mm)
+
+cor.mat = cor(forb[,c(11:18)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(forb$mean.cover.response, forb$leafN.mg.g) # r = 0.19
+cor.test(forb$mean.cover.response, forb$height.m) # r = -0.03
+cor.test(forb$mean.cover.response, forb$rootN.mg.g) # r = -0.04
+cor.test(forb$mean.cover.response, forb$SLA_m2.kg) # r = 0.09
+cor.test(forb$mean.cover.response, forb$root.depth_m) # r = 0.04
+cor.test(forb$mean.cover.response, forb$RTD.g.cm3) # r = -0.02
+cor.test(forb$mean.cover.response, forb$SRL_m.g) # r = -0.03
+cor.test(forb$mean.cover.response, forb$rootDiam.mm) # r = 0.02
+
+#### ANNUAL GRASSES ####
+
+annual.grass = subset(annual.data, annual.data$functional_group == "GRASS") # 39 data points
+
+#### ANNUAL FORB ####
+annual.forb = subset(annual.data, annual.data$functional_group == "FORB") # 78 data points
+
+#### PERENNIAL GRASS ####
+
+perennial.grass = subset(perennial.data, perennial.data$functional_group == "GRASS") # 182 data points
+
+#### PERENNIAL FORB ####
+
+perennial.forb = subset(perennial.data, perennial.data$functional_group == "FORB") # 231 data points
+
+#### write out the files ####
+
+write.csv(all.data, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/all.data.csv")
+write.csv(annual.data, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/annual.data.csv")
+write.csv(annual.forb, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/annual.forb.csv")
+write.csv(annual.grass, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/annual.grass.csv")
+write.csv(forb, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/forb.csv")
+write.csv(grass, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/grass.csv")
+write.csv(no.trees, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/no.trees.csv")
+write.csv(perennial.data, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.data.csv")
+write.csv(perennial.forb, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.forb.csv")
+write.csv(perennial.grass, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.grass.csv")
+write.csv(perennial.no.tree, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.no.tree.csv")
+write.csv(perennial.tree, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.tree.csv")
+write.csv(trees, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/trees.csv")
+
+
+
+
+
+
+#### Generating data files of Drought yr 1 versus Drought yr 2 ####
+# read in cover year 2
+
+cover.yr.2 = read.csv("./Formatted.Data/cover.trt.y2.csv")
+
+# read in cover data
+cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
+
+# merge cover year 1 with cover year 2
+
+years.cover = merge(cover.data, cover.yr.2, by = c("site_code", "Taxon"))
+years.cover = years.cover[,c(1,2,8,17)]
+colnames(years.cover)[3] = "mean.drt.cover.yr1"
+colnames(years.cover)[4] = "mean.drt.cover.yr2"
+
+# remove 0 if wasn't in plot in year 1 and year 2
+
+years.cover.2 = subset(years.cover, !(years.cover$mean.drt.cover.yr1 == 0))
+years.cover.3 = subset(years.cover.2, !(years.cover.2$mean.drt.cover.yr2 == 0)) # 774 data points
+
+years.cover.3$diff.drt.trt = years.cover.3$mean.drt.cover.yr2 - years.cover.3$mean.drt.cover.yr1
+
+# merge new cover data with traits
+
+trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.2.csv")
+
+# subset traits so they must have SLA
+trait.data.2 = trait.data.new[,c(1,7,8,10,12,14,15,18,20,27:29)]
+trait.data.3 = subset(trait.data.2, trait.data.2$SLA_m2.kg > 0 ) # 646 data points, 
+
+all.data.year2 = merge(years.cover.3, trait.data.3, by="Taxon") # 563 data points
+
+#### test for correlation with all data drt.v.drt ####
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$height.m)
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$rootN.mg.g) # correlated r = 0.50
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$SLA_m2.kg) # correlated r = 0.33
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$root.depth_m)
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$RTD.g.cm3) # correlated r = -0.19
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$SRL_m.g) # correlated r = 0.25
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$rootDiam.mm)
+cor.test(all.data.year2$height.m, all.data.year2$rootN.mg.g)
+cor.test(all.data.year2$height.m, all.data.year2$SLA_m2.kg)
+cor.test(all.data.year2$height.m, all.data.year2$root.depth_m)
+cor.test(all.data.year2$height.m, all.data.year2$RTD.g.cm3)
+cor.test(all.data.year2$height.m, all.data.year2$SRL_m.g)
+cor.test(all.data.year2$height.m, all.data.year2$rootDiam.mm) # correlated r = 0.20
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$SLA_m2.kg) # correlated r = 0.24
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$root.depth_m)
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$RTD.g.cm3) # correlated r = -0.14
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$SRL_m.g)
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$rootDiam.mm)
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$root.depth_m) # correlated r = -0.10
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$RTD.g.cm3) # correlated r = -0.25
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$SRL_m.g) # correlated r = 0.45
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$rootDiam.mm) # correlated r = -0.16
+cor.test(all.data.year2$root.depth_m, all.data.year2$RTD.g.cm3) # correlated r = 0.12
+cor.test(all.data.year2$root.depth_m, all.data.year2$SRL_m.g)
+cor.test(all.data.year2$root.depth_m, all.data.year2$rootDiam.mm) #  correlated r = 0.20
+cor.test(all.data.year2$RTD.g.cm3, all.data.year2$SRL_m.g) # correlated r = -0.30
+cor.test(all.data.year2$RTD.g.cm3, all.data.year2$rootDiam.mm)
+cor.test(all.data.year2$SRL_m.g, all.data.year2$rootDiam.mm)
+
+cor.mat = cor(all.data.year2[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$leafN.mg.g) # r = -0.08
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$height.m) # r = 0.006
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$rootN.mg.g) # r = -0.05
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$SLA_m2.kg) # r = -0.06
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$root.depth_m) # r = -0.03
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$RTD.g.cm3) # r = -0.003
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$SRL_m.g) # r = 0.009
+cor.test(all.data.year2$diff.drt.trt, all.data.year2$rootDiam.mm) # r = -0.01
+
+#### data set with WOODY removed ####
+
+no.trees = subset(all.data.year2, !all.data.year2$functional_group == "WOODY") # 485 data points
+
+#### test for correlation with all data without woody drt.v.drt ####
+cor.test(no.trees$leafN.mg.g, no.trees$height.m) # correlated r = -0.12
+cor.test(no.trees$leafN.mg.g, no.trees$rootN.mg.g) # correlated r = 0.50
+cor.test(no.trees$leafN.mg.g, no.trees$SLA_m2.kg) # correlated r = 0.33
+cor.test(no.trees$leafN.mg.g, no.trees$root.depth_m)
+cor.test(no.trees$leafN.mg.g, no.trees$RTD.g.cm3) # correlated r = -0.18
+cor.test(no.trees$leafN.mg.g, no.trees$SRL_m.g) # correlated r = 0.22
+cor.test(no.trees$leafN.mg.g, no.trees$rootDiam.mm)
+cor.test(no.trees$height.m, no.trees$rootN.mg.g)
+cor.test(no.trees$height.m, no.trees$SLA_m2.kg) # correlated r = -0.17
+cor.test(no.trees$height.m, no.trees$root.depth_m) # correlated r = 0.11
+cor.test(no.trees$height.m, no.trees$RTD.g.cm3) # correlated r = -0.12
+cor.test(no.trees$height.m, no.trees$SRL_m.g) # correlated r = -0.12
+cor.test(no.trees$height.m, no.trees$rootDiam.mm)
+cor.test(no.trees$rootN.mg.g, no.trees$SLA_m2.kg) # correlated r = 0.23
+cor.test(no.trees$rootN.mg.g, no.trees$root.depth_m)
+cor.test(no.trees$rootN.mg.g, no.trees$RTD.g.cm3) # correlated r = -0.17
+cor.test(no.trees$rootN.mg.g, no.trees$SRL_m.g)
+cor.test(no.trees$rootN.mg.g, no.trees$rootDiam.mm)
+cor.test(no.trees$SLA_m2.kg, no.trees$root.depth_m) # correlated r = -0.10
+cor.test(no.trees$SLA_m2.kg, no.trees$RTD.g.cm3) # correlated r = -0.21
+cor.test(no.trees$SLA_m2.kg, no.trees$SRL_m.g) # correlated r = 0.42
+cor.test(no.trees$SLA_m2.kg, no.trees$rootDiam.mm) # correlated r = -0.14
+cor.test(no.trees$root.depth_m, no.trees$RTD.g.cm3) # correlated r = 0.13
+cor.test(no.trees$root.depth_m, no.trees$SRL_m.g)
+cor.test(no.trees$root.depth_m, no.trees$rootDiam.mm) #  correlated r = 0.17
+cor.test(no.trees$RTD.g.cm3, no.trees$SRL_m.g) # correlated r = -0.24
+cor.test(no.trees$RTD.g.cm3, no.trees$rootDiam.mm)
+cor.test(no.trees$SRL_m.g, no.trees$rootDiam.mm)
+
+cor.mat = cor(no.trees[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(no.trees$diff.drt.trt, no.trees$leafN.mg.g) # r = -0.07
+cor.test(no.trees$diff.drt.trt, no.trees$height.m) # r = 0.0002
+cor.test(no.trees$diff.drt.trt, no.trees$rootN.mg.g) # r = -0.005
+cor.test(no.trees$diff.drt.trt, no.trees$SLA_m2.kg) # r = -0.06
+cor.test(no.trees$diff.drt.trt, no.trees$root.depth_m) # r = -0.02
+cor.test(no.trees$diff.drt.trt, no.trees$RTD.g.cm3) # r = -0.013
+cor.test(no.trees$diff.drt.trt, no.trees$SRL_m.g) # r = 0.02
+cor.test(no.trees$diff.drt.trt, no.trees$rootDiam.mm) # r = -0.005
+
+#### data set with TREE removed ####
+
+trees = subset(all.data.year2, !all.data.year2$local_lifeform == "TREE") # 559 data points
+
+#### test for correlation with all data without TREE lifeform drt.v.drt ####
+
+cor.test(trees$leafN.mg.g, trees$height.m)
+cor.test(trees$leafN.mg.g, trees$rootN.mg.g) # correlated r = 0.50
+cor.test(trees$leafN.mg.g, trees$SLA_m2.kg) # correlated r = 0.33
+cor.test(trees$leafN.mg.g, trees$root.depth_m)
+cor.test(trees$leafN.mg.g, trees$RTD.g.cm3) # correlated r = -0.19
+cor.test(trees$leafN.mg.g, trees$SRL_m.g) # correlated r = 0.25
+cor.test(trees$leafN.mg.g, trees$rootDiam.mm)
+cor.test(trees$height.m, trees$rootN.mg.g)
+cor.test(trees$height.m, trees$SLA_m2.kg)
+cor.test(trees$height.m, trees$root.depth_m)
+cor.test(trees$height.m, trees$RTD.g.cm3)
+cor.test(trees$height.m, trees$SRL_m.g) # correlated r = -0.13
+cor.test(trees$height.m, trees$rootDiam.mm)
+cor.test(trees$rootN.mg.g, trees$SLA_m2.kg) # correlated r = 0.24
+cor.test(trees$rootN.mg.g, trees$root.depth_m)
+cor.test(trees$rootN.mg.g, trees$RTD.g.cm3) # correlated r = -0.13
+cor.test(trees$rootN.mg.g, trees$SRL_m.g)
+cor.test(trees$rootN.mg.g, trees$rootDiam.mm)
+cor.test(trees$SLA_m2.kg, trees$root.depth_m) # correlated r = -0.10
+cor.test(trees$SLA_m2.kg, trees$RTD.g.cm3) # correlated r = -0.25
+cor.test(trees$SLA_m2.kg, trees$SRL_m.g) # correlated r = 0.44
+cor.test(trees$SLA_m2.kg, trees$rootDiam.mm) # correlated r = -0.16
+cor.test(trees$root.depth_m, trees$RTD.g.cm3) # correlated r = 0.12
+cor.test(trees$root.depth_m, trees$SRL_m.g)
+cor.test(trees$root.depth_m, trees$rootDiam.mm) #  correlated r = 0.20
+cor.test(trees$RTD.g.cm3, trees$SRL_m.g) # correlated r = -0.30
+cor.test(trees$RTD.g.cm3, trees$rootDiam.mm)
+cor.test(trees$SRL_m.g, trees$rootDiam.mm)
+
+cor.mat = cor(trees[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(trees$diff.drt.trt, trees$leafN.mg.g) # r = -0.08
+cor.test(trees$diff.drt.trt, trees$height.m) # r = 0.01
+cor.test(trees$diff.drt.trt, trees$rootN.mg.g) # r = -0.05
+cor.test(trees$diff.drt.trt, trees$SLA_m2.kg) # r = -0.06
+cor.test(trees$diff.drt.trt, trees$root.depth_m) # r = -0.03
+cor.test(trees$diff.drt.trt, trees$RTD.g.cm3) # r = -0.004
+cor.test(trees$diff.drt.trt, trees$SRL_m.g) # r = 0.01
+cor.test(trees$diff.drt.trt, trees$rootDiam.mm) # r = -0.01
+
+#### data set split by lifespan ####
+
+# need to read out data and fix the lifespan to particular sites since some species have different lifespan at different sites
+
+# write.csv(all.data.year2, file="./Formatted.Data/all.data.year2.response.0.csv")
+
+all.data.year2.ls = read.csv("./Formatted.Data/all.data.year2.response.0.lifespan.csv", row.names = 1)
+table(all.data.year2.ls$local_lifespan)
+
+#### ANNUAL drt.v.drt ####
+
+annual.data = subset(all.data.year2.ls, all.data.year2.ls$local_lifespan == "ANNUAL") # 83 data points
+
+#### test for correlation with all data ####
+cor.test(annual.data$leafN.mg.g, annual.data$height.m)
+cor.test(annual.data$leafN.mg.g, annual.data$rootN.mg.g) # correlated r = 0.60
+cor.test(annual.data$leafN.mg.g, annual.data$SLA_m2.kg) # correlated r = 0.28
+cor.test(annual.data$leafN.mg.g, annual.data$root.depth_m)
+cor.test(annual.data$leafN.mg.g, annual.data$RTD.g.cm3)
+cor.test(annual.data$leafN.mg.g, annual.data$SRL_m.g)
+cor.test(annual.data$leafN.mg.g, annual.data$rootDiam.mm)
+cor.test(annual.data$height.m, annual.data$rootN.mg.g)
+cor.test(annual.data$height.m, annual.data$SLA_m2.kg)  # correlated r = 0.23
+cor.test(annual.data$height.m, annual.data$root.depth_m)  # correlated r = 0.35
+cor.test(annual.data$height.m, annual.data$RTD.g.cm3)
+cor.test(annual.data$height.m, annual.data$SRL_m.g) # correlated r = 0.32
+cor.test(annual.data$height.m, annual.data$rootDiam.mm)
+cor.test(annual.data$rootN.mg.g, annual.data$SLA_m2.kg)
+cor.test(annual.data$rootN.mg.g, annual.data$root.depth_m)
+cor.test(annual.data$rootN.mg.g, annual.data$RTD.g.cm3)
+cor.test(annual.data$rootN.mg.g, annual.data$SRL_m.g)
+cor.test(annual.data$rootN.mg.g, annual.data$rootDiam.mm)
+cor.test(annual.data$SLA_m2.kg, annual.data$root.depth_m)
+cor.test(annual.data$SLA_m2.kg, annual.data$RTD.g.cm3) # correlated r = -0.33
+cor.test(annual.data$SLA_m2.kg, annual.data$SRL_m.g) # correlated r = 0.29
+cor.test(annual.data$SLA_m2.kg, annual.data$rootDiam.mm)
+cor.test(annual.data$root.depth_m, annual.data$RTD.g.cm3)
+cor.test(annual.data$root.depth_m, annual.data$SRL_m.g)
+cor.test(annual.data$root.depth_m, annual.data$rootDiam.mm)
+cor.test(annual.data$RTD.g.cm3, annual.data$SRL_m.g) # correlated r = -0.33
+cor.test(annual.data$RTD.g.cm3, annual.data$rootDiam.mm)
+cor.test(annual.data$SRL_m.g, annual.data$rootDiam.mm)
+
+cor.mat = cor(annual.data[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(annual.data$diff.drt.trt, annual.data$leafN.mg.g) # r = -0.35
+cor.test(annual.data$diff.drt.trt, annual.data$height.m) # r = -0.07
+cor.test(annual.data$diff.drt.trt, annual.data$rootN.mg.g) # r = -0.22
+cor.test(annual.data$diff.drt.trt, annual.data$SLA_m2.kg) # r = -0.18
+cor.test(annual.data$diff.drt.trt, annual.data$root.depth_m) # r = -0.22
+cor.test(annual.data$diff.drt.trt, annual.data$RTD.g.cm3) # r = 0.02
+cor.test(annual.data$diff.drt.trt, annual.data$SRL_m.g) # r = 0.15
+cor.test(annual.data$diff.drt.trt, annual.data$rootDiam.mm) # r = 0.05
+
+#### PERENNIAL drt.v.drt ####
+
+perennial.data = subset(all.data.year2.ls, all.data.year2.ls$local_lifespan == "PERENNIAL") # 463 data points
+
+#### test for correlation with all data ####
+cor.test(perennial.data$leafN.mg.g, perennial.data$height.m)
+cor.test(perennial.data$leafN.mg.g, perennial.data$rootN.mg.g) # correlated r = 0.47
+cor.test(perennial.data$leafN.mg.g, perennial.data$SLA_m2.kg) # correlated r = 0.33
+cor.test(perennial.data$leafN.mg.g, perennial.data$root.depth_m)
+cor.test(perennial.data$leafN.mg.g, perennial.data$RTD.g.cm3) # correlated r = -0.21
+cor.test(perennial.data$leafN.mg.g, perennial.data$SRL_m.g) # correlated r = 0.27
+cor.test(perennial.data$leafN.mg.g, perennial.data$rootDiam.mm)
+cor.test(perennial.data$height.m, perennial.data$rootN.mg.g)
+cor.test(perennial.data$height.m, perennial.data$SLA_m2.kg)
+cor.test(perennial.data$height.m, perennial.data$root.depth_m)
+cor.test(perennial.data$height.m, perennial.data$RTD.g.cm3)
+cor.test(perennial.data$height.m, perennial.data$SRL_m.g)
+cor.test(perennial.data$height.m, perennial.data$rootDiam.mm) # correlated r = 0.23
+cor.test(perennial.data$rootN.mg.g, perennial.data$SLA_m2.kg) # correlated r = 0.24
+cor.test(perennial.data$rootN.mg.g, perennial.data$root.depth_m)
+cor.test(perennial.data$rootN.mg.g, perennial.data$RTD.g.cm3) # correlated r = -0.13
+cor.test(perennial.data$rootN.mg.g, perennial.data$SRL_m.g)
+cor.test(perennial.data$rootN.mg.g, perennial.data$rootDiam.mm)
+cor.test(perennial.data$SLA_m2.kg, perennial.data$root.depth_m)
+cor.test(perennial.data$SLA_m2.kg, perennial.data$RTD.g.cm3) # correlated r = -0.26
+cor.test(perennial.data$SLA_m2.kg, perennial.data$SRL_m.g) # correlated r = 0.44
+cor.test(perennial.data$SLA_m2.kg, perennial.data$rootDiam.mm)
+cor.test(perennial.data$root.depth_m, perennial.data$RTD.g.cm3) # correlated r = -0.29
+cor.test(perennial.data$root.depth_m, perennial.data$SRL_m.g)
+cor.test(perennial.data$root.depth_m, perennial.data$rootDiam.mm) #  correlated r = 0.24
+cor.test(perennial.data$RTD.g.cm3, perennial.data$SRL_m.g) # correlated r = -0.34
+cor.test(perennial.data$RTD.g.cm3, perennial.data$rootDiam.mm)
+cor.test(perennial.data$SRL_m.g, perennial.data$rootDiam.mm)
+
+cor.mat = cor(perennial.data[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.data$diff.drt.trt, perennial.data$leafN.mg.g) # r = -0.04
+cor.test(perennial.data$diff.drt.trt, perennial.data$height.m) # r = 0.02
+cor.test(perennial.data$diff.drt.trt, perennial.data$rootN.mg.g) # r = -0.04
+cor.test(perennial.data$diff.drt.trt, perennial.data$SLA_m2.kg) # r = -0.06
+cor.test(perennial.data$diff.drt.trt, perennial.data$root.depth_m) # r = -0.004
+cor.test(perennial.data$diff.drt.trt, perennial.data$RTD.g.cm3) # r = -0.05
+cor.test(perennial.data$diff.drt.trt, perennial.data$SRL_m.g) # r = -0.03
+cor.test(perennial.data$diff.drt.trt, perennial.data$rootDiam.mm) # r = -0.002
+
+#### Perennial data without woody functional group drt.v.drt ####
+
+perennial.tree = subset(perennial.data, !perennial.data$functional_group == "WOODY") # 388 data points
+
+#### test for correlation with all data ####
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$height.m) # correlated r = -0.14
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$rootN.mg.g) # correlated r = 0.47
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$SLA_m2.kg) # correlated r = 0.34
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$root.depth_m)
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$RTD.g.cm3) # correlated r = -0.21
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$SRL_m.g) # correlated r = 0.25
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$height.m, perennial.tree$rootN.mg.g)
+cor.test(perennial.tree$height.m, perennial.tree$SLA_m2.kg) # correlated r = -0.20
+cor.test(perennial.tree$height.m, perennial.tree$root.depth_m)
+cor.test(perennial.tree$height.m, perennial.tree$RTD.g.cm3)
+cor.test(perennial.tree$height.m, perennial.tree$SRL_m.g) # correlated r = -0.16
+cor.test(perennial.tree$height.m, perennial.tree$rootDiam.mm) # correlated r = 0.14
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$SLA_m2.kg) # correlated r = 0.23
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$root.depth_m)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$RTD.g.cm3)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$SRL_m.g)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$root.depth_m)
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$RTD.g.cm3) # correlated r = -0.26
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$SRL_m.g) # correlated r = 0.42
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$rootDiam.mm) # correlated r = -0.22
+cor.test(perennial.tree$root.depth_m, perennial.tree$RTD.g.cm3)
+cor.test(perennial.tree$root.depth_m, perennial.tree$SRL_m.g)
+cor.test(perennial.tree$root.depth_m, perennial.tree$rootDiam.mm) #  correlated r = 0.22
+cor.test(perennial.tree$RTD.g.cm3, perennial.tree$SRL_m.g) # correlated r = -0.28
+cor.test(perennial.tree$RTD.g.cm3, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$SRL_m.g, perennial.tree$rootDiam.mm)
+
+cor.mat = cor(perennial.tree[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$leafN.mg.g) # r = -0.02
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$height.m) # r = 0.04
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$rootN.mg.g) # r = 0.01
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$SLA_m2.kg) # r = -0.06
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$root.depth_m) # r = 0.006
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$RTD.g.cm3) # r = -0.08
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$SRL_m.g) # r = -0.02
+cor.test(perennial.tree$diff.drt.trt, perennial.tree$rootDiam.mm) # r = 0.003
+
+#### Perennial data without TREE lifeform drt.v.drt ####
+
+perennial.no.tree = subset(perennial.data, !perennial.data$local_lifeform == "TREE") # 459 data points
+
+#### test for correlation with all data ####
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$height.m)
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$rootN.mg.g) # correlated r = 0.47
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$SLA_m2.kg) # correlated r = 0.33
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$RTD.g.cm3) # correlated r = -0.21
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$SRL_m.g) # correlated r = 0.27
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$rootN.mg.g)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$SLA_m2.kg)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$SRL_m.g) # correlated r = -0.16
+cor.test(perennial.no.tree$height.m, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$SLA_m2.kg) # correlated r = 0.24
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$SRL_m.g)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$RTD.g.cm3) # correlated r = -0.29
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$SRL_m.g) # correlated r = 0.44
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$rootDiam.mm) # correlated r = -0.22
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$SRL_m.g)
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$rootDiam.mm) #  correlated r = 0.24
+cor.test(perennial.no.tree$RTD.g.cm3, perennial.no.tree$SRL_m.g) # correlated r = -0.34
+cor.test(perennial.no.tree$RTD.g.cm3, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$SRL_m.g, perennial.no.tree$rootDiam.mm)
+
+cor.mat = cor(perennial.no.tree[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$leafN.mg.g) # r = -0.04
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$height.m) # r = 0.03
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$rootN.mg.g) # r = -0.04
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$SLA_m2.kg) # r = -0.06
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$root.depth_m) # r = -0.004
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$RTD.g.cm3) # r = -0.05
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$SRL_m.g) # r = -0.03
+cor.test(perennial.no.tree$diff.drt.trt, perennial.no.tree$rootDiam.mm) # r = -0.003
+
+#### GRASS drt.v.drt ####
+
+grass = subset(all.data.year2, all.data.year2$functional_group == "GRASS") # 175 data points
+
+#### test for correlation with all data ####
+cor.test(grass$leafN.mg.g, grass$height.m)
+cor.test(grass$leafN.mg.g, grass$rootN.mg.g) # correlated r = 0.27
+cor.test(grass$leafN.mg.g, grass$SLA_m2.kg) # correlated r = 0.42
+cor.test(grass$leafN.mg.g, grass$root.depth_m)
+cor.test(grass$leafN.mg.g, grass$RTD.g.cm3) # correlated r = -0.28
+cor.test(grass$leafN.mg.g, grass$SRL_m.g) # correlated r = 0.55
+cor.test(grass$leafN.mg.g, grass$rootDiam.mm) # correlated r = -0.33
+cor.test(grass$height.m, grass$rootN.mg.g) # correlated r = 0.22
+cor.test(grass$height.m, grass$SLA_m2.kg)
+cor.test(grass$height.m, grass$root.depth_m) # correlated r = 0.19
+cor.test(grass$height.m, grass$RTD.g.cm3)
+cor.test(grass$height.m, grass$SRL_m.g)
+cor.test(grass$height.m, grass$rootDiam.mm) # correlated r = 0.30
+cor.test(grass$rootN.mg.g, grass$SLA_m2.kg)
+cor.test(grass$rootN.mg.g, grass$root.depth_m)
+cor.test(grass$rootN.mg.g, grass$RTD.g.cm3)
+cor.test(grass$rootN.mg.g, grass$SRL_m.g)
+cor.test(grass$rootN.mg.g, grass$rootDiam.mm)
+cor.test(grass$SLA_m2.kg, grass$root.depth_m) # correlated r = -0.19
+cor.test(grass$SLA_m2.kg, grass$RTD.g.cm3) # correlated r = -0.52
+cor.test(grass$SLA_m2.kg, grass$SRL_m.g) # correlated r = 0.45
+cor.test(grass$SLA_m2.kg, grass$rootDiam.mm) # correlated r = -0.35
+cor.test(grass$root.depth_m, grass$RTD.g.cm3)
+cor.test(grass$root.depth_m, grass$SRL_m.g)
+cor.test(grass$root.depth_m, grass$rootDiam.mm) #  correlated r = 0.24
+cor.test(grass$RTD.g.cm3, grass$SRL_m.g) # correlated r = -0.36
+cor.test(grass$RTD.g.cm3, grass$rootDiam.mm)
+cor.test(grass$SRL_m.g, grass$rootDiam.mm) # correlated r = -0.38
+
+cor.mat = cor(grass[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(grass$diff.drt.trt, grass$leafN.mg.g) # r = -0.11
+cor.test(grass$diff.drt.trt, grass$height.m) # r = 0.10
+cor.test(grass$diff.drt.trt, grass$rootN.mg.g) # r = -0.05
+cor.test(grass$diff.drt.trt, grass$SLA_m2.kg) # r = -0.09
+cor.test(grass$diff.drt.trt, grass$root.depth_m) # r = 0.10
+cor.test(grass$diff.drt.trt, grass$RTD.g.cm3) # r = -0.10
+cor.test(grass$diff.drt.trt, grass$SRL_m.g) # r = 0.01
+cor.test(grass$diff.drt.trt, grass$rootDiam.mm) # r = -0.03
+#### FORB drt.v.drt ####
+
+forb = subset(all.data.year2, all.data.year2$functional_group == "FORB") # 252 data points
+
+#### test for correlation with all data ####
+cor.test(forb$leafN.mg.g, forb$height.m)
+cor.test(forb$leafN.mg.g, forb$rootN.mg.g)
+cor.test(forb$leafN.mg.g, forb$SLA_m2.kg) # correlated r = 0.24
+cor.test(forb$leafN.mg.g, forb$root.depth_m) # correlated r = 0.18
+cor.test(forb$leafN.mg.g, forb$RTD.g.cm3)
+cor.test(forb$leafN.mg.g, forb$SRL_m.g) # correlated r = 0.22
+cor.test(forb$leafN.mg.g, forb$rootDiam.mm)
+cor.test(forb$height.m, forb$rootN.mg.g)
+cor.test(forb$height.m, forb$SLA_m2.kg) # correlated r = -0.22
+cor.test(forb$height.m, forb$root.depth_m)
+cor.test(forb$height.m, forb$RTD.g.cm3) # correlated r = -0.33
+cor.test(forb$height.m, forb$SRL_m.g) # correlated r = -0.26
+cor.test(forb$height.m, forb$rootDiam.mm)
+cor.test(forb$rootN.mg.g, forb$SLA_m2.kg)
+cor.test(forb$rootN.mg.g, forb$root.depth_m)
+cor.test(forb$rootN.mg.g, forb$RTD.g.cm3)
+cor.test(forb$rootN.mg.g, forb$SRL_m.g) # correlated r = 0.31
+cor.test(forb$rootN.mg.g, forb$rootDiam.mm)
+cor.test(forb$SLA_m2.kg, forb$root.depth_m)
+cor.test(forb$SLA_m2.kg, forb$RTD.g.cm3)
+cor.test(forb$SLA_m2.kg, forb$SRL_m.g) # correlated r = 0.38
+cor.test(forb$SLA_m2.kg, forb$rootDiam.mm)
+cor.test(forb$root.depth_m, forb$RTD.g.cm3)
+cor.test(forb$root.depth_m, forb$SRL_m.g)
+cor.test(forb$root.depth_m, forb$rootDiam.mm) #  correlated r = 0.20
+cor.test(forb$RTD.g.cm3, forb$SRL_m.g)
+cor.test(forb$RTD.g.cm3, forb$rootDiam.mm)
+cor.test(forb$SRL_m.g, forb$rootDiam.mm)
+
+cor.mat = cor(forb[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(forb$diff.drt.trt, forb$leafN.mg.g) # r = -0.11
+cor.test(forb$diff.drt.trt, forb$height.m) # r = -0.08
+cor.test(forb$diff.drt.trt, forb$rootN.mg.g) # r = -0.11
+cor.test(forb$diff.drt.trt, forb$SLA_m2.kg) # r = -0.06
+cor.test(forb$diff.drt.trt, forb$root.depth_m) # r = -0.09
+cor.test(forb$diff.drt.trt, forb$RTD.g.cm3) # r = 0.11
+cor.test(forb$diff.drt.trt, forb$SRL_m.g) # r = 0.05
+cor.test(forb$diff.drt.trt, forb$rootDiam.mm) # r = -0.01
+
+#### annual GRASS drt.v.drt ####
+
+annual.grass = subset(annual.data, annual.data$functional_group == "GRASS") # 31 data points
+
+#### annual forb drt.v.drt ####
+
+annual.forb = subset(annual.data, annual.data$functional_group == "FORB") # 46 data points
+
+#### perennial GRASS drt.v.drt ####
+
+perennial.grass = subset(perennial.data, perennial.data$functional_group == "GRASS") # 143 data points
+
+#### perennial forb drt.v.drt ####
+
+perennial.forb = subset(perennial.data, perennial.data$functional_group == "FORB") # 195 data points
+
+
+#### write out the files ####
+
+write.csv(all.data.year2, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/all.data.year2.csv")
+write.csv(no.trees, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/no.trees.csv")
+write.csv(trees, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/trees.csv")
+write.csv(annual.data, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/annual.data.csv")
+write.csv(annual.forb, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/annual.forb.csv")
+write.csv(annual.grass, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/annual.grass.csv")
+write.csv(forb, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/forb.csv")
+write.csv(grass, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/grass.csv")
+write.csv(perennial.data, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.data.csv")
+write.csv(perennial.forb, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.forb.csv")
+write.csv(perennial.grass, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.grass.csv")
+write.csv(perennial.tree, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.tree.csv")
+write.csv(perennial.no.tree, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.no.tree.csv")
+
+
+
+
+
+
+
+
+
+#### Generating data files of Control yr 2 versus Drought yr 2 ####
+
+# read in cover year 2
+cover.yr.2 = read.csv("./Formatted.Data/cover.trt.y2.csv")
+
+# remove individuals where 0 in control or drought
+
+cover.2 = subset(cover.yr.2, cover.yr.2$mean.ctrl.cover > 0)
+cover.3 = subset(cover.2, cover.2$mean.drt.cover > 0)
+
+# merge new cover data with traits
+
+trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.2.csv")
+
+# subset traits so they must have SLA
+trait.data.2 = trait.data.new[,c(1,7,8,10,12,14,15,18,20,27:29)]
+trait.data.3 = subset(trait.data.2, trait.data.2$SLA_m2.kg > 0 ) # 645 data points, 
+
+all.data.year2 = merge(cover.3, trait.data.3, by="Taxon") # 579 data points
+
+
+#### test for correlation with all data ctr.v.drt.2 ####
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$height.m)
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$rootN.mg.g) # correlated r = 0.45
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$SLA_m2.kg) # correlated r = 0.36
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$root.depth_m)
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$RTD.g.cm3) # correlated r = -0.16
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$SRL_m.g) # correlated r = 0.22
+cor.test(all.data.year2$leafN.mg.g, all.data.year2$rootDiam.mm)
+cor.test(all.data.year2$height.m, all.data.year2$rootN.mg.g)
+cor.test(all.data.year2$height.m, all.data.year2$SLA_m2.kg) # correlated r = -0.09
+cor.test(all.data.year2$height.m, all.data.year2$root.depth_m)
+cor.test(all.data.year2$height.m, all.data.year2$RTD.g.cm3)
+cor.test(all.data.year2$height.m, all.data.year2$SRL_m.g) # correlated r = -0.15
+cor.test(all.data.year2$height.m, all.data.year2$rootDiam.mm)
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$SLA_m2.kg) # correlated r = 0.18
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$root.depth_m)
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$RTD.g.cm3)
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$SRL_m.g)
+cor.test(all.data.year2$rootN.mg.g, all.data.year2$rootDiam.mm)
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$root.depth_m)
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$RTD.g.cm3) # correlated r = -0.24
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$SRL_m.g) # correlated r = 0.42
+cor.test(all.data.year2$SLA_m2.kg, all.data.year2$rootDiam.mm) # correlated r = -0.15
+cor.test(all.data.year2$root.depth_m, all.data.year2$RTD.g.cm3)
+cor.test(all.data.year2$root.depth_m, all.data.year2$SRL_m.g)
+cor.test(all.data.year2$root.depth_m, all.data.year2$rootDiam.mm) #  correlated r = 0.18
+cor.test(all.data.year2$RTD.g.cm3, all.data.year2$SRL_m.g) # correlated r = -0.29
+cor.test(all.data.year2$RTD.g.cm3, all.data.year2$rootDiam.mm)
+cor.test(all.data.year2$SRL_m.g, all.data.year2$rootDiam.mm)
+
+cor.mat = cor(all.data.year2[,c(12:19)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(all.data.year2$mean.cover.response, all.data.year2$leafN.mg.g) # r = -0.007
+cor.test(all.data.year2$mean.cover.response, all.data.year2$height.m) # r = 0.001
+cor.test(all.data.year2$mean.cover.response, all.data.year2$rootN.mg.g) # r = -0.03
+cor.test(all.data.year2$mean.cover.response, all.data.year2$SLA_m2.kg) # r = -0.00007
+cor.test(all.data.year2$mean.cover.response, all.data.year2$root.depth_m) # r = 0.02
+cor.test(all.data.year2$mean.cover.response, all.data.year2$RTD.g.cm3) # r = -0.001
+cor.test(all.data.year2$mean.cover.response, all.data.year2$SRL_m.g) # r = -0.02
+cor.test(all.data.year2$mean.cover.response, all.data.year2$rootDiam.mm) # r = 0.04
+
+#### data set with WOODY removed ####
+
+no.trees = subset(all.data.year2, !all.data.year2$functional_group == "WOODY") # 507 data points
+
+#### test for correlation with all data without woody ctr.v.drt.2  ####
+cor.test(no.trees$leafN.mg.g, no.trees$height.m) # correlated r = -0.11
+cor.test(no.trees$leafN.mg.g, no.trees$rootN.mg.g) # correlated r = 0.45
+cor.test(no.trees$leafN.mg.g, no.trees$SLA_m2.kg) # correlated r = 0.36
+cor.test(no.trees$leafN.mg.g, no.trees$root.depth_m) # correlated r = 0.11
+cor.test(no.trees$leafN.mg.g, no.trees$RTD.g.cm3) # correlated r = -0.16
+cor.test(no.trees$leafN.mg.g, no.trees$SRL_m.g) # correlated r = 0.19
+cor.test(no.trees$leafN.mg.g, no.trees$rootDiam.mm)
+cor.test(no.trees$height.m, no.trees$rootN.mg.g)
+cor.test(no.trees$height.m, no.trees$SLA_m2.kg) # correlated r = -0.16
+cor.test(no.trees$height.m, no.trees$root.depth_m) # correlated r = 0.11
+cor.test(no.trees$height.m, no.trees$RTD.g.cm3) # correlated r = -0.15
+cor.test(no.trees$height.m, no.trees$SRL_m.g) # correlated r = -0.13
+cor.test(no.trees$height.m, no.trees$rootDiam.mm)
+cor.test(no.trees$rootN.mg.g, no.trees$SLA_m2.kg) # correlated r = 0.16
+cor.test(no.trees$rootN.mg.g, no.trees$root.depth_m)
+cor.test(no.trees$rootN.mg.g, no.trees$RTD.g.cm3)
+cor.test(no.trees$rootN.mg.g, no.trees$SRL_m.g)
+cor.test(no.trees$rootN.mg.g, no.trees$rootDiam.mm)
+cor.test(no.trees$SLA_m2.kg, no.trees$root.depth_m)
+cor.test(no.trees$SLA_m2.kg, no.trees$RTD.g.cm3) # correlated r = -0.22
+cor.test(no.trees$SLA_m2.kg, no.trees$SRL_m.g) # correlated r = 0.38
+cor.test(no.trees$SLA_m2.kg, no.trees$rootDiam.mm) # correlated r = -0.12
+cor.test(no.trees$root.depth_m, no.trees$RTD.g.cm3) # correlated r = 0.12
+cor.test(no.trees$root.depth_m, no.trees$SRL_m.g)
+cor.test(no.trees$root.depth_m, no.trees$rootDiam.mm) #  correlated r = 0.16
+cor.test(no.trees$RTD.g.cm3, no.trees$SRL_m.g) # correlated r = -0.23
+cor.test(no.trees$RTD.g.cm3, no.trees$rootDiam.mm)
+cor.test(no.trees$SRL_m.g, no.trees$rootDiam.mm)
+
+cor.mat = cor(no.trees[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(no.trees$mean.cover.response, no.trees$leafN.mg.g) # r = 0.002
+cor.test(no.trees$mean.cover.response, no.trees$height.m) # r = -0.02
+cor.test(no.trees$mean.cover.response, no.trees$rootN.mg.g) # r = -0.03
+cor.test(no.trees$mean.cover.response, no.trees$SLA_m2.kg) # r = 0.009
+cor.test(no.trees$mean.cover.response, no.trees$root.depth_m) # r = 0.02
+cor.test(no.trees$mean.cover.response, no.trees$RTD.g.cm3) # r = -0.02
+cor.test(no.trees$mean.cover.response, no.trees$SRL_m.g) # r = -0.002
+cor.test(no.trees$mean.cover.response, no.trees$rootDiam.mm) # r = 0.04
+
+#### data set with TREE removed ####
+
+trees = subset(all.data.year2, !all.data.year2$local_lifeform == "TREE") # 576 data points
+
+#### test for correlation with all data without TREE lifeform ctr.v.drt.2  ####
+
+cor.test(trees$leafN.mg.g, trees$height.m)
+cor.test(trees$leafN.mg.g, trees$rootN.mg.g) # correlated r = 0.45
+cor.test(trees$leafN.mg.g, trees$SLA_m2.kg) # correlated r = 0.35
+cor.test(trees$leafN.mg.g, trees$root.depth_m)
+cor.test(trees$leafN.mg.g, trees$RTD.g.cm3) # correlated r = -0.16
+cor.test(trees$leafN.mg.g, trees$SRL_m.g) # correlated r = 0.21
+cor.test(trees$leafN.mg.g, trees$rootDiam.mm)
+cor.test(trees$height.m, trees$rootN.mg.g)
+cor.test(trees$height.m, trees$SLA_m2.kg) # correlated r = -0.09
+cor.test(trees$height.m, trees$root.depth_m)
+cor.test(trees$height.m, trees$RTD.g.cm3)
+cor.test(trees$height.m, trees$SRL_m.g) # correlated r = -0.15
+cor.test(trees$height.m, trees$rootDiam.mm)
+cor.test(trees$rootN.mg.g, trees$SLA_m2.kg) # correlated r = 0.18
+cor.test(trees$rootN.mg.g, trees$root.depth_m)
+cor.test(trees$rootN.mg.g, trees$RTD.g.cm3)
+cor.test(trees$rootN.mg.g, trees$SRL_m.g)
+cor.test(trees$rootN.mg.g, trees$rootDiam.mm)
+cor.test(trees$SLA_m2.kg, trees$root.depth_m)
+cor.test(trees$SLA_m2.kg, trees$RTD.g.cm3) # correlated r = -0.24
+cor.test(trees$SLA_m2.kg, trees$SRL_m.g) # correlated r = 0.41
+cor.test(trees$SLA_m2.kg, trees$rootDiam.mm) # correlated r = -0.14
+cor.test(trees$root.depth_m, trees$RTD.g.cm3)
+cor.test(trees$root.depth_m, trees$SRL_m.g)
+cor.test(trees$root.depth_m, trees$rootDiam.mm) #  correlated r = 0.18
+cor.test(trees$RTD.g.cm3, trees$SRL_m.g) # correlated r = -0.28
+cor.test(trees$RTD.g.cm3, trees$rootDiam.mm)
+cor.test(trees$SRL_m.g, trees$rootDiam.mm)
+
+cor.mat = cor(trees[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(trees$mean.cover.response, trees$leafN.mg.g) # r = -0.007
+cor.test(trees$mean.cover.response, trees$height.m) # r = 0.001
+cor.test(trees$mean.cover.response, trees$rootN.mg.g) # r = -0.03
+cor.test(trees$mean.cover.response, trees$SLA_m2.kg) # r = -0.0004
+cor.test(trees$mean.cover.response, trees$root.depth_m) # r = 0.02
+cor.test(trees$mean.cover.response, trees$RTD.g.cm3) # r = -0.002
+cor.test(trees$mean.cover.response, trees$SRL_m.g) # r = -0.02
+cor.test(trees$mean.cover.response, trees$rootDiam.mm) # r = 0.04
+
+#### data set split by lifespan ####
+
+# need to read out data and fix the lifespan to particular sites since some species have different lifespan at different sites
+
+# write.csv(all.data.year2, file="./Formatted.Data/all.data.year2.ctr.v.drt.response.0.csv")
+
+all.data.year2.ls = read.csv("./Formatted.Data/all.data.year2.ctr.v.drt.response.0.lifespan.csv", row.names = 1)
+table(all.data.year2.ls$local_lifespan)
+
+#### ANNUAL ctr.v.drt.2  ####
+
+annual.data = subset(all.data.year2.ls, all.data.year2.ls$local_lifespan == "ANNUAL") # 96 data points
+
+#### test for correlation with all data ####
+cor.test(annual.data$leafN.mg.g, annual.data$height.m)
+cor.test(annual.data$leafN.mg.g, annual.data$rootN.mg.g) # correlated r = 0.48
+cor.test(annual.data$leafN.mg.g, annual.data$SLA_m2.kg)  # correlated r = 0.28
+cor.test(annual.data$leafN.mg.g, annual.data$root.depth_m)
+cor.test(annual.data$leafN.mg.g, annual.data$RTD.g.cm3)
+cor.test(annual.data$leafN.mg.g, annual.data$SRL_m.g)
+cor.test(annual.data$leafN.mg.g, annual.data$rootDiam.mm)  # correlated r = -0.31
+cor.test(annual.data$height.m, annual.data$rootN.mg.g)
+cor.test(annual.data$height.m, annual.data$SLA_m2.kg)  # correlated r = 0.31
+cor.test(annual.data$height.m, annual.data$root.depth_m)  # correlated r = 0.29
+cor.test(annual.data$height.m, annual.data$RTD.g.cm3)
+cor.test(annual.data$height.m, annual.data$SRL_m.g)
+cor.test(annual.data$height.m, annual.data$rootDiam.mm)
+cor.test(annual.data$rootN.mg.g, annual.data$SLA_m2.kg)
+cor.test(annual.data$rootN.mg.g, annual.data$root.depth_m)
+cor.test(annual.data$rootN.mg.g, annual.data$RTD.g.cm3)
+cor.test(annual.data$rootN.mg.g, annual.data$SRL_m.g)
+cor.test(annual.data$rootN.mg.g, annual.data$rootDiam.mm)
+cor.test(annual.data$SLA_m2.kg, annual.data$root.depth_m)
+cor.test(annual.data$SLA_m2.kg, annual.data$RTD.g.cm3)
+cor.test(annual.data$SLA_m2.kg, annual.data$SRL_m.g)
+cor.test(annual.data$SLA_m2.kg, annual.data$rootDiam.mm)
+cor.test(annual.data$root.depth_m, annual.data$RTD.g.cm3)
+cor.test(annual.data$root.depth_m, annual.data$SRL_m.g)  # correlated r = -0.27
+cor.test(annual.data$root.depth_m, annual.data$rootDiam.mm)
+cor.test(annual.data$RTD.g.cm3, annual.data$SRL_m.g) 
+cor.test(annual.data$RTD.g.cm3, annual.data$rootDiam.mm)
+cor.test(annual.data$SRL_m.g, annual.data$rootDiam.mm)
+
+cor.mat = cor(annual.data[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(annual.data$mean.cover.response, annual.data$leafN.mg.g) # r = -0.04
+cor.test(annual.data$mean.cover.response, annual.data$height.m) # r = -0.17
+cor.test(annual.data$mean.cover.response, annual.data$rootN.mg.g) # r = 0.04
+cor.test(annual.data$mean.cover.response, annual.data$SLA_m2.kg) # r = -0.04
+cor.test(annual.data$mean.cover.response, annual.data$root.depth_m) # r = 0.11
+cor.test(annual.data$mean.cover.response, annual.data$RTD.g.cm3) # r = 0.11
+cor.test(annual.data$mean.cover.response, annual.data$SRL_m.g) # r = -0.11
+cor.test(annual.data$mean.cover.response, annual.data$rootDiam.mm) # r = 0.14
+
+#### PERENNIAL ctr.v.drt.2  ####
+
+perennial.data = subset(all.data.year2.ls, all.data.year2.ls$local_lifespan == "PERENNIAL") # 465 data points
+
+#### test for correlation with all data ####
+cor.test(perennial.data$leafN.mg.g, perennial.data$height.m)
+cor.test(perennial.data$leafN.mg.g, perennial.data$rootN.mg.g) # correlated r = 0.43
+cor.test(perennial.data$leafN.mg.g, perennial.data$SLA_m2.kg) # correlated r = 0.35
+cor.test(perennial.data$leafN.mg.g, perennial.data$root.depth_m)
+cor.test(perennial.data$leafN.mg.g, perennial.data$RTD.g.cm3) # correlated r = -0.24
+cor.test(perennial.data$leafN.mg.g, perennial.data$SRL_m.g) # correlated r = 0.27
+cor.test(perennial.data$leafN.mg.g, perennial.data$rootDiam.mm)
+cor.test(perennial.data$height.m, perennial.data$rootN.mg.g)
+cor.test(perennial.data$height.m, perennial.data$SLA_m2.kg) # correlated r = -0.10
+cor.test(perennial.data$height.m, perennial.data$root.depth_m)
+cor.test(perennial.data$height.m, perennial.data$RTD.g.cm3)
+cor.test(perennial.data$height.m, perennial.data$SRL_m.g) # correlated r = -0.18
+cor.test(perennial.data$height.m, perennial.data$rootDiam.mm)
+cor.test(perennial.data$rootN.mg.g, perennial.data$SLA_m2.kg) # correlated r = 0.19
+cor.test(perennial.data$rootN.mg.g, perennial.data$root.depth_m)
+cor.test(perennial.data$rootN.mg.g, perennial.data$RTD.g.cm3)
+cor.test(perennial.data$rootN.mg.g, perennial.data$SRL_m.g)
+cor.test(perennial.data$rootN.mg.g, perennial.data$rootDiam.mm)
+cor.test(perennial.data$SLA_m2.kg, perennial.data$root.depth_m)
+cor.test(perennial.data$SLA_m2.kg, perennial.data$RTD.g.cm3) # correlated r = -0.31
+cor.test(perennial.data$SLA_m2.kg, perennial.data$SRL_m.g) # correlated r = 0.46
+cor.test(perennial.data$SLA_m2.kg, perennial.data$rootDiam.mm) # correlated r = -0.18
+cor.test(perennial.data$root.depth_m, perennial.data$RTD.g.cm3)
+cor.test(perennial.data$root.depth_m, perennial.data$SRL_m.g)
+cor.test(perennial.data$root.depth_m, perennial.data$rootDiam.mm) #  correlated r = 0.24
+cor.test(perennial.data$RTD.g.cm3, perennial.data$SRL_m.g) # correlated r = -0.34
+cor.test(perennial.data$RTD.g.cm3, perennial.data$rootDiam.mm)
+cor.test(perennial.data$SRL_m.g, perennial.data$rootDiam.mm)
+
+cor.mat = cor(perennial.data[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.data$mean.cover.response, perennial.data$leafN.mg.g) # r = 0.01
+cor.test(perennial.data$mean.cover.response, perennial.data$height.m) # r = 0.02
+cor.test(perennial.data$mean.cover.response, perennial.data$rootN.mg.g) # r = -0.03
+cor.test(perennial.data$mean.cover.response, perennial.data$SLA_m2.kg) # r = 0.01
+cor.test(perennial.data$mean.cover.response, perennial.data$root.depth_m) # r = -0.009
+cor.test(perennial.data$mean.cover.response, perennial.data$RTD.g.cm3) # r = -0.05
+cor.test(perennial.data$mean.cover.response, perennial.data$SRL_m.g) # r = 0.002
+cor.test(perennial.data$mean.cover.response, perennial.data$rootDiam.mm) # r = 0.04
+
+#### Perennial data without woody functional group ctr.v.drt.2  ####
+
+perennial.tree = subset(perennial.data, !perennial.data$functional_group == "WOODY") # 395 data points
+
+#### test for correlation with all data ####
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$height.m) # correlated r = -0.14
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$rootN.mg.g) # correlated r = 0.43
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$SLA_m2.kg) # correlated r = 0.37
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$root.depth_m)
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$RTD.g.cm3) # correlated r = -0.26
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$SRL_m.g) # correlated r = 0.26
+cor.test(perennial.tree$leafN.mg.g, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$height.m, perennial.tree$rootN.mg.g)
+cor.test(perennial.tree$height.m, perennial.tree$SLA_m2.kg) # correlated r = -0.21
+cor.test(perennial.tree$height.m, perennial.tree$root.depth_m)
+cor.test(perennial.tree$height.m, perennial.tree$RTD.g.cm3)
+cor.test(perennial.tree$height.m, perennial.tree$SRL_m.g) # correlated r = -0.17
+cor.test(perennial.tree$height.m, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$SLA_m2.kg) # correlated r = 0.17
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$root.depth_m)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$RTD.g.cm3)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$SRL_m.g)
+cor.test(perennial.tree$rootN.mg.g, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$root.depth_m)
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$RTD.g.cm3) # correlated r = -0.29
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$SRL_m.g) # correlated r = 0.44
+cor.test(perennial.tree$SLA_m2.kg, perennial.tree$rootDiam.mm) # correlated r = -0.15
+cor.test(perennial.tree$root.depth_m, perennial.tree$RTD.g.cm3) # correlated r = 0.14
+cor.test(perennial.tree$root.depth_m, perennial.tree$SRL_m.g)
+cor.test(perennial.tree$root.depth_m, perennial.tree$rootDiam.mm) #  correlated r = 0.21
+cor.test(perennial.tree$RTD.g.cm3, perennial.tree$SRL_m.g) # correlated r = -0.28
+cor.test(perennial.tree$RTD.g.cm3, perennial.tree$rootDiam.mm)
+cor.test(perennial.tree$SRL_m.g, perennial.tree$rootDiam.mm)
+
+cor.mat = cor(perennial.tree[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.tree$mean.cover.response, perennial.tree$leafN.mg.g) # r = 0.03
+cor.test(perennial.tree$mean.cover.response, perennial.tree$height.m) # r = -0.001
+cor.test(perennial.tree$mean.cover.response, perennial.tree$rootN.mg.g) # r = -0.03
+cor.test(perennial.tree$mean.cover.response, perennial.tree$SLA_m2.kg) # r = 0.02
+cor.test(perennial.tree$mean.cover.response, perennial.tree$root.depth_m) # r = -0.02
+cor.test(perennial.tree$mean.cover.response, perennial.tree$RTD.g.cm3) # r = -0.09
+cor.test(perennial.tree$mean.cover.response, perennial.tree$SRL_m.g) # r = 0.03
+cor.test(perennial.tree$mean.cover.response, perennial.tree$rootDiam.mm) # r = 0.03
+
+#### Perennial data without TREE lifeform ctr.v.drt.2  ####
+
+perennial.no.tree = subset(perennial.data, !perennial.data$local_lifeform == "TREE") # 462 data points
+
+#### test for correlation with all data ####
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$height.m)
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$rootN.mg.g) # correlated r = 0.43
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$SLA_m2.kg) # correlated r = 0.34
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$RTD.g.cm3) # correlated r = -0.24
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$SRL_m.g) # correlated r = 0.27
+cor.test(perennial.no.tree$leafN.mg.g, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$rootN.mg.g)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$SLA_m2.kg) # correlated r = -0.10
+cor.test(perennial.no.tree$height.m, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$height.m, perennial.no.tree$SRL_m.g) # correlated r = -0.18
+cor.test(perennial.no.tree$height.m, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$SLA_m2.kg) # correlated r = 0.19
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$SRL_m.g)
+cor.test(perennial.no.tree$rootN.mg.g, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$root.depth_m)
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$RTD.g.cm3) # correlated r = -0.31
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$SRL_m.g) # correlated r = 0.45
+cor.test(perennial.no.tree$SLA_m2.kg, perennial.no.tree$rootDiam.mm) # correlated r = -0.16
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$RTD.g.cm3)
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$SRL_m.g)
+cor.test(perennial.no.tree$root.depth_m, perennial.no.tree$rootDiam.mm) #  correlated r = 0.23
+cor.test(perennial.no.tree$RTD.g.cm3, perennial.no.tree$SRL_m.g) # correlated r = -0.33
+cor.test(perennial.no.tree$RTD.g.cm3, perennial.no.tree$rootDiam.mm)
+cor.test(perennial.no.tree$SRL_m.g, perennial.no.tree$rootDiam.mm)
+
+cor.mat = cor(perennial.no.tree[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$leafN.mg.g) # r = 0.01
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$height.m) # r = 0.02
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$rootN.mg.g) # r = -0.03
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$SLA_m2.kg) # r = 0.01
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$root.depth_m) # r = -0.008
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$RTD.g.cm3) # r = -0.05
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$SRL_m.g) # r = 0.002
+cor.test(perennial.no.tree$mean.cover.response, perennial.no.tree$rootDiam.mm) # r = 0.04
+
+#### GRASS ctr.v.drt.2  ####
+
+grass = subset(all.data.year2, all.data.year2$functional_group == "GRASS") # 193 data points
+
+#### test for correlation with all data ####
+cor.test(grass$leafN.mg.g, grass$height.m)
+cor.test(grass$leafN.mg.g, grass$rootN.mg.g) # correlated r = 0.19
+cor.test(grass$leafN.mg.g, grass$SLA_m2.kg) # correlated r = 0.40
+cor.test(grass$leafN.mg.g, grass$root.depth_m)
+cor.test(grass$leafN.mg.g, grass$RTD.g.cm3) # correlated r = -0.32
+cor.test(grass$leafN.mg.g, grass$SRL_m.g) # correlated r = 0.58
+cor.test(grass$leafN.mg.g, grass$rootDiam.mm) # correlated r = -0.35
+cor.test(grass$height.m, grass$rootN.mg.g) # correlated r = 0.18
+cor.test(grass$height.m, grass$SLA_m2.kg)
+cor.test(grass$height.m, grass$root.depth_m)
+cor.test(grass$height.m, grass$RTD.g.cm3)
+cor.test(grass$height.m, grass$SRL_m.g)
+cor.test(grass$height.m, grass$rootDiam.mm) # correlated r = 0.23
+cor.test(grass$rootN.mg.g, grass$SLA_m2.kg)
+cor.test(grass$rootN.mg.g, grass$root.depth_m)
+cor.test(grass$rootN.mg.g, grass$RTD.g.cm3)
+cor.test(grass$rootN.mg.g, grass$SRL_m.g)
+cor.test(grass$rootN.mg.g, grass$rootDiam.mm)
+cor.test(grass$SLA_m2.kg, grass$root.depth_m) # correlated r = -0.22
+cor.test(grass$SLA_m2.kg, grass$RTD.g.cm3) # correlated r = -0.53
+cor.test(grass$SLA_m2.kg, grass$SRL_m.g) # correlated r = 0.44
+cor.test(grass$SLA_m2.kg, grass$rootDiam.mm) # correlated r = -0.29
+cor.test(grass$root.depth_m, grass$RTD.g.cm3) # correlated r = 0.20
+cor.test(grass$root.depth_m, grass$SRL_m.g) # correlated r = -0.19
+cor.test(grass$root.depth_m, grass$rootDiam.mm) #  correlated r = 0.25
+cor.test(grass$RTD.g.cm3, grass$SRL_m.g) # correlated r = -0.35
+cor.test(grass$RTD.g.cm3, grass$rootDiam.mm)
+cor.test(grass$SRL_m.g, grass$rootDiam.mm) # correlated r = -0.40
+
+cor.mat = cor(grass[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(grass$mean.cover.response, grass$leafN.mg.g) # r = -0.03
+cor.test(grass$mean.cover.response, grass$height.m) # r = 0.01
+cor.test(grass$mean.cover.response, grass$rootN.mg.g) # r = -0.10
+cor.test(grass$mean.cover.response, grass$SLA_m2.kg) # r = -0.04
+cor.test(grass$mean.cover.response, grass$root.depth_m) # r = -0.01
+cor.test(grass$mean.cover.response, grass$RTD.g.cm3) # r = -0.10
+cor.test(grass$mean.cover.response, grass$SRL_m.g) # r = -0.05
+cor.test(grass$mean.cover.response, grass$rootDiam.mm) # r = 0.06
+
+#### FORB ctr.v.drt.2  ####
+
+forb = subset(all.data.year2, all.data.year2$functional_group == "FORB") # 254 data points
+
+#### test for correlation with all data ####
+cor.test(forb$leafN.mg.g, forb$height.m)
+cor.test(forb$leafN.mg.g, forb$rootN.mg.g)
+cor.test(forb$leafN.mg.g, forb$SLA_m2.kg) # correlated r = 0.28
+cor.test(forb$leafN.mg.g, forb$root.depth_m) # correlated r = 0.20
+cor.test(forb$leafN.mg.g, forb$RTD.g.cm3)
+cor.test(forb$leafN.mg.g, forb$SRL_m.g)
+cor.test(forb$leafN.mg.g, forb$rootDiam.mm)
+cor.test(forb$height.m, forb$rootN.mg.g)
+cor.test(forb$height.m, forb$SLA_m2.kg) # correlated r = -0.20
+cor.test(forb$height.m, forb$root.depth_m)
+cor.test(forb$height.m, forb$RTD.g.cm3) # correlated r = -0.38
+cor.test(forb$height.m, forb$SRL_m.g) # correlated r = -0.27
+cor.test(forb$height.m, forb$rootDiam.mm)
+cor.test(forb$rootN.mg.g, forb$SLA_m2.kg) # correlated r = 0.21
+cor.test(forb$rootN.mg.g, forb$root.depth_m)
+cor.test(forb$rootN.mg.g, forb$RTD.g.cm3)
+cor.test(forb$rootN.mg.g, forb$SRL_m.g) # correlated r = 0.28
+cor.test(forb$rootN.mg.g, forb$rootDiam.mm)
+cor.test(forb$SLA_m2.kg, forb$root.depth_m)
+cor.test(forb$SLA_m2.kg, forb$RTD.g.cm3)
+cor.test(forb$SLA_m2.kg, forb$SRL_m.g) # correlated r = 0.32
+cor.test(forb$SLA_m2.kg, forb$rootDiam.mm)
+cor.test(forb$root.depth_m, forb$RTD.g.cm3)
+cor.test(forb$root.depth_m, forb$SRL_m.g)
+cor.test(forb$root.depth_m, forb$rootDiam.mm)
+cor.test(forb$RTD.g.cm3, forb$SRL_m.g)
+cor.test(forb$RTD.g.cm3, forb$rootDiam.mm)
+cor.test(forb$SRL_m.g, forb$rootDiam.mm)
+
+cor.mat = cor(forb[,c(6:13)],use = "pairwise") 
+corrplot(cor.mat, method="number")
+
+#### correlation between response and predictors ####
+
+cor.test(forb$mean.cover.response, forb$leafN.mg.g) # r = 0.08
+cor.test(forb$mean.cover.response, forb$height.m) # r = -0.02
+cor.test(forb$mean.cover.response, forb$rootN.mg.g) # r = 0.04
+cor.test(forb$mean.cover.response, forb$SLA_m2.kg) # r = 0.07
+cor.test(forb$mean.cover.response, forb$root.depth_m) # r = 0.05
+cor.test(forb$mean.cover.response, forb$RTD.g.cm3) # r = 0.11
+cor.test(forb$mean.cover.response, forb$SRL_m.g) # r = 0.02
+cor.test(forb$mean.cover.response, forb$rootDiam.mm) # r = 0.02
+
+#### annual GRASS ctr.v.drt.2  ####
+
+annual.grass = subset(annual.data, annual.data$functional_group == "GRASS") # 34 data points
+
+#### annual forb ctr.v.drt.2  ####
+
+annual.forb = subset(annual.data, annual.data$functional_group == "FORB") # 54 data points
+
+#### perennial GRASS ctr.v.drt.2  ####
+
+perennial.grass = subset(perennial.data, perennial.data$functional_group == "GRASS") # 157 data points
+
+#### perennial forb ctr.v.drt.2  ####
+
+perennial.forb = subset(perennial.data, perennial.data$functional_group == "FORB") # 189 data points
+
+
+#### write out the files ####
+
+write.csv(all.data.year2, file="./Formatted.Data/Ctrl.v.drt.yr2.data/all.data.year2.csv")
+write.csv(no.trees, file="./Formatted.Data/Ctrl.v.drt.yr2.data/no.trees.csv")
+write.csv(trees, file="./Formatted.Data/Ctrl.v.drt.yr2.data/trees.csv")
+write.csv(annual.data, file="./Formatted.Data/Ctrl.v.drt.yr2.data/annual.data.csv")
+write.csv(annual.forb, file="./Formatted.Data/Ctrl.v.drt.yr2.data/annual.forb.csv")
+write.csv(annual.grass, file="./Formatted.Data/Ctrl.v.drt.yr2.data/annual.grass.csv")
+write.csv(forb, file="./Formatted.Data/Ctrl.v.drt.yr2.data/forb.csv")
+write.csv(grass, file="./Formatted.Data/Ctrl.v.drt.yr2.data/grass.csv")
+write.csv(perennial.data, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.data.csv")
+write.csv(perennial.forb, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.forb.csv")
+write.csv(perennial.grass, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.grass.csv")
+write.csv(perennial.tree, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.tree.csv")
+write.csv(perennial.no.tree, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.no.tree.csv")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

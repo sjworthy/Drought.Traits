@@ -9,7 +9,7 @@ try.data.2 <- subset(try.data, try.data$TraitName != "")
 
 # get species list
 
-yr.1.species = read.csv("./Formatted.Data/trait.species.trt.yr1.csv")
+yr.1.species = read.csv("./Formatted.Data/trait.species.trt.yr1.old.csv")
 
 sp.list=str_to_sentence(yr.1.species$Taxon)
 
