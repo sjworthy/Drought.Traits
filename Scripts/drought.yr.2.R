@@ -1,144 +1,65 @@
+# Script for analysis of Drought Net data
+# Comparing mean change in % cover between drought year 1 and drought year 2
 # models of year 2 - year 1 cover
 
-# read in cover year 2
-cover.yr.2 = read.csv("./Formatted.Data/cover.trt.y2.csv")
+library(dismo)
+library(gbm)
+library(ggBRT)
 
-# read in cover data
-cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
+#### read in all the data frames needs for the analyses ####
 
-# merge cover year 1 with cover year 2
-
-years.cover = merge(cover.data, cover.yr.2, by = c("site_code", "Taxon"))
-years.cover = years.cover[,c(1,2,8,17)]
-colnames(years.cover)[3] = "mean.drt.cover.yr1"
-colnames(years.cover)[4] = "mean.drt.cover.yr2"
-
-# remove 0 if wasn't in plot in year 1 and year 2
-
-years.cover.2 = subset(years.cover, !(years.cover$mean.drt.cover.yr1 == 0))
-years.cover.3 = subset(years.cover.2, !(years.cover.2$mean.drt.cover.yr2 == 0))
-
-years.cover.3$diff.drt.trt = years.cover.3$mean.drt.cover.yr2 - years.cover.3$mean.drt.cover.yr1
-
-# Redo removing only if 0 in both years for same plant
-
-new.years.cover = subset(years.cover, !(years.cover$mean.drt.cover.yr1 == 0 & years.cover$mean.drt.cover.yr2 == 0))
-new.years.cover$diff.drt.trt = new.years.cover$mean.drt.cover.yr2 - new.years.cover$mean.drt.cover.yr1
-
-# merge new cover data with traits
-
-trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.csv")
-
-# subset traits so they must have SLA
-trait.data.2 = trait.data.new[,c(1,7,8,10,12,14,15,18,20,27:29)]
-trait.data.3 = subset(trait.data.2, trait.data.2$SLA_m2.kg > 0 ) # 646 data points, 
-
-all.data.year2 = merge(years.cover.3, trait.data.3, by="Taxon") # 563 data points
-all.data.new.year2 = merge(new.years.cover, trait.data.3, by = "Taxon") # 648 data points
-
-# merge with mean annual precipitation data (MAP)
-
-Site.info = read.csv("./Raw.Data/Site_Elev-Disturb.csv")
-site.info.map = Site.info[,c(2,13)]
-
-all.data = merge(all.data.year2, site.info.map, by="site_code")
-all.data.new = merge(all.data.new.year2, site.info.map, by="site_code")
-
-
-#### data set with trees and shrubs removed ####
-
-no.trees = subset(all.data, !all.data$functional_group == "WOODY")
-no.trees.new = subset(all.data.new, !all.data.new$functional_group == "WOODY")
+# all data
+all.data = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/all.data.year2.csv", row.names = 1) # 563 data points
+# all data without functional group WOODY
+no.trees = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/no.trees.csv", row.names = 1) # 485 data points
+# all data without local lifeform = TREE
+trees = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/trees.csv", row.names = 1) # 559 data points
+# all annual data
+annual.data = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/annual.data.csv", row.names = 1) # 83 data points
+# all perennial data
+perennial.data = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.data.csv", row.names = 1) # 463 data points
+# perennial data without functional group WOODY
+perennial.tree = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.tree.csv", row.names = 1) # 388 data points
+# perennial data without local lifeform = TREE
+perennial.no.tree = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.no.tree.csv", row.names = 1) # 459 data points
+# grasses
+grass = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/grass.csv", row.names = 1) # 175 data points
+# forbs
+forb = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/forb.csv", row.names = 1) # 252 data points
 
 #### change site code to numeric, continuous vector ####
 all.data$site.id = as.numeric(as.factor(all.data$site_code))
 no.trees$site.id = as.numeric(as.factor(no.trees$site_code))
-
-all.data.new$site.id = as.numeric(as.factor(all.data.new$site_code))
-no.trees.new$site.id = as.numeric(as.factor(no.trees.new$site_code))
-
-#### data set split by lifespan ####
-
-# need to read out data and fix the lifespan to particular sites since some species have different lifespan at different sites
-
-#write.csv(all.data, file="./Formatted.Data/all.data.year2.response.0.csv")
-#write.csv(all.data.new, file="./Formatted.Data/all.data.new.year2.response.0.csv")
-
-
-all.data.year2.ls = read.csv("./Formatted.Data/all.data.year2.lifespan.response.0.csv", row.names = 1)
-table(all.data.year2.ls$local_lifespan)
-
-all.data.year2.ls.new = read.csv("./Formatted.Data/all.data.new.year2.lifespan.response.0.csv", row.names = 1)
-table(all.data.year2.ls.new$local_lifespan)
-
-#merge with MAP
-all.data.ls = merge(all.data.year2.ls, site.info.map, by = "site_code")
-all.data.ls.new = merge(all.data.year2.ls.new, site.info.map, by = "site_code")
-
-annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL")
-perennial.data = subset(all.data.ls, all.data.ls$local_lifespan == "PERENNIAL")
-
+trees$site.id = as.numeric(as.factor(trees$site_code))
 annual.data$site.id = as.numeric(as.factor(annual.data$site_code))
 perennial.data$site.id = as.numeric(as.factor(perennial.data$site_code))
-
-perennial.tree = subset(perennial.data, !perennial.data$functional_group == "WOODY")
 perennial.tree$site.id = as.numeric(as.factor(perennial.tree$site_code))
-
-annual.data.new = subset(all.data.ls.new, all.data.ls.new$local_lifespan == "ANNUAL")
-perennial.data.new = subset(all.data.ls.new, all.data.ls.new$local_lifespan == "PERENNIAL")
-
-annual.data.new$site.id = as.numeric(as.factor(annual.data.new$site_code))
-perennial.data.new$site.id = as.numeric(as.factor(perennial.data.new$site_code))
-
-perennial.tree.new = subset(perennial.data.new, !perennial.data.new$functional_group == "WOODY")
-perennial.tree.new$site.id = as.numeric(as.factor(perennial.tree.new$site_code))
-
-#### split data by functional group ####
-
-grass = subset(all.data, all.data$functional_group == "GRASS")
-forb = subset(all.data, all.data$functional_group == "FORB")
-
+perennial.no.tree$site.id = as.numeric(as.factor(perennial.no.tree$site_code))
 grass$site.id = as.numeric(as.factor(grass$site_code))
 forb$site.id = as.numeric(as.factor(forb$site_code))
 
-annual.grass = subset(annual.data, annual.data$functional_group == "GRASS")
-annual.forb = subset(annual.data, annual.data$functional_group == "FORB")
+#### merge with mean annual precipitation data (MAP) ####
 
-perennial.grass = subset(perennial.data, perennial.data$functional_group == "GRASS")
-perennial.forb = subset(perennial.data, perennial.data$functional_group == "FORB")
+Site.info = read.csv("./Raw.Data/Site_Elev-Disturb.csv")
+site.info.map = Site.info[,c(2,13)]
 
-annual.grass$site.id = as.numeric(as.factor(annual.grass$site_code))
-annual.forb$site.id = as.numeric(as.factor(annual.forb$site_code))
+all.data = merge(all.data, site.info.map, by="site_code")
+no.trees = merge(no.trees, site.info.map, by="site_code")
+trees = merge(trees, site.info.map, by="site_code")
+annual.data = merge(annual.data, site.info.map, by="site_code")
+perennial.data = merge(perennial.data, site.info.map, by="site_code")
+perennial.tree = merge(perennial.tree, site.info.map, by="site_code")
+perennial.no.tree = merge(perennial.no.tree, site.info.map, by="site_code")
+grass = merge(grass, site.info.map, by="site_code")
+forb = merge(forb, site.info.map, by="site_code")
 
-perennial.grass$site.id = as.numeric(as.factor(perennial.grass$site_code))
-perennial.forb$site.id = as.numeric(as.factor(perennial.forb$site_code))
-
-# new 
-grass.new = subset(all.data.new, all.data.new$functional_group == "GRASS")
-forb.new = subset(all.data.new, all.data.new$functional_group == "FORB")
-
-grass.new$site.id = as.numeric(as.factor(grass.new$site_code))
-forb.new$site.id = as.numeric(as.factor(forb.new$site_code))
-
-annual.grass.new = subset(annual.data.new, annual.data.new$functional_group == "GRASS")
-annual.forb.new = subset(annual.data.new, annual.data.new$functional_group == "FORB")
-
-perennial.grass.new = subset(perennial.data.new, perennial.data.new$functional_group == "GRASS")
-perennial.forb.new = subset(perennial.data.new, perennial.data.new$functional_group == "FORB")
-
-annual.grass.new$site.id = as.numeric(as.factor(annual.grass.new$site_code))
-annual.forb.new$site.id = as.numeric(as.factor(annual.forb.new$site_code))
-
-perennial.grass.new$site.id = as.numeric(as.factor(perennial.grass.new$site_code))
-perennial.forb.new$site.id = as.numeric(as.factor(perennial.forb.new$site_code))
-
-
-#### determining best learning rate to generate 1000 trees ####
+#### determining best parameter combination to generate 1000 trees ####
+# bag fraction of 0.50 and 0.75, step.size of 25 and 50, tc = 10
 
 set.seed(2023)
 all.brt.1=gbm.step(data=all.data, gbm.x = c(6:13,18), gbm.y=5,
-                   family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                   bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50,
+                   family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
+                   bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50,
                    site.weights = all.data$site.id)
 
 ggPerformance(all.brt.1)
@@ -151,70 +72,70 @@ all.brt.1.no.site=gbm.step(data=all.data, gbm.x = c(6:13,18), gbm.y=5,
 ggPerformance(all.brt.1.no.site)
 
 set.seed(2023)
-tree.brt.1=gbm.step(data=no.trees, gbm.x = c(6:13,17), gbm.y=5,
+tree.brt.1=gbm.step(data=no.trees, gbm.x = c(6:13,18), gbm.y=5,
                     family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25, 
+                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 75, 
                     site.weights = no.trees$site.id)
 
 ggPerformance(tree.brt.1)
 
 set.seed(2023)
-tree.brt.1.no.site=gbm.step(data=no.trees, gbm.x = c(6:13,17), gbm.y=5,
-                            family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+tree.brt.1.no.site=gbm.step(data=no.trees, gbm.x = c(6:13,18), gbm.y=5,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 
 ggPerformance(tree.brt.1.no.site)
 
 set.seed(2023)
-annual.brt.1=gbm.step(data=annual.data, gbm.x = c(6:13,17), gbm.y=5,
-                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+annual.brt.1=gbm.step(data=annual.data, gbm.x = c(6:13,18), gbm.y=5,
+                      family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50,
                       site.weights = annual.data$site.id)
 
 ggPerformance(annual.brt.1) 
 
 set.seed(2023)
-annual.brt.1.no.site=gbm.step(data=annual.data, gbm.x = c(6:13,17), gbm.y=5,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+annual.brt.1.no.site=gbm.step(data=annual.data, gbm.x = c(6:13,18), gbm.y=5,
+                              family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
                               bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
 ggPerformance(annual.brt.1.no.site) 
 
 
 set.seed(2023)
-perennial.brt.1=gbm.step(data=perennial.data, gbm.x = c(6:13,17), gbm.y=5,
+perennial.brt.1=gbm.step(data=perennial.data, gbm.x = c(6:13,18), gbm.y=5,
                          family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
-                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25, 
+                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50, 
                          site.weights = perennial.data$site.id)
 
 ggPerformance(perennial.brt.1) 
 
 set.seed(2023)
-perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(6:13,17), gbm.y=5,
-                                 family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                                 bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(6:13,18), gbm.y=5,
+                                 family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
+                                 bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 
 ggPerformance(perennial.brt.1.no.site) 
 
 set.seed(2023)
 perennial.tree.brt.1=gbm.step(data=perennial.tree, gbm.x = c(6:13,17), gbm.y=5,
                               family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
-                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50,
+                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25,
                               site.weights = perennial.tree$site.id)
 
 ggPerformance(perennial.tree.brt.1) 
 
 set.seed(2023)
 perennial.tree.brt.1.no.site=gbm.step(data=perennial.tree, gbm.x = c(6:13,17), gbm.y=5,
-                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
+                                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 
 ggPerformance(perennial.tree.brt.1.no.site) 
 
 set.seed(2023)
 grass.brt.1=gbm.step(data=grass, gbm.x = c(6:13,17), gbm.y=5,
-                     family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
-                     bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50,
+                     family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
+                     bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25,
                      site.weights = grass$site.id)
 
 ggPerformance(grass.brt.1) 
@@ -222,11 +143,11 @@ ggPerformance(grass.brt.1)
 set.seed(2023)
 grass.brt.1.no.site=gbm.step(data=grass, gbm.x = c(6:13,17), gbm.y=5,
                              family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+                             bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(grass.brt.1.no.site) 
 
 set.seed(2023)
-forb.brt.1=gbm.step(data=forb, gbm.x = c(6:13,17), gbm.y=5,
+forb.brt.1=gbm.step(data=forb, gbm.x = c(6:13,18), gbm.y=5,
                     family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
                     bag.fraction = 0.75, n.trees = 50, verbose = TRUE,step.size = 50,
                     site.weights = forb$site.id)
@@ -234,8 +155,8 @@ forb.brt.1=gbm.step(data=forb, gbm.x = c(6:13,17), gbm.y=5,
 ggPerformance(forb.brt.1) 
 
 set.seed(2023)
-forb.brt.1.no.site=gbm.step(data=forb, gbm.x = c(6:13,17), gbm.y=5,
-                            family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+forb.brt.1.no.site=gbm.step(data=forb, gbm.x = c(6:13,18), gbm.y=5,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(forb.brt.1.no.site) 
 
@@ -293,6 +214,35 @@ perennial.forb.brt.1.no.site=gbm.step(data=perennial.forb, gbm.x = c(6:13,17), g
                                       family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
                                       bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(perennial.forb.brt.1.no.site)
+
+
+set.seed(2023)
+trees.brt.1=gbm.step(data=trees, gbm.x = c(6:13,18), gbm.y=5,
+                     family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                     bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25, 
+                     site.weights = trees$site.id)
+
+ggPerformance(trees.brt.1)
+
+set.seed(2023)
+trees.brt.1.no.site=gbm.step(data=trees, gbm.x = c(6:13,18), gbm.y=5,
+                             family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50) 
+
+ggPerformance(trees.brt.1.no.site)
+
+set.seed(2023)
+perennial.no.tree.brt.1=gbm.step(data=perennial.no.tree, gbm.x = c(6:13,18), gbm.y=5,
+                                 family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
+                                 bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25,
+                                 site.weights = perennial.no.tree$site.id)
+ggPerformance(perennial.no.tree.brt.1)
+
+set.seed(2023)
+perennial.no.tree.brt.1.no.site=gbm.step(data=perennial.no.tree, gbm.x = c(6:13,18), gbm.y=5,
+                                         family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
+                                         bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(perennial.no.tree.brt.1.no.site)
 
 #### new dataset ####
 

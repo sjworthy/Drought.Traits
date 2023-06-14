@@ -18,8 +18,8 @@ mean = mean(trait.data.2$leafN.mg.g, na.rm = TRUE)
 std = sd(trait.data.2$leafN.mg.g, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$leafN.mg.g[which(trait.data.2$leafN.mg.g <Tmin | trait.data.2$leafN.mg.g > Tmax)]
-# removed leafN 58.30000 and 67.58333
+sort(trait.data.2$leafN.mg.g[which(trait.data.2$leafN.mg.g <Tmin | trait.data.2$leafN.mg.g > Tmax)])
+# removed leafN 3.60, 38.6 - 67.58333
 
 hist(trait.data.2$height.m)
 boxplot(trait.data.2$height.m)
@@ -27,9 +27,8 @@ mean = mean(trait.data.2$height.m, na.rm = TRUE)
 std = sd(trait.data.2$height.m, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$height.m[which(trait.data.2$height.m <Tmin | trait.data.2$height.m > Tmax)]
-# removed height > 14.37587 16.68757 19.05000 20.17067 20.42708 20.46877 20.50100 20.83333 
-# 21.00000 21.58000 22.64920 23.39467 23.60517 24.86933 25.75100 27.10186 28.99781 32.57366 46.30267
+sort(trait.data.2$height.m[which(trait.data.2$height.m <Tmin | trait.data.2$height.m > Tmax)])
+# removed height > 10 - 46.30267
 
 hist(trait.data.2$rootN.mg.g)
 boxplot(trait.data.2$rootN.mg.g)
@@ -37,8 +36,8 @@ mean = mean(trait.data.2$rootN.mg.g, na.rm = TRUE)
 std = sd(trait.data.2$rootN.mg.g, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$rootN.mg.g[which(trait.data.2$rootN.mg.g <Tmin | trait.data.2$rootN.mg.g > Tmax)]
-# remove rootN 33.34667 34.39000 39.26274
+sort(trait.data.2$rootN.mg.g[which(trait.data.2$rootN.mg.g <Tmin | trait.data.2$rootN.mg.g > Tmax)])
+# remove rootN 26.12779 - 39.26274
 
 hist(trait.data.2$SLA_m2.kg)
 boxplot(trait.data.2$SLA_m2.kg)
@@ -46,8 +45,8 @@ mean = mean(trait.data.2$SLA_m2.kg, na.rm = TRUE)
 std = sd(trait.data.2$SLA_m2.kg, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$SLA_m2.kg[which(trait.data.2$SLA_m2.kg <Tmin | trait.data.2$SLA_m2.kg > Tmax)]
-# remove SLA 53.50000 57.70000 61.28000 63.13000 64.32508 66.41054 68.90000 75.90000 86.00000 96.66667 98.20000
+sort(trait.data.2$SLA_m2.kg[which(trait.data.2$SLA_m2.kg <Tmin | trait.data.2$SLA_m2.kg > Tmax)])
+# remove SLA 41.82567 - 98.20000
 
 hist(trait.data.2$root.depth_m)
 boxplot(trait.data.2$root.depth_m)
@@ -55,8 +54,8 @@ mean = mean(trait.data.2$root.depth_m, na.rm = TRUE)
 std = sd(trait.data.2$root.depth_m, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$root.depth_m[which(trait.data.2$root.depth_m <Tmin | trait.data.2$root.depth_m > Tmax)]
-# remove depth 3.352800  3.500000  3.709333  3.828571  6.451600 11.625000
+sort(trait.data.2$root.depth_m[which(trait.data.2$root.depth_m <Tmin | trait.data.2$root.depth_m > Tmax)])
+# remove depth 2.5 - 11.625000
 
 hist(trait.data.2$RTD.g.cm3)
 boxplot(trait.data.2$RTD.g.cm3)
@@ -64,8 +63,8 @@ mean = mean(trait.data.2$RTD.g.cm3, na.rm = TRUE)
 std = sd(trait.data.2$RTD.g.cm3, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$RTD.g.cm3[which(trait.data.2$RTD.g.cm3 <Tmin | trait.data.2$RTD.g.cm3 > Tmax)]
-# remove RTD 0.9167417 1.1945504
+sort(trait.data.2$RTD.g.cm3[which(trait.data.2$RTD.g.cm3 <Tmin | trait.data.2$RTD.g.cm3 > Tmax)])
+# remove RTD 0.6342500 - 1.1945504
 
 hist(trait.data.2$SRL_m.g)
 boxplot(trait.data.2$SRL_m.g)
@@ -73,8 +72,8 @@ mean = mean(trait.data.2$SRL_m.g, na.rm = TRUE)
 std = sd(trait.data.2$SRL_m.g, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$SRL_m.g[which(trait.data.2$SRL_m.g <Tmin | trait.data.2$SRL_m.g > Tmax)]
-# remove SRL 601.5858 627.5050 630.3000 657.7263 760.8500 833.5418 929.9185
+sort(trait.data.2$SRL_m.g[which(trait.data.2$SRL_m.g <Tmin | trait.data.2$SRL_m.g > Tmax)])
+# remove SRL 437.3523 - 929.9185
 
 hist(trait.data.2$rootDiam.mm)
 boxplot(trait.data.2$rootDiam.mm)
@@ -82,12 +81,12 @@ mean = mean(trait.data.2$rootDiam.mm, na.rm = TRUE)
 std = sd(trait.data.2$rootDiam.mm, na.rm = TRUE)
 Tmin = mean-(3*std)
 Tmax = mean+(3*std)
-trait.data.2$rootDiam.mm[which(trait.data.2$rootDiam.mm <Tmin | trait.data.2$rootDiam.mm > Tmax)]
-# remove diam 81.81050 27.13865
+sort(trait.data.2$rootDiam.mm[which(trait.data.2$rootDiam.mm <Tmin | trait.data.2$rootDiam.mm > Tmax)])
+# remove diam 27.13865 - 81.81050 
 
 #### read in new trait data without outliers and cover data ####
 
-trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.2.csv")
+trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.std2.csv")
 cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
 
 # subset traits so they must have SLA
@@ -569,7 +568,7 @@ perennial.forb = subset(perennial.data, perennial.data$functional_group == "FORB
 
 #### write out the files ####
 
-write.csv(all.data, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/all.data.csv")
+write.csv(all.data, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/all.data.2.csv")
 write.csv(annual.data, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/annual.data.csv")
 write.csv(annual.forb, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/annual.forb.csv")
 write.csv(annual.grass, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/annual.grass.csv")
@@ -1162,6 +1161,18 @@ cor.test(all.data.year2$mean.cover.response, all.data.year2$root.depth_m) # r = 
 cor.test(all.data.year2$mean.cover.response, all.data.year2$RTD.g.cm3) # r = -0.001
 cor.test(all.data.year2$mean.cover.response, all.data.year2$SRL_m.g) # r = -0.02
 cor.test(all.data.year2$mean.cover.response, all.data.year2$rootDiam.mm) # r = 0.04
+
+
+# all outliers removed manually from trait.species.trt.yr1.final.new and made new file trait.species.trt.yr1.outlier
+hist(all.data.year2$leafN.mg.g)
+boxplot(all.data.year2$leafN.mg.g)
+mean = mean(all.data.year2$leafN.mg.g, na.rm = TRUE)
+std = sd(all.data.year2$leafN.mg.g, na.rm = TRUE)
+Tmin = mean-(3*std)
+Tmax = mean+(3*std)
+all.data.year2$leafN.mg.g[which(all.data.year2$leafN.mg.g <Tmin | all.data.year2$leafN.mg.g > Tmax)]
+# removed leafN 58.30000 and 67.58333
+
 
 #### data set with WOODY removed ####
 
