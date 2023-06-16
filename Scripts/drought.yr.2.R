@@ -5,6 +5,7 @@
 library(dismo)
 library(gbm)
 library(ggBRT)
+library(multcomp)
 
 #### read in all the data frames needs for the analyses ####
 
@@ -26,6 +27,38 @@ perennial.no.tree = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.
 grass = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/grass.csv", row.names = 1) # 175 data points
 # forbs
 forb = read.csv("./Formatted.Data/Drt.yr1.v.drt.yr2.data/forb.csv", row.names = 1) # 252 data points
+
+##### imputed trait dataframes ####
+
+impute.traits = read.csv("./Formatted.Data/trait.imputation.2.csv")
+colnames(impute.traits)[1] = "Taxon"
+impute.traits$Taxon = sub("_", " ", impute.traits$Taxon)
+
+no.trees$Taxon = str_to_sentence(no.trees$Taxon)
+no.trees.impute = left_join(no.trees,impute.traits)
+no.trees.impute = no.trees.impute[,c(1,2,5,14:24)]
+
+annual.data$Taxon = str_to_sentence(annual.data$Taxon)
+annual.data.impute = left_join(annual.data,impute.traits)
+annual.data.impute = annual.data.impute[,c(1,2,5,14:24)]
+
+perennial.tree$Taxon = str_to_sentence(perennial.tree$Taxon)
+perennial.tree.impute = left_join(perennial.tree,impute.traits)
+perennial.tree.impute = perennial.tree.impute[,c(1,2,5,14:24)]
+
+grass$Taxon = str_to_sentence(grass$Taxon)
+grass.impute = left_join(grass,impute.traits)
+grass.impute = grass.impute[,c(1,2,5,14:24)]
+
+forb$Taxon = str_to_sentence(forb$Taxon)
+forb.impute = left_join(forb,impute.traits)
+forb.impute = forb.impute[,c(1,2,5,14:24)]
+
+write.csv(no.trees.impute, file = "./Formatted.Data/Drt.yr1.v.drt.yr2.data/no.trees.impute.csv")
+write.csv(annual.data.impute, file = "./Formatted.Data/Drt.yr1.v.drt.yr2.data/annual.data.impute.csv")
+write.csv(perennial.tree.impute, file = "./Formatted.Data/Drt.yr1.v.drt.yr2.data/perennial.tree.impute.csv")
+write.csv(grass.impute, file = "./Formatted.Data/Drt.yr1.v.drt.yr2.data/grass.impute.csv")
+write.csv(forb.impute, file = "./Formatted.Data/Drt.yr1.v.drt.yr2.data/forb.impute.csv")
 
 #### change site code to numeric, continuous vector ####
 all.data$site.id = as.numeric(as.factor(all.data$site_code))
@@ -72,21 +105,24 @@ all.brt.1.no.site=gbm.step(data=all.data, gbm.x = c(6:13,18), gbm.y=5,
 ggPerformance(all.brt.1.no.site)
 
 set.seed(2023)
+
 tree.brt.1=gbm.step(data=no.trees, gbm.x = c(6:13,18), gbm.y=5,
                     family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 75, 
+                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25, 
                     site.weights = no.trees$site.id)
 
 ggPerformance(tree.brt.1)
 
 set.seed(2023)
-tree.brt.1.no.site=gbm.step(data=no.trees, gbm.x = c(6:13,18), gbm.y=5,
-                            family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
+
+tree.brt.1.no.site=gbm.step(data=no.trees, gbm.x = c(9), gbm.y=5,
+                            family = "gaussian", tree.complexity = 1, learning.rate = 0.00000000005,
                             bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 
 ggPerformance(tree.brt.1.no.site)
 
 set.seed(2023)
+
 annual.brt.1=gbm.step(data=annual.data, gbm.x = c(6:13,18), gbm.y=5,
                       family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50,
@@ -95,9 +131,10 @@ annual.brt.1=gbm.step(data=annual.data, gbm.x = c(6:13,18), gbm.y=5,
 ggPerformance(annual.brt.1) 
 
 set.seed(2023)
+
 annual.brt.1.no.site=gbm.step(data=annual.data, gbm.x = c(6:13,18), gbm.y=5,
                               family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
-                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+                              bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 
 ggPerformance(annual.brt.1.no.site) 
 
@@ -118,32 +155,35 @@ perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(6:13,18), gbm.y=
 ggPerformance(perennial.brt.1.no.site) 
 
 set.seed(2023)
-perennial.tree.brt.1=gbm.step(data=perennial.tree, gbm.x = c(6:13,17), gbm.y=5,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
-                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25,
+
+perennial.tree.brt.1=gbm.step(data=perennial.tree, gbm.x = c(6:13), gbm.y=5,
+                              family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
+                              bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25,
                               site.weights = perennial.tree$site.id)
 
 ggPerformance(perennial.tree.brt.1) 
 
 set.seed(2023)
-perennial.tree.brt.1.no.site=gbm.step(data=perennial.tree, gbm.x = c(6:13,17), gbm.y=5,
-                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+
+perennial.tree.brt.1.no.site=gbm.step(data=perennial.tree, gbm.x = c(6:13), gbm.y=5,
+                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.000001,
+                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
 ggPerformance(perennial.tree.brt.1.no.site) 
 
 set.seed(2023)
-grass.brt.1=gbm.step(data=grass, gbm.x = c(6:13,17), gbm.y=5,
-                     family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                     bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25,
+grass.brt.1=gbm.step(data=grass, gbm.x = c(6:13,18), gbm.y=5,
+                     family = "gaussian", tree.complexity = 10, learning.rate = 0.00000000000001,
+                     bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25,
                      site.weights = grass$site.id)
 
 ggPerformance(grass.brt.1) 
 
 set.seed(2023)
-grass.brt.1.no.site=gbm.step(data=grass, gbm.x = c(6:13,17), gbm.y=5,
-                             family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                             bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+
+grass.brt.1.no.site=gbm.step(data=grass, gbm.x = c(6:13), gbm.y=5,
+                             family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(grass.brt.1.no.site) 
 
 set.seed(2023)
@@ -155,9 +195,10 @@ forb.brt.1=gbm.step(data=forb, gbm.x = c(6:13,18), gbm.y=5,
 ggPerformance(forb.brt.1) 
 
 set.seed(2023)
+
 forb.brt.1.no.site=gbm.step(data=forb, gbm.x = c(6:13,18), gbm.y=5,
                             family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(forb.brt.1.no.site) 
 
 
@@ -244,411 +285,32 @@ perennial.no.tree.brt.1.no.site=gbm.step(data=perennial.no.tree, gbm.x = c(6:13,
                                          bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(perennial.no.tree.brt.1.no.site)
 
-#### new dataset ####
-
-# start learning rate at 0.1
-set.seed(2023)
-all.brt.1.new=gbm.step(data=all.data.new, gbm.x = c(6:13,17), gbm.y=5,
-                   family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                   bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50,
-                   site.weights = all.data.new$site.id)
-
-ggPerformance(all.brt.1.new)
-
-set.seed(2023)
-all.brt.1.new.no.site=gbm.step(data=all.data.new, gbm.x = c(6:13,17), gbm.y=5,
-                       family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(all.brt.1.new.no.site)
-
-set.seed(2023)
-tree.brt.1.new=gbm.step(data=no.trees.new, gbm.x = c(6:13,17), gbm.y=5,
-                    family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                    bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25,
-                    site.weights = no.trees.new$site.id)
-
-ggPerformance(tree.brt.1.new)
-
-set.seed(2023)
-tree.brt.1.new.no.site=gbm.step(data=no.trees.new, gbm.x = c(6:13,17), gbm.y=5,
-                        family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                        bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(tree.brt.1.new.no.site)
-
-set.seed(2023)
-annual.brt.1.new=gbm.step(data=annual.data.new, gbm.x = c(6:13,17), gbm.y=5,
-                      family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE,step.size = 50,
-                      site.weights = annual.data.new$site.id)
-
-ggPerformance(annual.brt.1.new)
-
-set.seed(2023)
-annual.brt.1.new.no.site=gbm.step(data=annual.data.new, gbm.x = c(6:13,17), gbm.y=5,
-                          family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                          bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(annual.brt.1.new.no.site)
-
-set.seed(2023)
-perennial.brt.1.new=gbm.step(data=perennial.data.new, gbm.x = c(6:13,17), gbm.y=5,
-                         family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                         bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50,
-                         site.weights = perennial.data.new$site.id)
-ggPerformance(perennial.brt.1.new)
-
-set.seed(2023)
-perennial.brt.1.new.no.site=gbm.step(data=perennial.data.new, gbm.x = c(6:13,17), gbm.y=5,
-                             family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
-                             bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(perennial.brt.1.new.no.site)
-
-set.seed(2023)
-perennial.tree.brt.1.new=gbm.step(data=perennial.tree.new, gbm.x = c(6:13,17), gbm.y=5,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                              bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50,
-                              site.weights = perennial.tree.new$site.id)
-ggPerformance(perennial.tree.brt.1.new)
-
-set.seed(2023)
-perennial.tree.brt.1.new.no.site=gbm.step(data=perennial.tree.new, gbm.x = c(6:13,17), gbm.y=5,
-                                  family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                                  bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(perennial.tree.brt.1.new.no.site)
-
-set.seed(2023)
-grass.brt.1.new=gbm.step(data=grass.new, gbm.x = c(6:13,17), gbm.y=5,
-                     family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                     bag.fraction = 0.5, n.trees = 50, verbose = TRUE,step.size = 50,
-                     site.weights = grass.new$site.id)
-
-ggPerformance(grass.brt.1.new)
-
-set.seed(2023)
-grass.brt.1.new.no.site=gbm.step(data=grass.new, gbm.x = c(6:13,17), gbm.y=5,
-                         family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                         bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(grass.brt.1.new.no.site)
-
-set.seed(2023)
-forb.brt.1.new=gbm.step(data=forb.new, gbm.x = c(6:13,17), gbm.y=5,
-                    family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50, 
-                    site.weights = forb.new$site.id)
-ggPerformance(forb.brt.1.new)
-
-set.seed(2023)
-forb.brt.1.new.no.site=gbm.step(data=forb.new, gbm.x = c(6:13,17), gbm.y=5,
-                        family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
-                        bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(forb.brt.1.new.no.site)
-
-set.seed(2023)
-annual.grass.brt.1.new=gbm.step(data=annual.grass.new, gbm.x = c(6:13,17), gbm.y=5,
-                            family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE,step.size = 25,
-                            site.weights = annual.grass.new$site.id)
-ggPerformance(annual.grass.brt.1.new)
-
-
-set.seed(2023)
-annual.grass.brt.1.new.no.site=gbm.step(data=annual.grass.new, gbm.x = c(6:13,17), gbm.y=5,
-                                family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                                bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(annual.grass.brt.1.new.no.site)
-
-set.seed(2023)
-annual.forb.brt.1.new=gbm.step(data=annual.forb.new, gbm.x = c(6:13,17), gbm.y=5,
-                           family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                           bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25,
-                           site.weights = annual.forb.new$site.id)
-ggPerformance(annual.forb.brt.1.new)
-
-set.seed(2023)
-annual.forb.brt.1.new.no.site=gbm.step(data=annual.forb.new, gbm.x = c(6:13,17), gbm.y=5,
-                               family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                               bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(annual.forb.brt.1.new.no.site)
-
-set.seed(2023)
-perennial.grass.brt.1.new=gbm.step(data=perennial.grass.new, gbm.x = c(6:13,17), gbm.y=5,
-                               family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                               bag.fraction = 0.75, n.trees = 50, verbose = TRUE,step.size = 50,
-                               site.weights = perennial.grass.new$site.id)
-ggPerformance(perennial.grass.brt.1.new)
-
-set.seed(2023)
-perennial.grass.brt.1.new.no.site=gbm.step(data=perennial.grass.new, gbm.x = c(6:13,17), gbm.y=5,
-                                   family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                                   bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(perennial.grass.brt.1.new.no.site)
-
-set.seed(2023)
-perennial.forb.brt.1.new=gbm.step(data=perennial.forb.new, gbm.x = c(6:13,17), gbm.y=5,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE,step.size = 50,
-                              site.weights = perennial.forb.new$site.id)
-ggPerformance(perennial.forb.brt.1.new)
-
-set.seed(2023)
-perennial.forb.brt.1.new.no.site=gbm.step(data=perennial.forb.new, gbm.x = c(6:13,17), gbm.y=5,
-                                  family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
-                                  bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(perennial.forb.brt.1.new.no.site)
-
-
-#### initial model evaluation ####
-# plots of predicted versus observed, estimate R2
-
-# which predictors are most important
-# all data without site
-summary(all.brt.1)
-
-all.predict.brt=predict(all.brt.1, n.trees = all.brt.1$n.trees)
-observed = all.data.year2$mean.cover.response
-plot(all.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.all.brt = 1-(all.brt.1$self.statistics$mean.resid/all.brt.1$self.statistics$mean.null)
-# 0.0004
-
-# which predictors are most important
-# all data without site
-summary(all.brt.1.no.site)
-
-all.predict.brt=predict(all.brt.1.no.site, n.trees = all.brt.1.no.site$n.trees)
-observed = all.data.year2$mean.cover.response
-plot(all.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.all.brt = 1-(all.brt.1.no.site$self.statistics$mean.resid/all.brt.1.no.site$self.statistics$mean.null)
-# 0.95
-
-# which predictors are most important
-# all data without tree
-summary(tree.brt.1)
-
-tree.predict.brt=predict(tree.brt.1, n.trees = tree.brt.1$n.trees)
-observed = no.trees$mean.cover.response
-plot(tree.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.tree.brt = 1-(tree.brt.1$self.statistics$mean.resid/tree.brt.1$self.statistics$mean.null)
-# 0.0005
-
-# which predictors are most important
-# all data without tree without site
-summary(tree.brt.1.no.site)
-
-tree.predict.brt=predict(tree.brt.1.no.site, n.trees = tree.brt.1.no.site$n.trees)
-observed = no.trees$mean.cover.response
-plot(tree.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.tree.brt = 1-(tree.brt.1.no.site$self.statistics$mean.resid/tree.brt.1.no.site$self.statistics$mean.null)
-# 0.04
-
-# which predictors are most important
-# only annuals
-summary(annual.brt.1)
-
-annual.predict.brt=predict(annual.brt.1, n.trees = annual.brt.1$n.trees)
-observed = annual.data$mean.cover.response
-plot(annual.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.annual.brt = 1-(annual.brt.1$self.statistics$mean.resid/annual.brt.1$self.statistics$mean.null)
-# 0.25
-
-# which predictors are most important
-# annuals without site
-summary(annual.brt.1.no.site)
-
-annual.predict.brt=predict(annual.brt.1.no.site, n.trees = annual.brt.1.no.site$n.trees)
-observed = annual.data$mean.cover.response
-plot(annual.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.annual.brt = 1-(annual.brt.1.no.site$self.statistics$mean.resid/annual.brt.1.no.site$self.statistics$mean.null)
-# 0.23
-
-# which predictors are most important
-# only perennials
-summary(perennial.brt.1)
-
-perennial.predict.brt=predict(perennial.brt.1, n.trees = perennial.brt.1$n.trees)
-observed = perennial.data$mean.cover.response
-plot(perennial.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.perennial.brt = 1-(perennial.brt.1$self.statistics$mean.resid/perennial.brt.1$self.statistics$mean.null)
-# 0.0006
-
-# which predictors are most important
-# only grasses
-summary(grass.brt.1)
-
-grass.predict.brt=predict(grass.brt.1, n.trees = grass.brt.1$n.trees)
-observed = grass$mean.cover.response
-plot(grass.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.grass.brt = 1-(grass.brt.1$self.statistics$mean.resid/grass.brt.1$self.statistics$mean.null)
-# 0.01
-
-# which predictors are most important
-# only grasses
-summary(grass.brt.1.no.site)
-
-grass.predict.brt=predict(grass.brt.1.no.site, n.trees = grass.brt.1.no.site$n.trees)
-observed = grass$mean.cover.response
-plot(grass.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.grass.brt = 1-(grass.brt.1.no.site$self.statistics$mean.resid/grass.brt.1.no.site$self.statistics$mean.null)
-# 0.008
-
-# which predictors are most important
-# only forbs
-summary(forb.brt.1)
-# RTD 89%
-
-forb.predict.brt=predict(forb.brt.1, n.trees = forb.brt.1$n.trees)
-observed = forb$mean.cover.response
-plot(forb.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.forb.brt = 1-(forb.brt.1$self.statistics$mean.resid/forb.brt.1$self.statistics$mean.null)
-# 0.01
-
-# which predictors are most important
-# only forbs
-summary(forb.brt.1.no.site)
-# RTD 89%
-
-forb.predict.brt=predict(forb.brt.1.no.site, n.trees = forb.brt.1.no.site$n.trees)
-observed = forb$mean.cover.response
-plot(forb.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.forb.brt = 1-(forb.brt.1.no.site$self.statistics$mean.resid/forb.brt.1.no.site$self.statistics$mean.null)
-# 0.07
-
-# which predictors are most important
-# only annual.grasses
-summary(annual.grass.brt.1)
-
-annual.grass.predict.brt=predict(annual.grass.brt.1, n.trees = annual.grass.brt.1$n.trees)
-observed = annual.grass$mean.cover.response
-plot(annual.grass.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.annual.grass.brt = 1-(annual.grass.brt.1$self.statistics$mean.resid/annual.grass.brt.1$self.statistics$mean.null)
-# 0.13
-
-# which predictors are most important
-# only annual.grasses
-summary(annual.grass.brt.1.no.site)
-
-annual.grass.predict.brt=predict(annual.grass.brt.1.no.site, n.trees = annual.grass.brt.1.no.site$n.trees)
-observed = annual.grass$mean.cover.response
-plot(annual.grass.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.annual.grass.brt = 1-(annual.grass.brt.1.no.site$self.statistics$mean.resid/annual.grass.brt.1.no.site$self.statistics$mean.null)
-# 0.16
-
-# which predictors are most important
-# only annual.forbes
-summary(annual.forb.brt.1)
-# RTD 89%
-
-annual.forb.predict.brt=predict(annual.forb.brt.1, n.trees = annual.forb.brt.1$n.trees)
-observed = annual.forb$mean.cover.response
-plot(annual.forb.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.annual.forb.brt = 1-(annual.forb.brt.1$self.statistics$mean.resid/annual.forb.brt.1$self.statistics$mean.null)
-# 0.34
-
-# which predictors are most important
-# only annual.forbes
-summary(annual.forb.brt.1.no.site)
-# RTD 89%
-
-annual.forb.predict.brt=predict(annual.forb.brt.1.no.site, n.trees = annual.forb.brt.1.no.site$n.trees)
-observed = annual.forb$mean.cover.response
-plot(annual.forb.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.annual.forb.brt = 1-(annual.forb.brt.1.no.site$self.statistics$mean.resid/annual.forb.brt.1.no.site$self.statistics$mean.null)
-# 0.46
-
-# which predictors are most important
-# only perennial.grasses
-summary(perennial.grass.brt.1)
-
-perennial.grass.predict.brt=predict(perennial.grass.brt.1, n.trees = perennial.grass.brt.1$n.trees)
-observed = perennial.grass$mean.cover.response
-plot(perennial.grass.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.perennial.grass.brt = 1-(perennial.grass.brt.1$self.statistics$mean.resid/perennial.grass.brt.1$self.statistics$mean.null)
-# 0.02
-
-# which predictors are most important
-# only perennial.grasses
-summary(perennial.grass.brt.1.no.site)
-
-perennial.grass.predict.brt=predict(perennial.grass.brt.1.no.site, n.trees = perennial.grass.brt.1.no.site$n.trees)
-observed = perennial.grass$mean.cover.response
-plot(perennial.grass.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.perennial.grass.brt = 1-(perennial.grass.brt.1.no.site$self.statistics$mean.resid/perennial.grass.brt.1.no.site$self.statistics$mean.null)
-# 0.008
-
-
-# which predictors are most important
-# only perennial.forbes
-summary(perennial.forb.brt.1.no.site)
-# RTD 89%
-
-perennial.forb.predict.brt=predict(perennial.forb.brt.1.no.site, n.trees = perennial.forb.brt.1.no.site$n.trees)
-observed = perennial.forb$mean.cover.response
-plot(perennial.forb.predict.brt~observed)
-abline(0, 1, col = 2)
-
-R2.perennial.forb.brt = 1-(perennial.forb.brt.1.no.site$self.statistics$mean.resid/perennial.forb.brt.1.no.site$self.statistics$mean.null)
-# 0.05
 
 #### determining best tree complexity ####
-# learning rate 0.001 only works with tree complexity = 1
-
-# all.data.year2 without site
 
 # all variables
 R2Obs.all.variables <- list()
 importancePred.all.variables <- list()
 nreps <- 10 #number of simulations
-set.seed(2023)
 for (tcomp in 1:10) {
   R2Obs.all.variables[[tcomp]] <- numeric(nreps)
-  importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
+  importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:9),
                                                              ncol = nreps))
   for(i in 1:nreps){
     if (i == 1) {
       cat(paste("Starting tc =", tcomp, "\n"))
     }
-    BRT.all.variables <- gbm.step(data=all.data.year2,
-                                  gbm.x = c(11:18),
-                                  gbm.y = 10,
+    BRT.all.variables <- gbm.step(data=annual.data,
+                                  gbm.x = c(6:13,18),
+                                  gbm.y = 5,
                                   family = "gaussian",
                                   tree.complexity = tcomp,
-                                  learning.rate = 0.0001,
-                                  bag.fraction = 0.75,
+                                  learning.rate = 0.001,
+                                  bag.fraction = 0.50,
                                   n.trees = 50,
-                                  plot.main=F, plot.folds=F,
-                                  site.weights = all.data.year2$site.id)
+                                  step.size = 50,
+                                  plot.main=F, plot.folds=F)
+                                  
     
     #R2 adj:
     R2Obs.all.variables[[tcomp]][i] <- 1 - (BRT.all.variables$self.statistics$mean.resid /
@@ -661,7 +323,7 @@ for (tcomp in 1:10) {
   }
 }
 
-# examine how R2 improves with tree complexity, pag 105
+# examine how R2 improves with tree complexity
 
 means <- sapply(R2Obs.all.variables, mean)
 sds <- sapply(R2Obs.all.variables, sd)
@@ -672,1509 +334,282 @@ for (i in 1:length(R2Obs.all.variables)) {
          angle = 90, code = 3, length = 0.1)
 }
 
-# can't get past tc = 1
+tcFactor <- as.factor(rep(1:10, each=nreps))
+R2Vector <- unlist(R2Obs.all.variables)
+model <- lm(R2Vector~tcFactor)
+TukeyModel<-glht(model, linfct = mcp(tcFactor="Tukey"))
+TukeyLetters <- cld(TukeyModel)$mcletters$Letters
 
-# tree variables with site
-
-R2Obs.tree.variables <- list()
-importancePred.tree.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.tree.variables[[tcomp]] <- numeric(nreps)
-  importancePred.tree.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                              ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.tree.variables <- gbm.step(data=no.trees,
-                                   gbm.x = c(11:18),
-                                   gbm.y = 10,
-                                   family = "gaussian",
-                                   tree..complexity = tcomp,
-                                   learning.rate = 0.0001,
-                                   bag.fraction = 0.75,
-                                   n.tree.s = 50,
-                                   plot.main=F, plot.folds=F,
-                                   site.weights = no.trees$site.id)
-    #R2 adj:
-    R2Obs.tree.variables[[tcomp]][i] <- 1 - (BRT.tree.variables$self.statistics$mean.resid /
-                                               BRT.tree.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.tree.variables[[tcomp]]) <- sort(rownames(summary(BRT.tree.variables)))
-    }
-    importancePred.tree.variables[[tcomp]][, i] <-
-      summary(BRT.tree.variables)[rownames(importancePred.tree.variables[[tcomp]]), ]$rel.inf
-  }
+plot(1:length(R2Obs.all.variables), means)
+for (i in 1:length(R2Obs.all.variables)){
+  arrows(x0=i, x1=i, y0=means[i]-sds[i], y1=means[i]+sds[i], angle=90, code=3,
+         length=0.1)
 }
+text(x= 1:length(R2Obs.all.variables),labels=TukeyLetters)
 
-# examine how R2 improves with tree. complexity, pag 105
+# elected the lowest tc value that did not show significant differences 
+# compared to the largest tc value
+# no trees without map tc = 1, won't fit past tc = 1
+# annual tc = 1,  won't fit past tc = 1
+# perennial tree tc = NA
+# grass tc = NA
+# forb tc = 3
 
-means <- sapply(R2Obs.tree.variables, mean)
-sds <- sapply(R2Obs.tree.variables, sd)
-plot(1:length(R2Obs.tree.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.tree.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
 
-# can't get past tc = 1
-
-# tree variables without site
-
-R2Obs.tree.variables <- list()
-importancePred.tree.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.tree.variables[[tcomp]] <- numeric(nreps)
-  importancePred.tree.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                              ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.tree.variables <- gbm.step(data=no.trees,
-                                   gbm.x = c(11:18),
-                                   gbm.y = 10,
-                                   family = "gaussian",
-                                   tree..complexity = tcomp,
-                                   learning.rate = 0.001,
-                                   bag.fraction = 0.75,
-                                   n.tree.s = 50,
-                                   plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.tree.variables[[tcomp]][i] <- 1 - (BRT.tree.variables$self.statistics$mean.resid /
-                                               BRT.tree.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.tree.variables[[tcomp]]) <- sort(rownames(summary(BRT.tree.variables)))
-    }
-    importancePred.tree.variables[[tcomp]][, i] <-
-      summary(BRT.tree.variables)[rownames(importancePred.tree.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree. complexity, pag 105
-
-means <- sapply(R2Obs.tree.variables, mean)
-sds <- sapply(R2Obs.tree.variables, sd)
-plot(1:length(R2Obs.tree.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.tree.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-# annual.data with site
-
-R2Obs.annual.variables <- list()
-importancePred.annual.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.annual.variables[[tcomp]] <- numeric(nreps)
-  importancePred.annual.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.annual.variables <- gbm.step(data=annual.data,
-                                     gbm.x = c(11:18),
-                                     gbm.y = 10,
-                                     family = "gaussian",
-                                     tree.complexity = tcomp,
-                                     learning.rate = 0.001,
-                                     bag.fraction = 0.75,
-                                     n.trees = 50,
-                                     plot.main=F, plot.folds=F,
-                                     site.weights = annual.data$site.id)
-    #R2 adj:
-    R2Obs.annual.variables[[tcomp]][i] <- 1 - (BRT.annual.variables$self.statistics$mean.resid /
-                                                 BRT.annual.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.annual.variables[[tcomp]]) <- sort(rownames(summary(BRT.annual.variables)))
-    }
-    importancePred.annual.variables[[tcomp]][, i] <-
-      summary(BRT.annual.variables)[rownames(importancePred.annual.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.annual.variables, mean)
-sds <- sapply(R2Obs.annual.variables, sd)
-plot(1:length(R2Obs.annual.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.annual.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# 9 complexity is best for all variables model with lr = 0.001
-
-# annual.data without site
-
-R2Obs.annual.variables <- list()
-importancePred.annual.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.annual.variables[[tcomp]] <- numeric(nreps)
-  importancePred.annual.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.annual.variables <- gbm.step(data=annual.data,
-                                     gbm.x = c(11:18),
-                                     gbm.y = 10,
-                                     family = "gaussian",
-                                     tree.complexity = tcomp,
-                                     learning.rate = 0.0001,
-                                     bag.fraction = 0.75,
-                                     n.trees = 50,
-                                     plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.annual.variables[[tcomp]][i] <- 1 - (BRT.annual.variables$self.statistics$mean.resid /
-                                                 BRT.annual.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.annual.variables[[tcomp]]) <- sort(rownames(summary(BRT.annual.variables)))
-    }
-    importancePred.annual.variables[[tcomp]][, i] <-
-      summary(BRT.annual.variables)[rownames(importancePred.annual.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.annual.variables, mean)
-sds <- sapply(R2Obs.annual.variables, sd)
-plot(1:length(R2Obs.annual.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.annual.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# 6, lr = 0.0001
-
-# perennial variables with site
-
-R2Obs.perennial.variables <- list()
-importancePred.perennial.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                   ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.variables <- gbm.step(data=perennial.data,
-                                        gbm.x = c(11:18),
-                                        gbm.y = 10,
-                                        family = "gaussian",
-                                        tree.complexity = tcomp,
-                                        learning.rate = 0.000001,
-                                        bag.fraction = 0.75,
-                                        n.trees = 50,
-                                        plot.main=F, plot.folds=F,
-                                        site.weights = perennial.data$site.id)
-    #R2 adj:
-    R2Obs.perennial.variables[[tcomp]][i] <- 1 - (BRT.perennial.variables$self.statistics$mean.resid /
-                                                    BRT.perennial.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.variables)))
-    }
-    importancePred.perennial.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.variables)[rownames(importancePred.perennial.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.variables, mean)
-sds <- sapply(R2Obs.perennial.variables, sd)
-plot(1:length(R2Obs.perennial.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-# perennial variables without site
-
-R2Obs.perennial.variables <- list()
-importancePred.perennial.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                   ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.variables <- gbm.step(data=perennial.data,
-                                        gbm.x = c(11:18),
-                                        gbm.y = 10,
-                                        family = "gaussian",
-                                        tree.complexity = tcomp,
-                                        learning.rate = 0.0000001,
-                                        bag.fraction = 0.75,
-                                        n.trees = 50,
-                                        plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.perennial.variables[[tcomp]][i] <- 1 - (BRT.perennial.variables$self.statistics$mean.resid /
-                                                    BRT.perennial.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.variables)))
-    }
-    importancePred.perennial.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.variables)[rownames(importancePred.perennial.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.variables, mean)
-sds <- sapply(R2Obs.perennial.variables, sd)
-plot(1:length(R2Obs.perennial.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# grass variables with site
-
-R2Obs.grass.variables <- list()
-importancePred.grass.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.grass.variables[[tcomp]] <- numeric(nreps)
-  importancePred.grass.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                               ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.grass.variables <- gbm.step(data=grass,
-                                    gbm.x = c(11:18),
-                                    gbm.y = 10,
-                                    family = "gaussian",
-                                    tree.complexity = tcomp,
-                                    learning.rate = 0.0000001,
-                                    bag.fraction = 0.75,
-                                    n.trees = 50,
-                                    plot.main=F, plot.folds=F,
-                                    site.weights = grass$site.id)
-    #R2 adj:
-    R2Obs.grass.variables[[tcomp]][i] <- 1 - (BRT.grass.variables$self.statistics$mean.resid /
-                                                BRT.grass.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.grass.variables[[tcomp]]) <- sort(rownames(summary(BRT.grass.variables)))
-    }
-    importancePred.grass.variables[[tcomp]][, i] <-
-      summary(BRT.grass.variables)[rownames(importancePred.grass.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.grass.variables, mean)
-sds <- sapply(R2Obs.grass.variables, sd)
-plot(1:length(R2Obs.grass.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.grass.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-# grass variables without site
-
-R2Obs.grass.variables <- list()
-importancePred.grass.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.grass.variables[[tcomp]] <- numeric(nreps)
-  importancePred.grass.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                               ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.grass.variables <- gbm.step(data=grass,
-                                    gbm.x = c(11:18),
-                                    gbm.y = 10,
-                                    family = "gaussian",
-                                    tree.complexity = tcomp,
-                                    learning.rate = 0.000001,
-                                    bag.fraction = 0.75,
-                                    n.trees = 50,
-                                    plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.grass.variables[[tcomp]][i] <- 1 - (BRT.grass.variables$self.statistics$mean.resid /
-                                                BRT.grass.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.grass.variables[[tcomp]]) <- sort(rownames(summary(BRT.grass.variables)))
-    }
-    importancePred.grass.variables[[tcomp]][, i] <-
-      summary(BRT.grass.variables)[rownames(importancePred.grass.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.grass.variables, mean)
-sds <- sapply(R2Obs.grass.variables, sd)
-plot(1:length(R2Obs.grass.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.grass.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-# forb variables with site
-
-R2Obs.forb.variables <- list()
-importancePred.forb.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.forb.variables[[tcomp]] <- numeric(nreps)
-  importancePred.forb.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                              ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.forb.variables <- gbm.step(data=forb,
-                                   gbm.x = c(11:18),
-                                   gbm.y = 10,
-                                   family = "gaussian",
-                                   tree.complexity = tcomp,
-                                   learning.rate = 0.001,
-                                   bag.fraction = 0.75,
-                                   n.trees = 50,
-                                   plot.main=F, plot.folds=F,
-                                   site.weights = forb$site.id)
-    #R2 adj:
-    R2Obs.forb.variables[[tcomp]][i] <- 1 - (BRT.forb.variables$self.statistics$mean.resid /
-                                               BRT.forb.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.forb.variables[[tcomp]]) <- sort(rownames(summary(BRT.forb.variables)))
-    }
-    importancePred.forb.variables[[tcomp]][, i] <-
-      summary(BRT.forb.variables)[rownames(importancePred.forb.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.forb.variables, mean)
-sds <- sapply(R2Obs.forb.variables, sd)
-plot(1:length(R2Obs.forb.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.forb.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# tc of 7 or 9
-
-# forb variables without site
-
-R2Obs.forb.variables <- list()
-importancePred.forb.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.forb.variables[[tcomp]] <- numeric(nreps)
-  importancePred.forb.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                              ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.forb.variables <- gbm.step(data=forb,
-                                   gbm.x = c(11:18),
-                                   gbm.y = 10,
-                                   family = "gaussian",
-                                   tree.complexity = tcomp,
-                                   learning.rate = 0.001,
-                                   bag.fraction = 0.75,
-                                   n.trees = 50,
-                                   plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.forb.variables[[tcomp]][i] <- 1 - (BRT.forb.variables$self.statistics$mean.resid /
-                                               BRT.forb.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.forb.variables[[tcomp]]) <- sort(rownames(summary(BRT.forb.variables)))
-    }
-    importancePred.forb.variables[[tcomp]][, i] <-
-      summary(BRT.forb.variables)[rownames(importancePred.forb.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.forb.variables, mean)
-sds <- sapply(R2Obs.forb.variables, sd)
-plot(1:length(R2Obs.forb.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.forb.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# tc of 10 or 6 or 8
-
-# annual.grass variables with site
-
-R2Obs.annual.grass.variables <- list()
-importancePred.annual.grass.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.annual.grass.variables[[tcomp]] <- numeric(nreps)
-  importancePred.annual.grass.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                      ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.annual.grass.variables <- gbm.step(data=annual.grass,
-                                           gbm.x = c(11:18),
-                                           gbm.y = 10,
-                                           family = "gaussian",
-                                           tree.complexity = tcomp,
-                                           learning.rate = 0.001,
-                                           bag.fraction = 0.75,
-                                           n.trees = 50,
-                                           plot.main=F, plot.folds=F,
-                                           site.weights = annual.grass$site.id)
-    #R2 adj:
-    R2Obs.annual.grass.variables[[tcomp]][i] <- 1 - (BRT.annual.grass.variables$self.statistics$mean.resid /
-                                                       BRT.annual.grass.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.annual.grass.variables[[tcomp]]) <- sort(rownames(summary(BRT.annual.grass.variables)))
-    }
-    importancePred.annual.grass.variables[[tcomp]][, i] <-
-      summary(BRT.annual.grass.variables)[rownames(importancePred.annual.grass.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.annual.grass.variables, mean)
-sds <- sapply(R2Obs.annual.grass.variables, sd)
-plot(1:length(R2Obs.annual.grass.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.annual.grass.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 3
-
-# annual.grass variables without site
-
-R2Obs.annual.grass.variables <- list()
-importancePred.annual.grass.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.annual.grass.variables[[tcomp]] <- numeric(nreps)
-  importancePred.annual.grass.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                      ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.annual.grass.variables <- gbm.step(data=annual.grass,
-                                           gbm.x = c(11:18),
-                                           gbm.y = 10,
-                                           family = "gaussian",
-                                           tree.complexity = tcomp,
-                                           learning.rate = 0.0001,
-                                           bag.fraction = 0.75,
-                                           n.trees = 50,
-                                           plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.annual.grass.variables[[tcomp]][i] <- 1 - (BRT.annual.grass.variables$self.statistics$mean.resid /
-                                                       BRT.annual.grass.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.annual.grass.variables[[tcomp]]) <- sort(rownames(summary(BRT.annual.grass.variables)))
-    }
-    importancePred.annual.grass.variables[[tcomp]][, i] <-
-      summary(BRT.annual.grass.variables)[rownames(importancePred.annual.grass.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.annual.grass.variables, mean)
-sds <- sapply(R2Obs.annual.grass.variables, sd)
-plot(1:length(R2Obs.annual.grass.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.annual.grass.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 4
-
-# annual.forb variables with site
-
-R2Obs.annual.forb.variables <- list()
-importancePred.annual.forb.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.annual.forb.variables[[tcomp]] <- numeric(nreps)
-  importancePred.annual.forb.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                     ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.annual.forb.variables <- gbm.step(data=annual.forb,
-                                          gbm.x = c(11:18),
-                                          gbm.y = 10,
-                                          family = "gaussian",
-                                          tree.complexity = tcomp,
-                                          learning.rate = 0.0001,
-                                          bag.fraction = 0.75,
-                                          n.trees = 50,
-                                          plot.main=F, plot.folds=F,
-                                          site.weights = annual.forb$site.id)
-    #R2 adj:
-    R2Obs.annual.forb.variables[[tcomp]][i] <- 1 - (BRT.annual.forb.variables$self.statistics$mean.resid /
-                                                      BRT.annual.forb.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.annual.forb.variables[[tcomp]]) <- sort(rownames(summary(BRT.annual.forb.variables)))
-    }
-    importancePred.annual.forb.variables[[tcomp]][, i] <-
-      summary(BRT.annual.forb.variables)[rownames(importancePred.annual.forb.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.annual.forb.variables, mean)
-sds <- sapply(R2Obs.annual.forb.variables, sd)
-plot(1:length(R2Obs.annual.forb.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.annual.forb.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# tc = 9 or 10
-
-# annual.forb variables without site
-
-R2Obs.annual.forb.variables <- list()
-importancePred.annual.forb.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.annual.forb.variables[[tcomp]] <- numeric(nreps)
-  importancePred.annual.forb.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                     ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.annual.forb.variables <- gbm.step(data=annual.forb,
-                                          gbm.x = c(11:18),
-                                          gbm.y = 10,
-                                          family = "gaussian",
-                                          tree.complexity = tcomp,
-                                          learning.rate = 0.0001,
-                                          bag.fraction = 0.75,
-                                          n.trees = 50,
-                                          plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.annual.forb.variables[[tcomp]][i] <- 1 - (BRT.annual.forb.variables$self.statistics$mean.resid /
-                                                      BRT.annual.forb.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.annual.forb.variables[[tcomp]]) <- sort(rownames(summary(BRT.annual.forb.variables)))
-    }
-    importancePred.annual.forb.variables[[tcomp]][, i] <-
-      summary(BRT.annual.forb.variables)[rownames(importancePred.annual.forb.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.annual.forb.variables, mean)
-sds <- sapply(R2Obs.annual.forb.variables, sd)
-plot(1:length(R2Obs.annual.forb.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.annual.forb.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# tc = 6
-
-# perennial.grass variables with site
-
-R2Obs.perennial.grass.variables <- list()
-importancePred.perennial.grass.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.grass.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.grass.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                         ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.grass.variables <- gbm.step(data=perennial.grass,
-                                              gbm.x = c(11:18),
-                                              gbm.y = 10,
-                                              family = "gaussian",
-                                              tree.complexity = tcomp,
-                                              learning.rate = 0.00000001,
-                                              bag.fraction = 0.75,
-                                              n.trees = 50,
-                                              plot.main=F, plot.folds=F,
-                                              site.weights = perennial.grass$site.id)
-    #R2 adj:
-    R2Obs.perennial.grass.variables[[tcomp]][i] <- 1 - (BRT.perennial.grass.variables$self.statistics$mean.resid /
-                                                          BRT.perennial.grass.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.grass.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.grass.variables)))
-    }
-    importancePred.perennial.grass.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.grass.variables)[rownames(importancePred.perennial.grass.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.grass.variables, mean)
-sds <- sapply(R2Obs.perennial.grass.variables, sd)
-plot(1:length(R2Obs.perennial.grass.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.grass.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-# perennial.grass variables with site
-
-R2Obs.perennial.grass.variables <- list()
-importancePred.perennial.grass.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.grass.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.grass.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                         ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.grass.variables <- gbm.step(data=perennial.grass,
-                                              gbm.x = c(11:18),
-                                              gbm.y = 10,
-                                              family = "gaussian",
-                                              tree.complexity = tcomp,
-                                              learning.rate = 0.00000001,
-                                              bag.fraction = 0.75,
-                                              n.trees = 50,
-                                              plot.main=F, plot.folds=F)
-    
-    #R2 adj:
-    R2Obs.perennial.grass.variables[[tcomp]][i] <- 1 - (BRT.perennial.grass.variables$self.statistics$mean.resid /
-                                                          BRT.perennial.grass.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.grass.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.grass.variables)))
-    }
-    importancePred.perennial.grass.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.grass.variables)[rownames(importancePred.perennial.grass.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.grass.variables, mean)
-sds <- sapply(R2Obs.perennial.grass.variables, sd)
-plot(1:length(R2Obs.perennial.grass.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.grass.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-# perennial.forb variables with site
-
-R2Obs.perennial.forb.variables <- list()
-importancePred.perennial.forb.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.forb.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.forb.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                        ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.forb.variables <- gbm.step(data=perennial.forb,
-                                             gbm.x = c(11:18),
-                                             gbm.y = 10,
-                                             family = "gaussian",
-                                             tree.complexity = tcomp,
-                                             learning.rate = 0.000001,
-                                             bag.fraction = 0.75,
-                                             n.trees = 50,
-                                             plot.main=F, plot.folds=F,
-                                             site.weights = perennial.forb$site.id)
-    
-    #R2 adj:
-    R2Obs.perennial.forb.variables[[tcomp]][i] <- 1 - (BRT.perennial.forb.variables$self.statistics$mean.resid /
-                                                         BRT.perennial.forb.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.forb.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.forb.variables)))
-    }
-    importancePred.perennial.forb.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.forb.variables)[rownames(importancePred.perennial.forb.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.forb.variables, mean)
-sds <- sapply(R2Obs.perennial.forb.variables, sd)
-plot(1:length(R2Obs.perennial.forb.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.forb.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-# perennial.forb variables without site
-
-R2Obs.perennial.forb.variables <- list()
-importancePred.perennial.forb.variables <- list()
-nreps <- 10 #number of simulations
-set.seed(2023)
-for (tcomp in 1:10) {
-  R2Obs.perennial.forb.variables[[tcomp]] <- numeric(nreps)
-  importancePred.perennial.forb.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:8),
-                                                                        ncol = nreps))
-  for(i in 1:nreps){
-    if (i == 1) {
-      cat(paste("Starting tc =", tcomp, "\n"))
-    }
-    BRT.perennial.forb.variables <- gbm.step(data=perennial.forb,
-                                             gbm.x = c(11:18),
-                                             gbm.y = 10,
-                                             family = "gaussian",
-                                             tree.complexity = tcomp,
-                                             learning.rate = 0.000001,
-                                             bag.fraction = 0.75,
-                                             n.trees = 50,
-                                             plot.main=F, plot.folds=F)
-    
-    
-    #R2 adj:
-    R2Obs.perennial.forb.variables[[tcomp]][i] <- 1 - (BRT.perennial.forb.variables$self.statistics$mean.resid /
-                                                         BRT.perennial.forb.variables$self.statistics$mean.null)
-    if (i == 1) {
-      rownames(importancePred.perennial.forb.variables[[tcomp]]) <- sort(rownames(summary(BRT.perennial.forb.variables)))
-    }
-    importancePred.perennial.forb.variables[[tcomp]][, i] <-
-      summary(BRT.perennial.forb.variables)[rownames(importancePred.perennial.forb.variables[[tcomp]]), ]$rel.inf
-  }
-}
-
-# examine how R2 improves with tree complexity, pag 105
-
-means <- sapply(R2Obs.perennial.forb.variables, mean)
-sds <- sapply(R2Obs.perennial.forb.variables, sd)
-plot(1:length(R2Obs.perennial.forb.variables), means, ylab = "R squared",
-     xlab = "Model complexity")
-for (i in 1:length(R2Obs.perennial.forb.variables)) {
-  arrows(x0 = i, x1 = i, y0 = means[i] - sds[i], y1 = means[i] + sds[i],
-         angle = 90, code = 3, length = 0.1)
-}
-
-# can't get past tc = 1
-
-#### final model with all data ####
+#### Best Models ####
 
 set.seed(2023)
-all.final.brt.1 <- gbm.step(data=all.data.year2,
-                            gbm.x = c(6:13),
-                            gbm.y = 5,
-                            family = "gaussian",
-                            tree.complexity = 10,
-                            learning.rate = 0.00001,
-                            bag.fraction = 0.75,
-                            n.trees = 50,
-                            plot.main=T, plot.folds=T, site.weights = all.data.year2$site.id)
+all.brt.no.site.map=gbm.step(data=all.data, gbm.x = c(6:13,18), gbm.y=5,
+                             family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
-summary(all.final.brt.1)
-ggInfluence(all.final.brt.1)
 
-gbm.plot(all.final.brt.1, common.scale = FALSE)
-gbm.plot.fits(all.final.brt.1)
+ggPerformance(all.brt.no.site.map)
+# 1100 trees Per.Expl = 11.19586552
+1-(all.brt.no.site.map$self.statistics$mean.resid/all.brt.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(all.brt.no.site.map)
 
-plot.gbm(all.final.brt.1, i.var = c("RTD.g.cm3"))
-plot.gbm(all.final.brt.1, i.var = c("root.depth_m"))
-plot.gbm(all.final.brt.1, i.var = c("leafN.mg.g"))
-plot.gbm(all.final.brt.1, i.var = c("SLA_m2.kg"))
-plot.gbm(all.final.brt.1, i.var = c("height.m"))
-plot.gbm(all.final.brt.1, i.var = c("rootDiam.mm"))
-plot.gbm(all.final.brt.1, i.var = c("SRL_m.g"))
-plot.gbm(all.final.brt.1, i.var = c("rootN.mg.g"))
-
-all.predict.brt=predict(all.final.brt.1, n.trees = all.final.brt.1$n.trees)
-observed.all = all.data.year2$mean.cover.response
-plot(all.predict.brt~observed.all)
-abline(0, 1, col = 2)
-
-R2.all.brt = 1-(all.final.brt.1$self.statistics$mean.resid/all.final.brt.1$self.statistics$mean.null)
-# 0.003
+ggPD(all.brt.no.site.map, rug = T) # partial dependency plots
+gbm.plot(all.brt.no.site.map, common.scale = FALSE)
+gbm.plot.fits(all.brt.no.site.map)
 
 # investigation of interactions
-gbm.interactions(all.final.brt.1)$rank.list
-# 2 weak interactions
+gbm.interactions(all.brt.no.site.map)$rank.list
+ggInteract_list(all.brt.no.site.map)
+# diam x leafN 18.98
+# rootN x leafN 14.12
+# MAP x leafN 7.58
+# SLA x rootN 2.43
 
-#### final model with all data without site ####
-set.seed(2023)
-all.final.brt.no.site <- gbm.step(data=all.data.year2,
-                                  gbm.x = c(6:13),
-                                  gbm.y = 5,
-                                  family = "gaussian",
-                                  tree.complexity = 10,
-                                  learning.rate = 0.0001,
-                                  bag.fraction = 0.75,
-                                  n.trees = 50,
-                                  plot.main=T, plot.folds=T)
-summary(all.final.brt.no.site)
+ggInteract_3D(all.brt.no.site.map, x = 6, y = 2, z.range = c(-1.5, 0.45))
+ggInteract_3D(all.brt.no.site.map, x = 6, y = 1,z.range = c(-1, 1.1))
+ggInteract_3D(all.brt.no.site.map, x = 7, y = 1, z.range = c(-0.5, 1.5))
+ggInteract_3D(all.brt.no.site.map, x = 6, y = 4, z.range = c(0, 1.2))
 
-gbm.plot(all.final.brt.no.site, common.scale = FALSE)
-gbm.plot.fits(all.final.brt.no.site)
 
-plot.gbm(all.final.brt.no.site, i.var = c("RTD.g.cm3"))
-plot.gbm(all.final.brt.no.site, i.var = c("root.depth_m"))
-plot.gbm(all.final.brt.no.site, i.var = c("leafN.mg.g"))
-plot.gbm(all.final.brt.no.site, i.var = c("SLA_m2.kg"))
-plot.gbm(all.final.brt.no.site, i.var = c("height.m"))
-plot.gbm(all.final.brt.no.site, i.var = c("rootDiam.mm"))
-plot.gbm(all.final.brt.no.site, i.var = c("SRL_m.g"))
-plot.gbm(all.final.brt.no.site, i.var = c("rootN.mg.g"))
+#### all data without woody ####
+tree.no.site.map=gbm.step(data=no.trees, gbm.x = c(6:13,18), gbm.y=5,
+                          family = "gaussian", tree.complexity = 1, learning.rate = 0.00001,
+                          bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
-all.predict.brt=predict(all.final.brt.no.site, n.trees = all.final.brt.no.site$n.trees)
-observed.all = all.data.year2$mean.cover.response
-plot(all.predict.brt~observed.all)
-abline(0, 1, col = 2)
+ggPerformance(tree.no.site.map)
+# 1500 trees Per.Expl = 14.41%
+1-(tree.no.site.map$self.statistics$mean.resid/tree.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(tree.no.site.map)
 
-R2.all.brt = 1-(all.final.brt.no.site$self.statistics$mean.resid/all.final.brt.no.site$self.statistics$mean.null)
-# 0.05
+ggPD(tree.no.site.map, rug = T) # partial dependency plots
+gbm.plot(tree.no.site.map, common.scale = FALSE)
+gbm.plot.fits(tree.no.site.map)
 
 # investigation of interactions
-gbm.interactions(all.final.brt.no.site)$rank.list
+gbm.interactions(tree.no.site.map)$rank.list
+ggInteract_list(tree.no.site.map)
+# height x leafN 35.06
+# RTD x height 27.94
+# rootDiam x height 6.23
+# SRL x height 5.45
 
-all.brt.simple = gbm.simplify(all.final.brt.no.site)
-# keep only leafN and height
+ggInteract_3D(tree.no.site.map, x = 2, y = 1, z.range = c(-2.5, 1.2))
+ggInteract_3D(tree.no.site.map, x = 6, y = 2,z.range = c(-2.5, 1.75))
+ggInteract_3D(tree.no.site.map, x = 8, y = 2, z.range = c(0, 1.2))
+ggInteract_3D(tree.no.site.map, x = 7, y = 2, z.range = c(-1, 1.2))
 
-#### model without trees ####
+#### annual ####
+# had to change from lr 0.005 to lr 0.001 to get model to fit
+annual.no.site.map=gbm.step(data=annual.data, gbm.x = c(6:13,18), gbm.y=5,
+                            family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
+                            bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(annual.no.site.map)
+# 1800 trees Per.Expl = 19.51 %
+1-(annual.no.site.map$self.statistics$mean.resid/annual.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(annual.no.site.map)
+
+ggPD(annual.no.site.map, rug = T) # partial dependency plots
+ggPDfit(annual.no.site.map)
+gbm.plot(annual.no.site.map, common.scale = FALSE)
+gbm.plot.fits(annual.no.site.map)
+
+annual.prerun<- plot.gbm.4list(annual.no.site.map)
+annual.boot <- gbm.bootstrap.functions(annual.no.site.map, list.predictors=annual.prerun, n.reps=100)
+ggPD_boot(annual.no.site.map, predictor="leafN.mg.g", list.4.preds=annual.prerun, 
+          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(annual.no.site.map, predictor="root.depth_m", list.4.preds=annual.prerun, 
+          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(annual.no.site.map, predictor="height.m", list.4.preds=annual.prerun, 
+          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(annual.no.site.map, predictor="SRL_m.g", list.4.preds=annual.prerun, 
+          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
+
+save(annual.no.site.map, annual.prerun, annual.boot, file = "./Results/drtyr1.v.drtyr2/annual.output.RData")
+
+
+
 set.seed(2023)
-tree.final.brt <- gbm.step(data=no.trees,
-                           gbm.x = c(6:13),
-                           gbm.y = 5,
-                           family = "gaussian",
-                           tree.complexity = 10,
-                           learning.rate = 0.0000001,
-                           bag.fraction = 0.75,
-                           n.trees = 50,
-                           plot.main=T, plot.folds=T, site.weights = no.trees$site.id)
-# didn't work
-summary(tree.final.brt)
+perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y=10,
+                                 family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
+                                 bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 25)
+# NA
 
-gbm.plot(tree.final.brt, common.scale = FALSE)
-gbm.plot.fits(tree.final.brt)
+set.seed(2023)
+perennial.tree.no.site.map=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
+                                    family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(perennial.tree.no.site.map)
+# 2000 trees Per.Expl = 4.92%
+1-(perennial.tree.no.site.map$self.statistics$mean.resid/perennial.tree.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(perennial.tree.no.site.map)
 
-plot.gbm(tree.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(tree.final.brt, i.var = c("root.depth_m"))
-plot.gbm(tree.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(tree.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(tree.final.brt, i.var = c("height.m"))
-plot.gbm(tree.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(tree.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(tree.final.brt, i.var = c("rootN.mg.g"))
-
-tree.predict.brt=predict(tree.final.brt, n.trees = tree.final.brt$n.trees)
-observed.tree = no.trees$mean.cover.response
-plot(tree.predict.brt~observed.tree)
-abline(0, 1, col = 2)
-
-R2.tree.brt = 1-(tree.final.brt$self.statistics$mean.resid/tree.final.brt$self.statistics$mean.null)
-# 0.06
+ggPD(perennial.tree.no.site.map, rug = T) # partial dependency plots
+gbm.plot(perennial.tree.no.site.map, common.scale = FALSE)
+gbm.plot.fits(perennial.tree.no.site.map)
 
 # investigation of interactions
-gbm.interactions(tree.final.brt)$rank.list
+gbm.interactions(perennial.tree.no.site.map)$rank.list
+ggInteract_list(perennial.tree.no.site.map)
+# height x leafN 4.33
+# SRL x height 1.63
+# SRL x leafN 3.30
+# SRL x SLA 0.33
 
-# significant interactions
+ggInteract_3D(perennial.tree.no.site.map, x = 2, y = 1, z.range = c(0, 0.75))
+ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 1,z.range = c(0, 0.75))
+ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 2, z.range = c(0, 0.75))
+ggInteract_3D(perennial.tree.no.site.map, x = 9, y = 4, z.range = c(0.2, 0.75))
 
-
-#### model without trees without site ####
-# not done
 set.seed(2023)
-tree.final.brt.no.site <- gbm.step(data=no.trees,
-                                   gbm.x = c(6:13),
-                                   gbm.y = 5,
-                                   family = "gaussian",
-                                   tree.complexity = 10,
-                                   learning.rate = 0.00000001,
-                                   bag.fraction = 0.75,
-                                   n.trees = 50,
-                                   plot.main=T, plot.folds=T)
-# didn't work
-summary(tree.final.brt.no.site)
+grass.no.site.map=gbm.step(data=grass, gbm.x = c(11:18,23), gbm.y=10,
+                           family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                           bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
-gbm.plot(tree.final.brt.no.site, common.scale = FALSE)
-gbm.plot.fits(tree.final.brt.no.site)
+ggPerformance(grass.no.site.map)
+# 1000 trees Per.Expl = 1.84%
+1-(grass.no.site.map$self.statistics$mean.resid/grass.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(grass.no.site.map)
 
-plot.gbm(tree.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(tree.final.brt, i.var = c("root.depth_m"))
-plot.gbm(tree.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(tree.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(tree.final.brt, i.var = c("height.m"))
-plot.gbm(tree.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(tree.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(tree.final.brt, i.var = c("rootN.mg.g"))
-
-tree.predict.brt=predict(tree.final.brt.no.site, n.trees = tree.final.brt.no.site$n.trees)
-observed.tree = no.trees$mean.cover.response
-plot(tree.predict.brt~observed.tree)
-abline(0, 1, col = 2)
-
-R2.tree.brt = 1-(tree.final.brt.no.site$self.statistics$mean.resid/tree.final.brt.no.site$self.statistics$mean.null)
-# 0.08
+ggPD(grass.no.site.map, rug = T) # partial dependency plots
+gbm.plot(grass.no.site.map, common.scale = FALSE)
+gbm.plot.fits(grass.no.site.map)
 
 # investigation of interactions
-gbm.interactions(tree.final.brt.no.site)$rank.list
+gbm.interactions(grass.no.site.map)$rank.list
+ggInteract_list(grass.no.site.map)
+# precip x diam 0.09
+# precip x RTD 0.08
+# diam x RTD 0.08
+# diam x rootN 0.05
 
-# significant interactions
-# none
+ggInteract_3D(grass.no.site.map, x = 9, y = 8, z.range = c(-0.05, 0.20))
+ggInteract_3D(grass.no.site.map, x = 9, y = 6,z.range = c(-0.2, 0.20))
+ggInteract_3D(grass.no.site.map, x = 8, y = 6, z.range = c(-0.2, 0.30))
+ggInteract_3D(grass.no.site.map, x = 8, y = 3, z.range = c(-0.2, 0.20))
 
-#### annual final model ####
-set.seed(2023)
-annual.final.brt <- gbm.step(data=annual.data,
-                             gbm.x = c(21:28),
-                             gbm.y = 20,
-                             family = "gaussian",
-                             tree.complexity = 10,
-                             learning.rate = 0.001,
-                             bag.fraction = 0.75,
-                             n.trees = 50,
-                             plot.main=T, plot.folds=T, site.weights = annual.data$site.id)
+#### Forb ####
+forb.no.site.map=gbm.step(data=forb, gbm.x = c(6:13,18), gbm.y=5,
+                          family = "gaussian", tree.complexity = 3, learning.rate = 0.001,
+                          bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 
-summary(annual.final.brt)
-ggInfluence(annual.final.brt)
+ggPerformance(forb.no.site.map)
+# 1050 trees Per.Expl = 13.67%
+1-(forb.no.site.map$self.statistics$mean.resid/forb.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(forb.no.site.map)
 
-gbm.plot(annual.final.brt, common.scale = FALSE)
-gbm.plot.fits(annual.final.brt)
+ggPD(forb.no.site.map, rug = T) # partial dependency plots
+ggPDfit(forb.no.site.map)
+gbm.plot(forb.no.site.map, common.scale = FALSE)
+gbm.plot.fits(forb.no.site.map)
 
-plot.gbm(annual.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(annual.final.brt, i.var = c("root.depth_m"))
-plot.gbm(annual.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(annual.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(annual.final.brt, i.var = c("height.m"))
-plot.gbm(annual.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(annual.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(annual.final.brt, i.var = c("rootN.mg.g"))
-
-annual.predict.brt=predict(annual.final.brt, n.trees = annual.final.brt$n.trees)
-observed.annaul = annual.data$mean.cover.response
-plot(annual.predict.brt~observed.annaul)
-abline(0, 1, col = 2)
-
-R2.annual.brt = 1-(annual.final.brt$self.statistics$mean.resid/annual.final.brt$self.statistics$mean.null)
-# 0.24
+forb.prerun<- plot.gbm.4list(forb.no.site.map)
+forb.boot <- gbm.bootstrap.functions(forb.no.site.map, list.predictors=forb.prerun, n.reps=100)
+ggPD_boot(forb.no.site.map, predictor="rootDiam.mm", list.4.preds=forb.prerun, 
+          booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(forb.no.site.map, predictor="rootN.mg.g", list.4.preds=forb.prerun, 
+          booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(forb.no.site.map, predictor="height.m", list.4.preds=forb.prerun, 
+          booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(forb.no.site.map, predictor="leafN.mg.g", list.4.preds=forb.prerun, 
+          booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
 
 # investigation of interactions
-gbm.interactions(annual.final.brt)$rank.list
+gbm.interactions(forb.no.site.map)$rank.list
+ggInteract_list(forb.no.site.map)
+# MAP x rootN 1.70
+# depth x rootN 1.00
+# MAP x height 0.93
+# Diam x rootN 0.84
 
-# significant interactions
+ggInteract_3D(forb.no.site.map, x = 6, y = 1, z.range = c(-2.0, 7))
+ggInteract_3D(forb.no.site.map, x = 5, y = 4,z.range = c(3, 5))
+ggInteract_3D(forb.no.site.map, x = 9, y = 1, z.range = c(-0.5, 7))
+ggInteract_3D(forb.no.site.map, x = 2, y = 1, z.range = c(0, 7))
+
+save(forb.no.site.map, forb.prerun, forb.boot, file = "./Results/drtyr1.v.drtyr2/forb.output.RData")
 
 
-#### annual final model without site ####
-# not done
 set.seed(2023)
-annual.final.brt.no.site <- gbm.step(data=annual.data,
-                             gbm.x = c(21:28),
-                             gbm.y = 20,
-                             family = "gaussian",
-                             tree.complexity = 10,
-                             learning.rate = 0.001,
-                             bag.fraction = 0.75,
-                             n.trees = 50,
-                             plot.main=T, plot.folds=T)
-summary(annual.final.brt.no.site)
+annual.grass.no.site.map=gbm.step(data=annual.grass, gbm.x = c(11:18,23), gbm.y=10,
+                                  family = "gaussian", tree.complexity = 2, learning.rate = 0.001,
+                                  bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
+ggPerformance(annual.grass.no.site.map)
+# 1950 trees Per.Expl = 34.72%
+1-(annual.grass.no.site.map$self.statistics$mean.resid/annual.grass.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(annual.grass.no.site.map)
 
-gbm.plot(annual.final.brt.no.site, common.scale = FALSE)
-gbm.plot.fits(annual.final.brt.no.site)
-
-plot.gbm(annual.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(annual.final.brt, i.var = c("root.depth_m"))
-plot.gbm(annual.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(annual.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(annual.final.brt, i.var = c("height.m"))
-plot.gbm(annual.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(annual.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(annual.final.brt, i.var = c("rootN.mg.g"))
-
-annual.predict.brt=predict(annual.final.brt.no.site, n.trees = annual.final.brt.no.site$n.trees)
-observed.annaul = annual.data$mean.cover.response
-plot(annual.predict.brt~observed.annaul)
-abline(0, 1, col = 2)
-
-R2.annual.brt = 1-(annual.final.brt.no.site$self.statistics$mean.resid/annual.final.brt.no.site$self.statistics$mean.null)
-# 0.26
+ggPD(annual.grass.no.site.map, rug = T) # partial dependency plots
+gbm.plot(annual.grass.no.site.map, common.scale = FALSE)
+gbm.plot.fits(annual.grass.no.site.map)
 
 # investigation of interactions
-gbm.interactions(annual.final.brt.no.site)$rank.list
+gbm.interactions(annual.grass.no.site.map)$rank.list
+ggInteract_list(annual.grass.no.site.map)
+# height x leafN 5.82
+# precip x height 5.33
+# precip x SLA 0.06
+# precip x depth 0.04
 
-# significant interactions
-# SRL x leafN, size = 42.91
-# rootDiam x SRL size = 3.97
-# SRL x depth, size = 2.58
-
-#### perennial final model without site####
-# perennial with site wouldn't fit
-# perennial without site wouldn't fit
-set.seed(2023)
-perennial.final.brt <- gbm.step(data=perennial.data,
-                                gbm.x = c(21:28),
-                                gbm.y = 20,
-                                family = "gaussian",
-                                tree.complexity = 10,
-                                learning.rate = 0.000001,
-                                bag.fraction = 0.75,
-                                n.trees = 50,
-                                plot.main=T, plot.folds=T, site.weights = perennial.data$site.id)
+ggInteract_3D(annual.grass.no.site.map, x = 2, y = 1, z.range = c(-0.1, 4))
+ggInteract_3D(annual.grass.no.site.map, x = 9, y = 2,z.range = c(-1, 4))
+ggInteract_3D(annual.grass.no.site.map, x = 9, y = 4, z.range = c(-2, 3))
+ggInteract_3D(annual.grass.no.site.map, x = 9, y = 5, z.range = c(-2, 3))
 
 set.seed(2023)
-perennial.final.brt.no.site <- gbm.step(data=perennial.data,
-                                gbm.x = c(21:28),
-                                gbm.y = 20,
-                                family = "gaussian",
-                                tree.complexity = 10,
-                                learning.rate = 0.0000001,
-                                bag.fraction = 0.75,
-                                n.trees = 50,
-                                plot.main=T, plot.folds=T)
-# only fits 750 trees
+annual.forb.no.site.map=gbm.step(data=annual.forb, gbm.x = c(11:18,23), gbm.y=10,
+                                 family = "gaussian", tree.complexity = 6, learning.rate = 0.001,
+                                 bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
+ggPerformance(annual.forb.no.site.map)
+# 1950 trees Per.Expl = 34.72%
+1-(annual.forb.no.site.map$self.statistics$mean.resid/annual.forb.no.site.map$self.statistics$mean.null) # R2
+ggInfluence(annual.forb.no.site.map)
 
-summary(perennial.final.brt.no.site)
-
-gbm.plot(perennial.final.brt, common.scale = FALSE)
-gbm.plot.fits(perennial.final.brt)
-
-plot.gbm(perennial.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(perennial.final.brt, i.var = c("root.depth_m"))
-plot.gbm(perennial.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(perennial.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(perennial.final.brt, i.var = c("height.m"))
-plot.gbm(perennial.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(perennial.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(perennial.final.brt, i.var = c("rootN.mg.g"))
-
-perennial.predict.brt=predict(perennial.final.brt, n.trees = perennial.final.brt$n.trees)
-observed.perennial = perennial.data$mean.cover.response
-plot(annual.predict.brt~observed.perennial)
-abline(0, 1, col = 2)
-
-R2.perennail.brt = 1-(perennial.final.brt.no.site$self.statistics$mean.resid/perennial.final.brt.no.site$self.statistics$mean.null)
-# 0.0
+ggPD(annual.forb.no.site.map, rug = T) # partial dependency plots
+gbm.plot(annual.forb.no.site.map, common.scale = FALSE)
+gbm.plot.fits(annual.forb.no.site.map)
 
 # investigation of interactions
-gbm.interactions(perennial.final.brt)$rank.list
-# none
+gbm.interactions(annual.forb.no.site.map)$rank.list
+ggInteract_list(annual.forb.no.site.map)
+# SLA x leafN 30.11
+# precip x SLA 15.70
+# precip x height 14.08
+# SLA x height 13.23
 
-#### perennial without tree final model ####
-# won't fit with site.id
-set.seed(2023)
-perennial.tree.final.brt <- gbm.step(data=perennial.tree,
-                                     gbm.x = c(21:28),
-                                     gbm.y = 20,
-                                     family = "gaussian",
-                                     tree.complexity = 10,
-                                     learning.rate = 0.000001,
-                                     bag.fraction = 0.75,
-                                     n.trees = 50,
-                                     plot.main=T, plot.folds=T, site.weights = perennial.tree$site.id)
-
-summary(perennial.tree.final.brt)
-
-gbm.plot(perennial.tree.final.brt, common.scale = FALSE)
-gbm.plot.fits(perennial.tree.final.brt)
-
-plot.gbm(perennial.tree.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(perennial.tree.final.brt, i.var = c("root.depth_m"))
-plot.gbm(perennial.tree.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(perennial.tree.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(perennial.tree.final.brt, i.var = c("height.m"))
-plot.gbm(perennial.tree.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(perennial.tree.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(perennial.tree.final.brt, i.var = c("rootN.mg.g"))
-
-perennial.tree.predict.brt=predict(perennial.tree.final.brt, n.trees = perennial.tree.final.brt$n.trees)
-observed.perennial.tree = perennial.tree$mean.cover.response
-plot(perennial.tree.predict.brt~observed.perennial.tree)
-abline(0, 1, col = 2)
-
-R2.perennail.brt = 1-(perennial.tree.final.brt$self.statistics$mean.resid/perennial.tree.final.brt$self.statistics$mean.null)
-# 0.02
-
-# investigation of interactions
-gbm.interactions(perennial.tree.final.brt)$rank.list
-# three weak interactions
-
-#### grass final model with site ####
+ggInteract_3D(annual.forb.no.site.map, x = 4, y = 1, z.range = c(-2.5, 3.5))
+ggInteract_3D(annual.forb.no.site.map, x = 9, y = 4,z.range = c(-4, 2))
+ggInteract_3D(annual.forb.no.site.map, x = 9, y = 2, z.range = c(-2, 5.5))
+ggInteract_3D(annual.forb.no.site.map, x = 4, y = 2, z.range = c(-3.5, 5))
 
 set.seed(2023)
-grass.final.brt <- gbm.step(data=grass,
-                            gbm.x = c(6:13),
-                            gbm.y = 5,
-                            family = "gaussian",
-                            tree.complexity = 10,
-                            learning.rate = 0.000001,
-                            bag.fraction = 0.75,
-                            n.trees = 50,
-                            plot.main=T, plot.folds=T, 
-                            site.weights = grass$site.id)
+perennial.grass.brt.1.no.site=gbm.step(data=perennial.grass, gbm.x = c(11:18,23), gbm.y=10,
+                                       family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(perennial.grass.brt.1.no.site)
 
 set.seed(2023)
-grass.final.brt.no.site <- gbm.step(data=grass,
-                            gbm.x = c(6:13),
-                            gbm.y = 5,
-                            family = "gaussian",
-                            tree.complexity = 10,
-                            learning.rate = 0.000001,
-                            bag.fraction = 0.75,
-                            n.trees = 50,
-                            plot.main=T, plot.folds=T) 
-                            
+perennial.forb.brt.1.no.site=gbm.step(data=perennial.forb, gbm.x = c(11:18,23), gbm.y=10,
+                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
 
-summary(grass.final.brt)
-
-gbm.plot(grass.final.brt, common.scale = FALSE)
-gbm.plot.fits(grass.final.brt)
-
-plot.gbm(grass.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(grass.final.brt, i.var = c("root.depth_m"))
-plot.gbm(grass.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(grass.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(grass.final.brt, i.var = c("height.m"))
-plot.gbm(grass.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(grass.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(grass.final.brt, i.var = c("rootN.mg.g"))
-
-grass.predict.brt=predict(grass.final.brt, n.trees = grass.final.brt$n.trees)
-observed.grass = grass$mean.cover.response
-plot(grass.predict.brt~observed.grass)
-abline(0, 1, col = 2)
-
-R2.grass.brt = 1-(grass.final.brt$self.statistics$mean.resid/grass.final.brt$self.statistics$mean.null)
-# 0.04
-
-# investigation of interactions
-gbm.interactions(grass.final.brt)$rank.list
-# three weak interactions
-
-#### forb final model with site ####
-
-set.seed(2023)
-forb.final.brt <- gbm.step(data=forb,
-                           gbm.x = c(6:13),
-                           gbm.y = 5,
-                           family = "gaussian",
-                           tree.complexity = 10,
-                           learning.rate = 0.0001,
-                           bag.fraction = 0.75,
-                           n.trees = 50,
-                           plot.main=T, plot.folds=T, 
-                           site.weights = forb$site.id)
-
-set.seed(2023)
-forb.final.brt.no.site <- gbm.step(data=forb,
-                           gbm.x = c(6:13),
-                           gbm.y = 5,
-                           family = "gaussian",
-                           tree.complexity = 10,
-                           learning.rate = 0.0001,
-                           bag.fraction = 0.75,
-                           n.trees = 50,
-                           plot.main=T, plot.folds=T) 
-                           
-
-summary(forb.final.brt)
-
-gbm.plot(forb.final.brt, common.scale = FALSE)
-gbm.plot.fits(forb.final.brt)
-
-plot.gbm(forb.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(forb.final.brt, i.var = c("root.depth_m"))
-plot.gbm(forb.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(forb.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(forb.final.brt, i.var = c("height.m"))
-plot.gbm(forb.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(forb.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(forb.final.brt, i.var = c("rootN.mg.g"))
-
-forb.predict.brt=predict(forb.final.brt, n.trees = forb.final.brt$n.trees)
-observed.forb = forb$mean.cover.response
-plot(forb.predict.brt~observed.forb)
-abline(0, 1, col = 2)
-
-R2.forb.brt = 1-(forb.final.brt$self.statistics$mean.resid/forb.final.brt$self.statistics$mean.null)
-# 0.06
-R2.forb.brt.no.site = 1-(forb.final.brt.no.site$self.statistics$mean.resid/forb.final.brt.no.site$self.statistics$mean.null)
-# 0.07
-
-# investigation of interactions
-gbm.interactions(forb.final.brt)$rank.list
-# depth x SLA 80.92
-# height x leafN 38.51
-# RTD x height 8.30
-
-#### annual.grass final model with site ####
-
-set.seed(2023)
-annual.grass.final.brt <- gbm.step(data=annual.grass,
-                                   gbm.x = c(21:28),
-                                   gbm.y = 20,
-                                   family = "gaussian",
-                                   tree.complexity = 10,
-                                   learning.rate = 0.001,
-                                   bag.fraction = 0.75,
-                                   n.trees = 50,
-                                   plot.main=T, plot.folds=T, 
-                                   site.weights = annual.grass$site.id)
-
-set.seed(2023)
-annual.grass.final.brt.no.site <- gbm.step(data=annual.grass,
-                                   gbm.x = c(21:28),
-                                   gbm.y = 20,
-                                   family = "gaussian",
-                                   tree.complexity = 10,
-                                   learning.rate = 0.001,
-                                   bag.fraction = 0.75,
-                                   n.trees = 50,
-                                   plot.main=T, plot.folds=T) 
-                                   
-
-summary(annual.grass.final.brt)
-
-gbm.plot(annual.grass.final.brt, common.scale = FALSE)
-gbm.plot.fits(annual.grass.final.brt)
-
-plot.gbm(annual.grass.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(annual.grass.final.brt, i.var = c("root.depth_m"))
-plot.gbm(annual.grass.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(annual.grass.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(annual.grass.final.brt, i.var = c("height.m"))
-plot.gbm(annual.grass.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(annual.grass.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(annual.grass.final.brt, i.var = c("rootN.mg.g"))
-
-annual.grass.predict.brt=predict(annual.grass.final.brt, n.trees = annual.grass.final.brt$n.trees)
-observed.annual.grass = annual.grass$mean.cover.response
-plot(annual.grass.predict.brt~observed.annual.grass)
-abline(0, 1, col = 2)
-
-R2.annual.grass.brt = 1-(annual.grass.final.brt$self.statistics$mean.resid/annual.grass.final.brt$self.statistics$mean.null)
-# 0.13
-R2.annual.grass.brt.no.site = 1-(annual.grass.final.brt.no.site$self.statistics$mean.resid/annual.grass.final.brt.no.site$self.statistics$mean.null)
-# 0.16
-
-
-# investigation of interactions
-gbm.interactions(annual.grass.final.brt)$rank.list
-# three weak interactions
-
-#### annual.forb final model with site ####
-
-set.seed(2023)
-annual.forb.final.brt <- gbm.step(data=annual.forb,
-                                  gbm.x = c(21:28),
-                                  gbm.y = 20,
-                                  family = "gaussian",
-                                  tree.complexity = 10,
-                                  learning.rate = 0.001,
-                                  bag.fraction = 0.75,
-                                  n.trees = 50,
-                                  plot.main=T, plot.folds=T, 
-                                  site.weights = annual.forb$site.id)
-summary(annual.forb.final.brt)
-ggInfluence(annual.forb.final.brt)
-
-gbm.plot(annual.forb.final.brt, common.scale = FALSE)
-gbm.plot.fits(annual.forb.final.brt)
-
-plot.gbm(annual.forb.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(annual.forb.final.brt, i.var = c("root.depth_m"))
-plot.gbm(annual.forb.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(annual.forb.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(annual.forb.final.brt, i.var = c("height.m"))
-plot.gbm(annual.forb.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(annual.forb.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(annual.forb.final.brt, i.var = c("rootN.mg.g"))
-
-annual.forb.predict.brt=predict(annual.forb.final.brt, n.trees = annual.forb.final.brt$n.trees)
-observed.annual.forb = annual.forb$mean.cover.response
-plot(annual.forb.predict.brt~observed.annual.forb)
-abline(0, 1, col = 2)
-
-R2.annual.forb.brt = 1-(annual.forb.final.brt$self.statistics$mean.resid/annual.forb.final.brt$self.statistics$mean.null)
-# 0.35
-
-# investigation of interactions
-gbm.interactions(annual.forb.final.brt)$rank.list
-
-ggInteract_3D(annual.forb.final.brt,x="SLA_m2.kg",y="height.m")
-
-
-#### perennial.grass final model with site ####
-
-set.seed(2023)
-perennial.grass.final.brt <- gbm.step(data=perennial.grass,
-                                      gbm.x = c(21:28),
-                                      gbm.y = 20,
-                                      family = "gaussian",
-                                      tree.complexity = 10,
-                                      learning.rate = 0.00000001,
-                                      bag.fraction = 0.75,
-                                      n.trees = 50,
-                                      plot.main=T, plot.folds=T, 
-                                      site.weights = perennial.grass$site.id)
-
-set.seed(2023)
-perennial.grass.final.brt.no.site <- gbm.step(data=perennial.grass,
-                                      gbm.x = c(21:28),
-                                      gbm.y = 20,
-                                      family = "gaussian",
-                                      tree.complexity = 10,
-                                      learning.rate = 0.0000001,
-                                      bag.fraction = 0.75,
-                                      n.trees = 50,
-                                      plot.main=T, plot.folds=T) 
-                                     
-summary(perennial.grass.final.brt)
-
-gbm.plot(perennial.grass.final.brt, common.scale = FALSE)
-gbm.plot.fits(perennial.grass.final.brt)
-
-plot.gbm(perennial.grass.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(perennial.grass.final.brt, i.var = c("root.depth_m"))
-plot.gbm(perennial.grass.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(perennial.grass.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(perennial.grass.final.brt, i.var = c("height.m"))
-plot.gbm(perennial.grass.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(perennial.grass.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(perennial.grass.final.brt, i.var = c("rootN.mg.g"))
-
-perennial.grass.predict.brt=predict(perennial.grass.final.brt, n.trees = perennial.grass.final.brt$n.trees)
-observed.perennial.grass = perennial.grass$mean.cover.response
-plot(perennial.grass.predict.brt~observed.perennial.grass)
-abline(0, 1, col = 2)
-
-R2.perennial.grass.brt = 1-(perennial.grass.final.brt$self.statistics$mean.resid/perennial.grass.final.brt$self.statistics$mean.null)
-# 0.004
-
-# investigation of interactions
-gbm.interactions(perennial.grass.final.brt)$rank.list
-# two weak interactions
-
-#### perennial.forb final model with site ####
-
-set.seed(2023)
-perennial.forb.final.brt <- gbm.step(data=perennial.forb,
-                                     gbm.x = c(21:28),
-                                     gbm.y = 20,
-                                     family = "gaussian",
-                                     tree.complexity = 10,
-                                     learning.rate = 0.0000001,
-                                     bag.fraction = 0.75,
-                                     n.trees = 50,
-                                     plot.main=T, plot.folds=T, 
-                                     site.weights = perennial.forb$site.id)
-summary(perennial.forb.final.brt)
-
-gbm.plot(perennial.forb.final.brt, common.scale = FALSE)
-gbm.plot.fits(perennial.forb.final.brt)
-
-plot.gbm(perennial.forb.final.brt, i.var = c("RTD.g.cm3"))
-plot.gbm(perennial.forb.final.brt, i.var = c("root.depth_m"))
-plot.gbm(perennial.forb.final.brt, i.var = c("leafN.mg.g"))
-plot.gbm(perennial.forb.final.brt, i.var = c("SLA_m2.kg"))
-plot.gbm(perennial.forb.final.brt, i.var = c("height.m"))
-plot.gbm(perennial.forb.final.brt, i.var = c("rootDiam.mm"))
-plot.gbm(perennial.forb.final.brt, i.var = c("SRL_m.g"))
-plot.gbm(perennial.forb.final.brt, i.var = c("rootN.mg.g"))
-
-perennial.forb.predict.brt=predict(perennial.forb.final.brt, n.trees = perennial.forb.final.brt$n.trees)
-observed.perennial.forb = perennial.forb$mean.cover.response
-plot(perennial.forb.predict.brt~observed.perennial.forb)
-abline(0, 1, col = 2)
-
-R2.perennial.forb.brt = 1-(perennial.forb.final.brt$self.statistics$mean.resid/perennial.forb.final.brt$self.statistics$mean.null)
-# 0.03
-
-# investigation of interactions
-gbm.interactions(perennial.forb.final.brt)$rank.list
-# three weak interactions
-
-
-
-
-
-
-
-
+ggPerformance(perennial.forb.brt.1.no.site)
 
 

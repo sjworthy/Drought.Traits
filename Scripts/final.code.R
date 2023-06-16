@@ -86,7 +86,7 @@ sort(trait.data.2$rootDiam.mm[which(trait.data.2$rootDiam.mm <Tmin | trait.data.
 
 #### read in new trait data without outliers and cover data ####
 
-trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.std2.csv")
+trait.data.new = read.csv("./Formatted.Data/trait.species.trt.yr1.outlier.2.csv")
 cover.data = read.csv("./Formatted.Data/cover.response.trt.y1.csv")
 
 # subset traits so they must have SLA
@@ -188,7 +188,11 @@ cor.test(no.trees$RTD.g.cm3, no.trees$SRL_m.g) # correlated r = -0.23
 cor.test(no.trees$RTD.g.cm3, no.trees$rootDiam.mm)
 cor.test(no.trees$SRL_m.g, no.trees$rootDiam.mm)
 
-cor.mat = cor(no.trees[,c(11:18)],use = "pairwise") 
+cor.mat = cor(no.trees[,c(11:18)],use = "pairwise")
+colnames(cor.mat) = c("leafN","height","rootN","SLA","rooting depth","RTD","SRL",
+                      "root diameter")
+rownames(cor.mat) = c("leafN","height","rootN","SLA","rooting depth","RTD","SRL",
+                      "root diameter")
 corrplot(cor.mat, method="number")
 
 #### correlation between response and predictors of ALL data WITHOUT WOODY ####
@@ -296,7 +300,11 @@ cor.test(annual.data$RTD.g.cm3, annual.data$SRL_m.g) # correlated r = -0.30
 cor.test(annual.data$RTD.g.cm3, annual.data$rootDiam.mm)
 cor.test(annual.data$SRL_m.g, annual.data$rootDiam.mm)
 
-cor.mat = cor(annual.data[,c(11:18)],use = "pairwise") 
+cor.mat = cor(annual.data[,c(11:18)],use = "pairwise")
+colnames(cor.mat) = c("leafN","height","rootN","SLA","rooting depth","RTD","SRL",
+                      "root diameter")
+rownames(cor.mat) = c("leafN","height","rootN","SLA","rooting depth","RTD","SRL",
+                      "root diameter")
 corrplot(cor.mat, method="number")
 
 #### correlation between response and predictors ####
@@ -394,6 +402,10 @@ cor.test(perennial.tree$RTD.g.cm3, perennial.tree$rootDiam.mm)
 cor.test(perennial.tree$SRL_m.g, perennial.tree$rootDiam.mm)
 
 cor.mat = cor(perennial.tree[,c(11:18)],use = "pairwise") 
+colnames(cor.mat) = c("leafN","height","rootN","SLA","rooting depth","RTD","SRL",
+                      "root diameter")
+rownames(cor.mat) = c("leafN","height","rootN","SLA","rooting depth","RTD","SRL",
+                      "root diameter")
 corrplot(cor.mat, method="number")
 
 #### correlation between response and predictors ####
@@ -581,10 +593,6 @@ write.csv(perennial.grass, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennia
 write.csv(perennial.no.tree, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.no.tree.csv")
 write.csv(perennial.tree, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.tree.csv")
 write.csv(trees, file = "./Formatted.Data/Ctrl.v.drt.yr1.data/trees.csv")
-
-
-
-
 
 
 #### Generating data files of Drought yr 1 versus Drought yr 2 ####
@@ -1091,12 +1099,6 @@ write.csv(perennial.no.tree, file="./Formatted.Data/Drt.yr1.v.drt.yr2.data/peren
 
 
 
-
-
-
-
-
-
 #### Generating data files of Control yr 2 versus Drought yr 2 ####
 
 # read in cover year 2
@@ -1600,18 +1602,4 @@ write.csv(perennial.forb, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.f
 write.csv(perennial.grass, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.grass.csv")
 write.csv(perennial.tree, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.tree.csv")
 write.csv(perennial.no.tree, file="./Formatted.Data/Ctrl.v.drt.yr2.data/perennial.no.tree.csv")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
