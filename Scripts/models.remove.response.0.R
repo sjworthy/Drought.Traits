@@ -36,6 +36,12 @@ impute.traits = read.csv("./Formatted.Data/trait.imputation.2.csv")
 colnames(impute.traits)[1] = "Taxon"
 impute.traits$Taxon = sub("_", " ", impute.traits$Taxon)
 
+# make negative imputed traits equal to NA
+
+impute.traits = impute.traits %>% mutate(height = replace(height, which(height<0), NA)) %>%
+  mutate(RTD = replace(RTD, which(RTD<0), NA)) %>%
+  mutate(SRL = replace(SRL, which(SRL<0), NA))
+
 no.trees$Taxon = str_to_sentence(no.trees$Taxon)
 no.trees.impute = left_join(no.trees,impute.traits)
 no.trees.impute = no.trees.impute[,c(1,3,10,19:29)]
@@ -164,7 +170,7 @@ annual.brt.1.no.site=gbm.step(data=annual.data, gbm.x = c(11:18,23), gbm.y=10,
 ggPerformance(annual.brt.1.no.site)
 
 annual.impute.no.site=gbm.step(data=annual.data.impute, gbm.x = c(8:15,17), gbm.y=4,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
+                              family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                               bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(annual.impute.no.site)
 
@@ -197,7 +203,7 @@ ggPerformance(perennial.tree.brt.1.no.site)
 
 perennial.tree.impute.no.site=gbm.step(data=perennial.tree.impute, gbm.x = c(8:15,17), gbm.y=4,
                                       family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(perennial.tree.impute.no.site)
 
 set.seed(2023)
@@ -239,7 +245,7 @@ ggPerformance(forb.brt.1.no.site)
 
 forb.impute.no.site=gbm.step(data=forb.impute, gbm.x = c(8:15,17), gbm.y=4,
                             family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
 
 ggPerformance(forb.impute.no.site)
 
@@ -351,7 +357,7 @@ for (tcomp in 1:10) {
                                   family = "gaussian",
                                   tree.complexity = tcomp,
                                   learning.rate = 0.001,
-                                  bag.fraction = 0.50,
+                                  bag.fraction = 0.75,
                                   n.trees = 50,
                                   step.size = 50,
                                   plot.main=F, plot.folds=F)
@@ -478,11 +484,11 @@ save(tree.no.site.map, all.tree.prerun, all.tree.boot, file = "./Results/ctrl.v.
 
 #### all data impute without woody ####
 tree.no.site.map.impute=gbm.step(data=no.trees.impute, gbm.x = c(8:15,17), gbm.y=4,
-                          family = "gaussian", tree.complexity = 5, learning.rate = 0.001,
+                          family = "gaussian", tree.complexity = 6, learning.rate = 0.001,
                           bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
 
 ggPerformance(tree.no.site.map.impute)
-# 1350 trees Per.Expl = 16.24%
+# 1100 trees Per.Expl = 14.92%
 1-(tree.no.site.map.impute$self.statistics$mean.resid/tree.no.site.map.impute$self.statistics$mean.null) # R2
 ggInfluence(tree.no.site.map.impute)
 
@@ -493,23 +499,23 @@ gbm.plot.fits(tree.no.site.map.impute)
 
 all.tree.prerun<- plot.gbm.4list(tree.no.site.map.impute)
 all.tree.boot <- gbm.bootstrap.functions(tree.no.site.map.impute, list.predictors=all.tree.prerun, n.reps=100)
-ggPD_boot(tree.no.site.map.impute, predictor="root_diam", list.4.preds=all.tree.prerun, 
-          booted.preds=all.tree.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(tree.no.site.map.impute, predictor="height", list.4.preds=all.tree.prerun, 
           booted.preds=all.tree.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(tree.no.site.map.impute, predictor="rootN", list.4.preds=all.tree.prerun, 
+ggPD_boot(tree.no.site.map.impute, predictor="root_diam", list.4.preds=all.tree.prerun, 
           booted.preds=all.tree.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(tree.no.site.map.impute, predictor="SLA", list.4.preds=all.tree.prerun, 
+ggPD_boot(tree.no.site.map.impute, predictor="RTD", list.4.preds=all.tree.prerun, 
+          booted.preds=all.tree.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(tree.no.site.map.impute, predictor="rootN", list.4.preds=all.tree.prerun, 
           booted.preds=all.tree.boot$function.preds, type.ci = "ribbon",rug = T)
 
 
 # investigation of interactions
 gbm.interactions(tree.no.site.map.impute)$interactions
 ggInteract_list(tree.no.site.map.impute, index = T)
-# diam x SLA 42.20
-# RTD x SLA 22.53
-# diam x RTD 8.62
-# RTD x height 8.55
+# diam x SLA 44.21
+# diam x RTD 11.61
+# RTD x height 11.02
+# RTD x SLA 9.30
 
 ggInteract_3D(tree.no.site.map.impute, x = 2, y = 1, z.range = c(-2.5, 1.2))
 ggInteract_3D(tree.no.site.map.impute, x = 6, y = 2,z.range = c(-2.5, 1.75))
@@ -567,10 +573,10 @@ perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y
 
 #### annual data impute ####
 annual.no.site.map.impute=gbm.step(data=annual.data.impute, gbm.x = c(8:15,17), gbm.y=4,
-                            family = "gaussian", tree.complexity = 5, learning.rate = 0.005,
-                            bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+                            family = "gaussian", tree.complexity = 3, learning.rate = 0.001,
+                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(annual.no.site.map.impute)
-# 1950 trees Per.Expl = 63.70%
+# 3300 trees Per.Expl = 44.61%
 1-(annual.no.site.map.impute$self.statistics$mean.resid/annual.no.site.map.impute$self.statistics$mean.null) # R2
 ggInfluence(annual.no.site.map.impute)
 
@@ -581,26 +587,22 @@ gbm.plot.fits(annual.no.site.map.impute)
 
 annual.prerun<- plot.gbm.4list(annual.no.site.map.impute)
 annual.boot <- gbm.bootstrap.functions(annual.no.site.map.impute, list.predictors=annual.prerun, n.reps=100)
-ggPD_boot(annual.no.site.map.impute, predictor="SRL", list.4.preds=annual.prerun, 
-          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(annual.no.site.map.impute, predictor="root_depth", list.4.preds=annual.prerun, 
-          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(annual.no.site.map.impute, predictor="leafN", list.4.preds=annual.prerun, 
-          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(annual.no.site.map.impute, predictor="height", list.4.preds=annual.prerun, 
+ggPD_boot(annual.no.site.map.impute, predictor="RTD", list.4.preds=annual.prerun, 
           booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(annual.no.site.map.impute, predictor="root_diam", list.4.preds=annual.prerun, 
           booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(annual.no.site.map.impute, predictor="precip", list.4.preds=annual.prerun, 
+ggPD_boot(annual.no.site.map.impute, predictor="SRL", list.4.preds=annual.prerun, 
+          booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(annual.no.site.map.impute, predictor="height", list.4.preds=annual.prerun, 
           booted.preds=annual.boot$function.preds, type.ci = "ribbon",rug = T)
 
 # investigation of interactions
 gbm.interactions(annual.no.site.map.impute)$rank.list
 ggInteract_list(annual.no.site.map.impute)
-# MAP x leafN 133.68
-# MAP x SRL 89.47
-# rootN x height 70.89
-# MAP x rootN 61.07
+# MAP x RTD 39.94
+# SRL x RTD 35.58
+# diam x height 34.95
+# MAP x SRL 24.52
 
 ggInteract_3D(annual.no.site.map.impute, x = 7, y = 1, z.range = c(-2.5, 1.5))
 ggInteract_3D(annual.no.site.map.impute, x = 9, y = 1,z.range = c(-1.5, 1.5))
@@ -659,9 +661,9 @@ save(perennial.tree.no.site.map, perennial.prerun, perennial.boot, file = "./Res
 #### Perennial without woody impute ####
 perennial.tree.no.site.map.impute=gbm.step(data=perennial.tree.impute, gbm.x = c(8:15,17), gbm.y=4,
                                     family = "gaussian", tree.complexity = 6, learning.rate = 0.0005,
-                                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+                                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(perennial.tree.no.site.map.impute)
-# 1350 trees Per.Expl = 12.77%
+# 1450 trees Per.Expl = 13.017%
 1-(perennial.tree.no.site.map.impute$self.statistics$mean.resid/perennial.tree.no.site.map.impute$self.statistics$mean.null) # R2
 ggInfluence(perennial.tree.no.site.map.impute)
 
@@ -672,24 +674,22 @@ gbm.plot.fits(perennial.tree.no.site.map.impute)
 
 perennial.prerun<- plot.gbm.4list(perennial.tree.no.site.map.impute)
 perennial.boot <- gbm.bootstrap.functions(perennial.tree.no.site.map.impute, list.predictors=perennial.prerun, n.reps=100)
-ggPD_boot(perennial.tree.no.site.map.impute, predictor="rootN", list.4.preds=perennial.prerun, 
-          booted.preds=perennial.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(perennial.tree.no.site.map.impute, predictor="height", list.4.preds=perennial.prerun, 
+          booted.preds=perennial.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(perennial.tree.no.site.map.impute, predictor="rootN", list.4.preds=perennial.prerun, 
           booted.preds=perennial.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(perennial.tree.no.site.map.impute, predictor="root_diam", list.4.preds=perennial.prerun, 
           booted.preds=perennial.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(perennial.tree.no.site.map.impute, predictor="precip", list.4.preds=perennial.prerun, 
           booted.preds=perennial.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(perennial.tree.no.site.map.impute, predictor="SLA", list.4.preds=perennial.prerun, 
-          booted.preds=perennial.boot$function.preds, type.ci = "ribbon",rug = T)
 
 # investigation of interactions
 gbm.interactions(perennial.tree.no.site.map.impute)$rank.list
 ggInteract_list(perennial.tree.no.site.map.impute)
-# MAP x rootN 59.13
-# diam x SLA 53.51
-# rootN x height 30.94
-# diam x height 11.88
+# daim x SLA 68.74
+# MAP x rootN 60.93
+# rootN x height 16.36
+# RTD x height 8.99
 
 ggInteract_3D(perennial.tree.no.site.map.impute, x = 2, y = 1, z.range = c(0, 0.75))
 ggInteract_3D(perennial.tree.no.site.map.impute, x = 7, y = 1,z.range = c(0, 0.75))
@@ -737,11 +737,11 @@ save(grass.no.site.map, grass.prerun, grass.boot, file = "./Results/ctrl.v.drt.y
 
 #### Grass Impute ####
 grass.no.site.map.impute=gbm.step(data=grass.impute, gbm.x = c(8:15,17), gbm.y=4,
-                           family = "gaussian", tree.complexity = 3, learning.rate = 0.0001,
-                           bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+                           family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
+                           bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
 
 ggPerformance(grass.no.site.map.impute)
-# 1850 trees Per.Expl = 3.61%
+# 1075 trees Per.Expl = 3.77%
 1-(grass.no.site.map.impute$self.statistics$mean.resid/grass.no.site.map.impute$self.statistics$mean.null) # R2
 ggInfluence(grass.no.site.map.impute)
 
@@ -756,21 +756,8 @@ ggPD_boot(grass.no.site.map.impute, predictor="rootN", list.4.preds=grass.prerun
           booted.preds=grass.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(grass.no.site.map.impute, predictor="root_diam", list.4.preds=grass.prerun, 
           booted.preds=grass.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(grass.no.site.map.impute, predictor="precip", list.4.preds=grass.prerun, 
+ggPD_boot(grass.no.site.map.impute, predictor="SRL", list.4.preds=grass.prerun, 
           booted.preds=grass.boot$function.preds, type.ci = "ribbon",rug = T)
-
-# investigation of interactions
-gbm.interactions(grass.no.site.map.impute)$rank.list
-ggInteract_list(grass.no.site.map.impute)
-# MAP x diam 9.48
-# diam x rootN 1.01
-# diam x depth 0.25
-# depth x rootN 0.21
-
-ggInteract_3D(grass.no.site.map.impute, x = 9, y = 8, z.range = c(-0.05, 0.20))
-ggInteract_3D(grass.no.site.map.impute, x = 9, y = 6,z.range = c(-0.2, 0.20))
-ggInteract_3D(grass.no.site.map.impute, x = 8, y = 6, z.range = c(-0.2, 0.30))
-ggInteract_3D(grass.no.site.map.impute, x = 8, y = 3, z.range = c(-0.2, 0.20))
 
 save(grass.no.site.map.impute, grass.prerun, grass.boot, file = "./Results/ctrl.v.drt.yr1/grass.impute.RData")
 
@@ -884,17 +871,13 @@ perennial.forb.brt.1.no.site=gbm.step(data=perennial.forb, gbm.x = c(11:18,23), 
 ggPerformance(perennial.forb.brt.1.no.site)
 
 
-
-
-
-
-#### Forb ####
+#### Forb Impute ####
 forb.no.site.map.impute=gbm.step(data=forb.impute, gbm.x = c(8:15,17), gbm.y=4,
-                          family = "gaussian", tree.complexity = 5, learning.rate = 0.001,
-                          bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+                          family = "gaussian", tree.complexity = 6, learning.rate = 0.001,
+                          bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 
 ggPerformance(forb.no.site.map.impute)
-# 3050 trees Per.Expl = 38.07%
+# 2850 trees Per.Expl = 41.70%
 1-(forb.no.site.map.impute$self.statistics$mean.resid/forb.no.site.map.impute$self.statistics$mean.null) # R2
 ggInfluence(forb.no.site.map.impute)
 
@@ -905,20 +888,22 @@ gbm.plot.fits(forb.no.site.map.impute)
 
 forb.prerun<- plot.gbm.4list(forb.no.site.map.impute)
 forb.boot <- gbm.bootstrap.functions(forb.no.site.map.impute, list.predictors=forb.prerun, n.reps=100)
+ggPD_boot(forb.no.site.map.impute, predictor="height", list.4.preds=forb.prerun, 
+          booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
+ggPD_boot(forb.no.site.map.impute, predictor="RTD", list.4.preds=forb.prerun, 
+          booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(forb.no.site.map.impute, predictor="SLA", list.4.preds=forb.prerun, 
           booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
 ggPD_boot(forb.no.site.map.impute, predictor="precip", list.4.preds=forb.prerun, 
-          booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
-ggPD_boot(forb.no.site.map.impute, predictor="root_diam", list.4.preds=forb.prerun, 
           booted.preds=forb.boot$function.preds, type.ci = "ribbon",rug = T)
 
 # investigation of interactions
 gbm.interactions(forb.no.site.map.impute)$rank.list
 ggInteract_list(forb.no.site.map.impute)
-# diam x SLA 60.59
-# depth x SLA 53.95
-# SLA x height 16.71
-# SLA x leafN 10.87
+# diam x SLA 117.71
+# depth x SLA 42.19
+# SLA x leafN 31
+# RTD x height 24.82
 
 ggInteract_3D(forb.no.site.map.impute, x = 6, y = 1, z.range = c(-2.0, 7))
 ggInteract_3D(forb.no.site.map.impute, x = 5, y = 4,z.range = c(3, 5))
