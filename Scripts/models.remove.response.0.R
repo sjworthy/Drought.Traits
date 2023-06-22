@@ -7,6 +7,7 @@ library(dismo)
 library(gbm)
 library(ggBRT)
 library(multcomp)
+remotes::install_github("njtierney/treezy")
 
 #### read in all the data frames needs for the analyses ####
 
@@ -425,7 +426,7 @@ ggPerformance(all.brt.no.site.map)
 1-(all.brt.no.site.map$self.statistics$mean.resid/all.brt.no.site.map$self.statistics$mean.null) # R2
 ggInfluence(all.brt.no.site.map)
 
-ggPD(all.brt.no.site.map, rug = T) # partial dependency plots
+ggPD(all.brt.no.site.map, rug = T, smooth = TRUE) # partial dependency plots
 gbm.plot(all.brt.no.site.map, common.scale = FALSE)
 gbm.plot.fits(all.brt.no.site.map)
 
@@ -443,6 +444,8 @@ ggInteract_3D(all.brt.no.site.map, x = 7, y = 1, z.range = c(-0.5, 1.5))
 ggInteract_3D(all.brt.no.site.map, x = 6, y = 4, z.range = c(0, 1.2))
 
 #### all data without woody ####
+load("./Results/ctrl.v.drt.yr1/all.data.no.woody.output.RData") 
+
 tree.no.site.map=gbm.step(data=no.trees, gbm.x = c(11:18,23), gbm.y=10,
                             family = "gaussian", tree.complexity = 6, learning.rate = 0.0005,
                             bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -452,10 +455,20 @@ ggPerformance(tree.no.site.map)
 1-(tree.no.site.map$self.statistics$mean.resid/tree.no.site.map$self.statistics$mean.null) # R2
 ggInfluence(tree.no.site.map)
 
-ggPD(tree.no.site.map, rug = T) # partial dependency plots
+ggPD(tree.no.site.map, rug = T, smooth = TRUE) # partial dependency plots
+ggPD(tree.no.site.map, predictor = "height.m",rug = T, smooth = TRUE)
 ggPDfit(tree.no.site.map)
-gbm.plot(tree.no.site.map, common.scale = FALSE)
+gbm.plot(tree.no.site.map,common.scale = FALSE, rug = TRUE)
 gbm.plot.fits(tree.no.site.map)
+gg_partial_plot(tree.no.site.map,
+                var = c("height.m","SLA_m2.kg",
+                        "leafN.mg.g"))
+plotmo(tree.no.site.map, pmethod="partdep", all1=TRUE, all2=TRUE)
+
+# get data to plot partial dependecy plots
+plot(tree.no.site.map, "height.m",return.grid = TRUE)
+plot(tree.no.site.map, "SLA_m2.kg", return.grid = TRUE)
+plot(tree.no.site.map, "leafN.mg.g", return.grid = TRUE)
 
 all.tree.prerun<- plot.gbm.4list(tree.no.site.map)
 all.tree.boot <- gbm.bootstrap.functions(tree.no.site.map, list.predictors=all.tree.prerun, n.reps=100)
@@ -475,14 +488,16 @@ ggInteract_list(tree.no.site.map, index = T)
 # height x leafN 1.99
 # diam x height 1.51
 
-ggInteract_3D(tree.no.site.map, x = 2, y = 1, z.range = c(-2.5, 1.2))
-ggInteract_3D(tree.no.site.map, x = 6, y = 2,z.range = c(-2.5, 1.75))
-ggInteract_3D(tree.no.site.map, x = 8, y = 2, z.range = c(0, 1.2))
-ggInteract_3D(tree.no.site.map, x = 7, y = 2, z.range = c(-1, 1.2))
+ggInteract_3D(tree.no.site.map, x = 6, y = 2, z.range = c(-3.0, 0.30))
+ggInteract_3D(tree.no.site.map, x = 6, y = 1, z.range = c(-2.5, 0.50))
+ggInteract_3D(tree.no.site.map, x = 2, y = 1, z.range = c(-2.5, 1))
+ggInteract_3D(tree.no.site.map, x = 8, y = 2, z.range = c(-2.5, 0.5))
 
-save(tree.no.site.map, all.tree.prerun, all.tree.boot, file = "./Results/ctrl.v.drt.yr1/all.data.no.woody.output.RData")
+# save(tree.no.site.map, all.tree.prerun, all.tree.boot, file = "./Results/ctrl.v.drt.yr1/all.data.no.woody.output.RData")
 
 #### all data impute without woody ####
+load("./Results/ctrl.v.drt.yr1/all.data.no.woody.impute.RData") 
+
 tree.no.site.map.impute=gbm.step(data=no.trees.impute, gbm.x = c(8:15,17), gbm.y=4,
                           family = "gaussian", tree.complexity = 6, learning.rate = 0.001,
                           bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -492,7 +507,7 @@ ggPerformance(tree.no.site.map.impute)
 1-(tree.no.site.map.impute$self.statistics$mean.resid/tree.no.site.map.impute$self.statistics$mean.null) # R2
 ggInfluence(tree.no.site.map.impute)
 
-ggPD(tree.no.site.map.impute, rug = T) # partial dependency plots
+ggPD(tree.no.site.map.impute, rug = T, common.scale = F) # partial dependency plots
 ggPDfit(tree.no.site.map.impute)
 gbm.plot(tree.no.site.map.impute, common.scale = FALSE)
 gbm.plot.fits(tree.no.site.map.impute)
@@ -517,14 +532,16 @@ ggInteract_list(tree.no.site.map.impute, index = T)
 # RTD x height 11.02
 # RTD x SLA 9.30
 
-ggInteract_3D(tree.no.site.map.impute, x = 2, y = 1, z.range = c(-2.5, 1.2))
-ggInteract_3D(tree.no.site.map.impute, x = 6, y = 2,z.range = c(-2.5, 1.75))
-ggInteract_3D(tree.no.site.map.impute, x = 8, y = 2, z.range = c(0, 1.2))
-ggInteract_3D(tree.no.site.map.impute, x = 7, y = 2, z.range = c(-1, 1.2))
+ggInteract_3D(tree.no.site.map.impute, x = 8, y = 4, z.range = c(-0.25, 2.1))
+ggInteract_3D(tree.no.site.map.impute, x = 8, y = 6,z.range = c(-0.5, 1.1))
+ggInteract_3D(tree.no.site.map.impute, x = 6, y = 2, z.range = c(-3.5, 0.3))
+ggInteract_3D(tree.no.site.map.impute, x = 6, y = 4, z.range = c(-1.5, 0.4))
 
 save(tree.no.site.map.impute, all.tree.prerun, all.tree.boot, file = "./Results/ctrl.v.drt.yr1/all.data.no.woody.impute.RData")
 
 #### annual data ####
+load("./Results/ctrl.v.drt.yr1/annual.output.RData") 
+
 annual.no.site.map=gbm.step(data=annual.data, gbm.x = c(11:18,23), gbm.y=10,
                               family = "gaussian", tree.complexity = 2, learning.rate = 0.001,
                               bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -557,10 +574,10 @@ ggInteract_list(annual.no.site.map)
 # MPA x SRL 4.86
 # SRL x depth 4.07
 
-ggInteract_3D(annual.no.site.map, x = 7, y = 1, z.range = c(-2.5, 1.5))
-ggInteract_3D(annual.no.site.map, x = 9, y = 1,z.range = c(-1.5, 1.5))
-ggInteract_3D(annual.no.site.map, x = 8, y = 7, z.range = c(-1.5, 1))
-ggInteract_3D(annual.no.site.map, x = 9, y = 5, z.range = c(-1, 0.8))
+ggInteract_3D(annual.no.site.map, x = 7, y = 1, z.range = c(-2.5, 2.0))
+ggInteract_3D(annual.no.site.map, x = 9, y = 1,z.range = c(-1, 1.5))
+ggInteract_3D(annual.no.site.map, x = 9, y = 7, z.range = c(-3.1, 0.5))
+ggInteract_3D(annual.no.site.map, x = 7, y = 5, z.range = c(-1.7, 1.5))
 
 save(annual.no.site.map, annual.prerun, annual.boot, file = "./Results/ctrl.v.drt.yr1/annual.output.RData")
 
@@ -572,6 +589,7 @@ perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y
 # NA
 
 #### annual data impute ####
+load("./Results/ctrl.v.drt.yr1/annual.impute.RData") 
 annual.no.site.map.impute=gbm.step(data=annual.data.impute, gbm.x = c(8:15,17), gbm.y=4,
                             family = "gaussian", tree.complexity = 3, learning.rate = 0.001,
                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -604,10 +622,10 @@ ggInteract_list(annual.no.site.map.impute)
 # diam x height 34.95
 # MAP x SRL 24.52
 
-ggInteract_3D(annual.no.site.map.impute, x = 7, y = 1, z.range = c(-2.5, 1.5))
-ggInteract_3D(annual.no.site.map.impute, x = 9, y = 1,z.range = c(-1.5, 1.5))
-ggInteract_3D(annual.no.site.map.impute, x = 8, y = 7, z.range = c(-1.5, 1))
-ggInteract_3D(annual.no.site.map.impute, x = 9, y = 5, z.range = c(-1, 0.8))
+ggInteract_3D(annual.no.site.map.impute, x = 9, y = 6, z.range = c(-1, 0.4))
+ggInteract_3D(annual.no.site.map.impute, x = 7, y = 6,z.range = c(-1.5, 2.5))
+ggInteract_3D(annual.no.site.map.impute, x = 8, y = 2, z.range = c(-0.5, 4.6))
+ggInteract_3D(annual.no.site.map.impute, x = 9, y = 7, z.range = c(-3.6, 1.35))
 
 save(annual.no.site.map.impute, annual.prerun, annual.boot, file = "./Results/ctrl.v.drt.yr1/annual.impute.RData")
 
@@ -619,6 +637,7 @@ perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y
 # NA
 
 #### Perennial without woody ####
+load("./Results/ctrl.v.drt.yr1/perennial.no.woody.output.RData") 
 perennial.tree.no.site.map=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
                                       family = "gaussian", tree.complexity = 7, learning.rate = 0.0001,
                                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -651,14 +670,15 @@ ggInteract_list(perennial.tree.no.site.map)
 # SRL x leafN 1.04
 # rootN x height 0.15
 
-ggInteract_3D(perennial.tree.no.site.map, x = 2, y = 1, z.range = c(0, 0.75))
-ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 1,z.range = c(0, 0.75))
-ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 2, z.range = c(0, 0.75))
-ggInteract_3D(perennial.tree.no.site.map, x = 9, y = 4, z.range = c(0.2, 0.75))
+ggInteract_3D(perennial.tree.no.site.map, x = 2, y = 1, z.range = c(-1, 0.02))
+ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 2, z.range = c(-1, 0.30))
+ggInteract_3D(perennial.tree.no.site.map, x = 7, y = 1, z.range = c(-1, 0.15))
+ggInteract_3D(perennial.tree.no.site.map, x = 3, y = 2, z.range = c(-1, 0.5))
 
 save(perennial.tree.no.site.map, perennial.prerun, perennial.boot, file = "./Results/ctrl.v.drt.yr1/perennial.no.woody.output.RData")
 
 #### Perennial without woody impute ####
+load("./Results/ctrl.v.drt.yr1/perennial.no.woody.impute.RData") 
 perennial.tree.no.site.map.impute=gbm.step(data=perennial.tree.impute, gbm.x = c(8:15,17), gbm.y=4,
                                     family = "gaussian", tree.complexity = 6, learning.rate = 0.0005,
                                     bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
@@ -691,14 +711,16 @@ ggInteract_list(perennial.tree.no.site.map.impute)
 # rootN x height 16.36
 # RTD x height 8.99
 
-ggInteract_3D(perennial.tree.no.site.map.impute, x = 2, y = 1, z.range = c(0, 0.75))
-ggInteract_3D(perennial.tree.no.site.map.impute, x = 7, y = 1,z.range = c(0, 0.75))
-ggInteract_3D(perennial.tree.no.site.map.impute, x = 7, y = 2, z.range = c(0, 0.75))
-ggInteract_3D(perennial.tree.no.site.map.impute, x = 9, y = 4, z.range = c(0.2, 0.75))
+ggInteract_3D(perennial.tree.no.site.map.impute, x = 8, y = 4, z.range = c(-0.5, 2.3))
+ggInteract_3D(perennial.tree.no.site.map.impute, x = 9, y = 3, z.range = c(-1, 3))
+ggInteract_3D(perennial.tree.no.site.map.impute, x = 3, y = 2, z.range = c(-3, 3.2))
+ggInteract_3D(perennial.tree.no.site.map.impute, x = 6, y = 2, z.range = c(-3, 0.5))
 
 save(perennial.tree.no.site.map.impute, perennial.prerun, perennial.boot, file = "./Results/ctrl.v.drt.yr1/perennial.no.woody.impute.RData")
 
 #### Grass ####
+load("./Results/ctrl.v.drt.yr1/grass.output.RData") 
+
 grass.no.site.map=gbm.step(data=grass, gbm.x = c(11:18,23), gbm.y=10,
                              family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
                              bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -736,6 +758,7 @@ ggInteract_3D(grass.no.site.map, x = 8, y = 3, z.range = c(-0.2, 0.20))
 save(grass.no.site.map, grass.prerun, grass.boot, file = "./Results/ctrl.v.drt.yr1/grass.output.RData")
 
 #### Grass Impute ####
+load("./Results/ctrl.v.drt.yr1/grass.impute.RData") 
 grass.no.site.map.impute=gbm.step(data=grass.impute, gbm.x = c(8:15,17), gbm.y=4,
                            family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
@@ -762,6 +785,7 @@ ggPD_boot(grass.no.site.map.impute, predictor="SRL", list.4.preds=grass.prerun,
 save(grass.no.site.map.impute, grass.prerun, grass.boot, file = "./Results/ctrl.v.drt.yr1/grass.impute.RData")
 
 #### Forb ####
+load("./Results/ctrl.v.drt.yr1/forb.output.RData") 
 forb.no.site.map=gbm.step(data=forb, gbm.x = c(11:18,23), gbm.y=10,
                             family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -790,15 +814,15 @@ ggPD_boot(forb.no.site.map, predictor="rootDiam.mm", list.4.preds=forb.prerun,
 # investigation of interactions
 gbm.interactions(forb.no.site.map)$rank.list
 ggInteract_list(forb.no.site.map)
-# RTD x leafN 19.22
-# depth x SLA 14.26
-# precip x leafN 12.26
-# height x leafN 9.15
+# depth x SLA 31.52
+# height x leafN 9.27
+# SLA x leafN 5.53
+# RTD x leafN 4.62
 
-ggInteract_3D(forb.no.site.map, x = 6, y = 1, z.range = c(-2.0, 7))
-ggInteract_3D(forb.no.site.map, x = 5, y = 4,z.range = c(3, 5))
-ggInteract_3D(forb.no.site.map, x = 9, y = 1, z.range = c(-0.5, 7))
-ggInteract_3D(forb.no.site.map, x = 2, y = 1, z.range = c(0, 7))
+ggInteract_3D(forb.no.site.map, x = 5, y = 4, z.range = c(0, 2))
+ggInteract_3D(forb.no.site.map, x = 2, y = 1, z.range = c(-2, 3))
+ggInteract_3D(forb.no.site.map, x = 4, y = 1, z.range = c(-1, 4))
+ggInteract_3D(forb.no.site.map, x = 6, y = 1, z.range = c(-3, 3.5))
 
 save(forb.no.site.map, forb.prerun, forb.boot, file = "./Results/ctrl.v.drt.yr1/forb.output.RData")
 
@@ -872,6 +896,8 @@ ggPerformance(perennial.forb.brt.1.no.site)
 
 
 #### Forb Impute ####
+load("./Results/ctrl.v.drt.yr1/forb.impute.RData") 
+
 forb.no.site.map.impute=gbm.step(data=forb.impute, gbm.x = c(8:15,17), gbm.y=4,
                           family = "gaussian", tree.complexity = 6, learning.rate = 0.001,
                           bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -905,10 +931,10 @@ ggInteract_list(forb.no.site.map.impute)
 # SLA x leafN 31
 # RTD x height 24.82
 
-ggInteract_3D(forb.no.site.map.impute, x = 6, y = 1, z.range = c(-2.0, 7))
-ggInteract_3D(forb.no.site.map.impute, x = 5, y = 4,z.range = c(3, 5))
-ggInteract_3D(forb.no.site.map.impute, x = 9, y = 1, z.range = c(-0.5, 7))
-ggInteract_3D(forb.no.site.map.impute, x = 2, y = 1, z.range = c(0, 7))
+ggInteract_3D(forb.no.site.map.impute, x = 8, y = 4, z.range = c(1, 6.5))
+ggInteract_3D(forb.no.site.map.impute, x = 5, y = 4,z.range = c(1, 4))
+ggInteract_3D(forb.no.site.map.impute, x = 4, y = 1, z.range = c(0, 6.5))
+ggInteract_3D(forb.no.site.map.impute, x = 6, y = 2, z.range = c(-2, 3))
 
 save(forb.no.site.map.impute, forb.prerun, forb.boot, file = "./Results/ctrl.v.drt.yr1/forb.impute.RData")
 

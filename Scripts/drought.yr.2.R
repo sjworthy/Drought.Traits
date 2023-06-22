@@ -478,6 +478,7 @@ ggInteract_3D(tree.no.site.map, x = 8, y = 2, z.range = c(0, 1.2))
 ggInteract_3D(tree.no.site.map, x = 7, y = 2, z.range = c(-1, 1.2))
 
 #### annual ####
+load("./Results/drtyr1.v.drtyr2/annual.output.RData") 
 annual.no.site.map=gbm.step(data=annual.data, gbm.x = c(6:13,18), gbm.y=5,
                             family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -564,7 +565,7 @@ ggInteract_3D(grass.no.site.map, x = 8, y = 6, z.range = c(-0.2, 0.30))
 ggInteract_3D(grass.no.site.map, x = 8, y = 3, z.range = c(-0.2, 0.20))
 
 #### annual impute ####
-
+load("./Results/drtyr1.v.drtyr2/annual.impute.RData") 
 annual.no.site.map.impute=gbm.step(data=annual.data.impute, gbm.x = c(8:15,17), gbm.y=4,
                             family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -655,6 +656,8 @@ ggInteract_3D(grass.no.site.map, x = 8, y = 6, z.range = c(-0.2, 0.30))
 ggInteract_3D(grass.no.site.map, x = 8, y = 3, z.range = c(-0.2, 0.20))
 
 #### Forb ####
+load("./Results/drtyr1.v.drtyr2/forb.output.RData") 
+
 forb.no.site.map=gbm.step(data=forb, gbm.x = c(6:13,18), gbm.y=5,
                           family = "gaussian", tree.complexity = 3, learning.rate = 0.001,
                           bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -688,10 +691,10 @@ ggInteract_list(forb.no.site.map)
 # MAP x height 0.93
 # Diam x rootN 0.84
 
-ggInteract_3D(forb.no.site.map, x = 6, y = 1, z.range = c(-2.0, 7))
-ggInteract_3D(forb.no.site.map, x = 5, y = 4,z.range = c(3, 5))
-ggInteract_3D(forb.no.site.map, x = 9, y = 1, z.range = c(-0.5, 7))
-ggInteract_3D(forb.no.site.map, x = 2, y = 1, z.range = c(0, 7))
+ggInteract_3D(forb.no.site.map, x = 9, y = 3, z.range = c(-1.5, -0.5))
+ggInteract_3D(forb.no.site.map, x = 5, y = 3, z.range = c(-2, -1))
+ggInteract_3D(forb.no.site.map, x = 9, y = 2, z.range = c(-1.5, -1))
+ggInteract_3D(forb.no.site.map, x = 8, y = 3, z.range = c(-2, 0.85))
 
 save(forb.no.site.map, forb.prerun, forb.boot, file = "./Results/drtyr1.v.drtyr2/forb.output.RData")
 
@@ -766,6 +769,8 @@ ggPerformance(perennial.forb.brt.1.no.site)
 
 
 #### Forb Impute ####
+load("./Results/drtyr1.v.drtyr2/forb.impute.RData") 
+
 forb.no.site.map.impute=gbm.step(data=forb.impute, gbm.x = c(8:15,17), gbm.y=4,
                           family = "gaussian", tree.complexity = 4, learning.rate = 0.0001,
                           bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
@@ -797,10 +802,10 @@ ggInteract_list(forb.no.site.map.impute)
 # RTD x height 0.52
 # Diam x SLA 0.21
 
-ggInteract_3D(forb.no.site.map.impute, x = 6, y = 1, z.range = c(-2.0, 7))
-ggInteract_3D(forb.no.site.map.impute, x = 5, y = 4,z.range = c(3, 5))
-ggInteract_3D(forb.no.site.map.impute, x = 9, y = 1, z.range = c(-0.5, 7))
-ggInteract_3D(forb.no.site.map.impute, x = 2, y = 1, z.range = c(0, 7))
+ggInteract_3D(forb.no.site.map.impute, x = 9, y = 2, z.range = c(-1.0, 0))
+ggInteract_3D(forb.no.site.map.impute, x = 6, y = 1, z.range = c(-1.5, 0))
+ggInteract_3D(forb.no.site.map.impute, x = 6, y = 2, z.range = c(-2, 0))
+ggInteract_3D(forb.no.site.map.impute, x = 8, y = 4, z.range = c(-1, 0.75))
 
 save(forb.no.site.map.impute, forb.prerun, forb.boot, file = "./Results/drtyr1.v.drtyr2/forb.impute.RData")
 
