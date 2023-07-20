@@ -117,97 +117,52 @@ forb.impute = merge(forb.impute, site.info.map, by="site_code")
 #### determining best parameter combination to generate 1000 trees ####
 # bag fraction of 0.50 and 0.75, step.size of 25 and 50, tc = 10, 
 
-set.seed(2023)
-all.brt.1=gbm.step(data=all.data, gbm.x = c(11:18,23), gbm.y=10,
-                   family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                   bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50,
-                   site.weights = all.data$site.id)
-
-ggPerformance(all.brt.1)
-
-set.seed(2023)
-all.brt.1.no.site=gbm.step(data=all.data, gbm.x = c(11:18,23), gbm.y=10,
-                   family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                   bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
-
-ggPerformance(all.brt.1.no.site)
-
-set.seed(2023)
-tree.brt.1=gbm.step(data=no.trees, gbm.x = c(11:18,23), gbm.y=10,
+all.data.map=gbm.step(data=all.data, gbm.x = c(12:19,24), gbm.y=10,
                     family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50,
-                    site.weights = no.trees$site.id)
+                    bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(all.data.map)
 
-ggPerformance(tree.brt.1)
+all.data.arid=gbm.step(data=all.data, gbm.x = c(12:19,25), gbm.y=10,
+                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(all.data.arid)
 
+all.data.map.arid=gbm.step(data=all.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                       family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                       bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(all.data.map.arid)
 
-set.seed(2023)
-
-tree.brt.1.no.site=gbm.step(data=no.trees, gbm.x = c(11:18,22), gbm.y=10,
-                    family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
-                    bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(tree.brt.1.no.site)
-
-tree.impute.no.site=gbm.step(data=no.trees.impute, gbm.x = c(8:15,17), gbm.y=4,
-                            family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(tree.impute.no.site)
-
-
-
-set.seed(2023)
-annual.brt.1=gbm.step(data=annual.data, gbm.x = c(11:18,23), gbm.y=10,
-                      family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25,
-                      site.weights = annual.data$site.id)
-ggPerformance(annual.brt.1)
-
-
-set.seed(2023)
-
-annual.brt.1.no.site=gbm.step(data=annual.data, gbm.x = c(11:18,23), gbm.y=10,
+annual.data.map=gbm.step(data=annual.data, gbm.x = c(12:19,24), gbm.y=10,
                       family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                       bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
-ggPerformance(annual.brt.1.no.site)
+ggPerformance(annual.data.map)
 
-annual.impute.no.site=gbm.step(data=annual.data.impute, gbm.x = c(8:15,17), gbm.y=4,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
-                              bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(annual.impute.no.site)
+annual.data.arid=gbm.step(data=annual.data, gbm.x = c(12:19,25), gbm.y=10,
+                         family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(annual.data.arid)
 
-set.seed(2023)
-perennial.brt.1=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y=10,
-                         family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25,
-                         site.weights = perennial.data$site.id)
-ggPerformance(perennial.brt.1)
+annual.data.map.arid=gbm.step(data=annual.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                          family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                          bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(annual.data.map.arid)
 
-set.seed(2023)
-perennial.brt.1.no.site=gbm.step(data=perennial.data, gbm.x = c(11:18,23), gbm.y=10,
-                         family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(perennial.brt.1.no.site)
 
-set.seed(2023)
-perennial.tree.brt.1=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.00001,
-                              bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50,
-                              site.weights = perennial.tree$site.id)
-ggPerformance(perennial.tree.brt.1)
+perennial.data.map=gbm.step(data=perennial.data, gbm.x = c(12:19,24), gbm.y=10,
+                         family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                         bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(perennial.data.map)
 
-set.seed(2023)
+perennial.data.arid=gbm.step(data=perennial.data, gbm.x = c(12:19,25), gbm.y=10,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(perennial.data.arid)
 
-perennial.tree.brt.1.no.site=gbm.step(data=perennial.tree, gbm.x = c(11:18,23), gbm.y=10,
-                              family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
-                              bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(perennial.tree.brt.1.no.site)
+perennial.data.map.arid=gbm.step(data=perennial.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                             family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                             bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(perennial.data.map.arid)
 
-perennial.tree.impute.no.site=gbm.step(data=perennial.tree.impute, gbm.x = c(8:15,17), gbm.y=4,
-                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
-                                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
-ggPerformance(perennial.tree.impute.no.site)
-
-set.seed(2023)
 
 grass.brt.1=gbm.step(data=grass, gbm.x = c(11:18,23), gbm.y=10,
                               family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
