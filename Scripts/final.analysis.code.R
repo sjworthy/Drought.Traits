@@ -725,5 +725,81 @@ ggInteract_2D(gbm.object = forb.map, x="precip",y="SLA_m2.kg",col.gradient = c("
 
 save(forb.map, forb.prerun, forb.boot, file = "./Results/ctrl.v.drt.yr1/forb.output.RData")
 
+#### Missingness ####
+mean(all.data$leafN.mg.g, na.rm = TRUE)
+sd(all.data$leafN.mg.g, na.rm = TRUE)
+range(all.data$leafN.mg.g, na.rm = TRUE)
+table(is.na(all.data$leafN.mg.g)) #133/632
 
+mean(all.data$height.m, na.rm = TRUE)
+sd(all.data$height.m, na.rm = TRUE)
+range(all.data$height.m, na.rm = TRUE)
+table(is.na(all.data$height.m)) #60/632
 
+mean(all.data$rootN.mg.g, na.rm = TRUE)
+sd(all.data$rootN.mg.g, na.rm = TRUE)
+range(all.data$rootN.mg.g, na.rm = TRUE)
+table(is.na(all.data$rootN.mg.g)) #331/632
+
+mean(all.data$SLA_m2.kg, na.rm = TRUE)
+sd(all.data$SLA_m2.kg, na.rm = TRUE)
+range(all.data$SLA_m2.kg, na.rm = TRUE)
+table(is.na(all.data$SLA_m2.kg)) #14/632
+
+mean(all.data$root.depth_m, na.rm = TRUE)
+sd(all.data$root.depth_m, na.rm = TRUE)
+range(all.data$root.depth_m, na.rm = TRUE)
+table(is.na(all.data$root.depth_m)) #189/632
+
+mean(all.data$RTD.g.cm3, na.rm = TRUE)
+sd(all.data$RTD.g.cm3, na.rm = TRUE)
+range(all.data$RTD.g.cm3, na.rm = TRUE)
+table(is.na(all.data$RTD.g.cm3)) #271/632
+
+mean(all.data$SRL_m.g, na.rm = TRUE)
+sd(all.data$SRL_m.g, na.rm = TRUE)
+range(all.data$SRL_m.g, na.rm = TRUE)
+table(is.na(all.data$SRL_m.g)) #225/632
+
+mean(all.data$rootDiam.mm, na.rm = TRUE)
+sd(all.data$rootDiam.mm, na.rm = TRUE)
+range(all.data$rootDiam.mm, na.rm = TRUE)
+table(is.na(all.data$rootDiam.mm)) #216/632
+
+#### Coefficients of Variation ####
+
+sd(annual.data$leafN.mg.g, na.rm = TRUE)/mean(annual.data$leafN.mg.g, na.rm = TRUE)
+sd(annual.data$height.m, na.rm = TRUE)/mean(annual.data$height.m, na.rm = TRUE)
+sd(annual.data$rootN.mg.g, na.rm = TRUE)/mean(annual.data$rootN.mg.g, na.rm = TRUE)
+sd(annual.data$SLA_m2.kg, na.rm = TRUE)/mean(annual.data$SLA_m2.kg, na.rm = TRUE)
+sd(annual.data$root.depth_m, na.rm = TRUE)/mean(annual.data$root.depth_m, na.rm = TRUE)
+sd(annual.data$RTD.g.cm3, na.rm = TRUE)/mean(annual.data$RTD.g.cm3, na.rm = TRUE)
+sd(annual.data$SRL_m.g, na.rm = TRUE)/mean(annual.data$SRL_m.g, na.rm = TRUE)
+sd(annual.data$rootDiam.mm, na.rm = TRUE)/mean(annual.data$rootDiam.mm, na.rm = TRUE)
+
+sd(perennial.data$leafN.mg.g, na.rm = TRUE)/mean(perennial.data$leafN.mg.g, na.rm = TRUE)
+sd(perennial.data$height.m, na.rm = TRUE)/mean(perennial.data$height.m, na.rm = TRUE)
+sd(perennial.data$rootN.mg.g, na.rm = TRUE)/mean(perennial.data$rootN.mg.g, na.rm = TRUE)
+sd(perennial.data$SLA_m2.kg, na.rm = TRUE)/mean(perennial.data$SLA_m2.kg, na.rm = TRUE)
+sd(perennial.data$root.depth_m, na.rm = TRUE)/mean(perennial.data$root.depth_m, na.rm = TRUE)
+sd(perennial.data$RTD.g.cm3, na.rm = TRUE)/mean(perennial.data$RTD.g.cm3, na.rm = TRUE)
+sd(perennial.data$SRL_m.g, na.rm = TRUE)/mean(perennial.data$SRL_m.g, na.rm = TRUE)
+sd(perennial.data$rootDiam.mm, na.rm = TRUE)/mean(perennial.data$rootDiam.mm, na.rm = TRUE)
+
+sd(grass$leafN.mg.g, na.rm = TRUE)/mean(grass$leafN.mg.g, na.rm = TRUE)
+sd(grass$height.m, na.rm = TRUE)/mean(grass$height.m, na.rm = TRUE)
+sd(grass$rootN.mg.g, na.rm = TRUE)/mean(grass$rootN.mg.g, na.rm = TRUE)
+sd(grass$SLA_m2.kg, na.rm = TRUE)/mean(grass$SLA_m2.kg, na.rm = TRUE)
+sd(grass$root.depth_m, na.rm = TRUE)/mean(grass$root.depth_m, na.rm = TRUE)
+sd(grass$RTD.g.cm3, na.rm = TRUE)/mean(grass$RTD.g.cm3, na.rm = TRUE)
+sd(grass$SRL_m.g, na.rm = TRUE)/mean(grass$SRL_m.g, na.rm = TRUE)
+sd(grass$rootDiam.mm, na.rm = TRUE)/mean(grass$rootDiam.mm, na.rm = TRUE)
+
+sd(forb$leafN.mg.g, na.rm = TRUE)/mean(forb$leafN.mg.g, na.rm = TRUE)
+sd(forb$height.m, na.rm = TRUE)/mean(forb$height.m, na.rm = TRUE)
+sd(forb$rootN.mg.g, na.rm = TRUE)/mean(forb$rootN.mg.g, na.rm = TRUE)
+sd(forb$SLA_m2.kg, na.rm = TRUE)/mean(forb$SLA_m2.kg, na.rm = TRUE)
+sd(forb$root.depth_m, na.rm = TRUE)/mean(forb$root.depth_m, na.rm = TRUE)
+sd(forb$RTD.g.cm3, na.rm = TRUE)/mean(forb$RTD.g.cm3, na.rm = TRUE)
+sd(forb$SRL_m.g, na.rm = TRUE)/mean(forb$SRL_m.g, na.rm = TRUE)
+sd(forb$rootDiam.mm, na.rm = TRUE)/mean(forb$rootDiam.mm, na.rm = TRUE)
