@@ -607,10 +607,10 @@ ggPD_boot(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F172
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
 ggPD_boot(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
           booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
-          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "SLA")
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
 ggPD_boot(forb.map,predictor = "RTD",list.4.preds=forb.prerun, col.line="#F17236",
           booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
-          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "RTD")
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
 
 ggPD_boot(forb.map,list.4.preds=forb.prerun, col.line="#F17236",
                              booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
