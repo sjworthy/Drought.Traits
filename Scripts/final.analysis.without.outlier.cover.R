@@ -71,20 +71,50 @@ forb = merge(forb.data.otl.rm, site.info.map, by="site_code")
 #### testing for correlation among traits ####
 
 # all.data
-cor.mat.all = cor(all.data[,c(12:19)],use = "pairwise") 
-corrplot(cor.mat.all, method="number")
+all.data.2 = all.data
+colnames(all.data.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(all.data.2)[24] = "Precipitation"
 
-cor.mat.annual = cor(annual.data[,c(12:19)],use = "pairwise") 
-corrplot(cor.mat.annual, method="number")
+cor.mat.all = cor(all.data.2[,c(12:19,24)],use = "pairwise") 
+corrplot(cor.mat.all, method="number",tl.col = "black", is.corr = TRUE,
+         col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
+         title = "All Species")
 
-cor.mat.perennial = cor(perennial.data[,c(12:19)],use = "pairwise") 
-corrplot(cor.mat.perennial, method="number")
+annual.data.2 = annual.data
+colnames(annual.data.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(annual.data.2)[24] = "Precipitation"
 
-cor.mat.grass = cor(grass[,c(12:19)],use = "pairwise") 
-corrplot(cor.mat.grass, method="number")
+cor.mat.annual = cor(annual.data.2[,c(12:19,24)],use = "pairwise") 
+corrplot(cor.mat.annual, method="number", tl.col = "black", is.corr = TRUE,
+         col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
+         title = "Annual Species")
 
-cor.mat.forb = cor(forb[,c(12:19)],use = "pairwise") 
-corrplot(cor.mat.forb, method="number")
+perennial.data.2 = perennial.data
+colnames(perennial.data.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(perennial.data.2)[24] = "Precipitation"
+
+cor.mat.perennial = cor(perennial.data.2[,c(12:19,24)],use = "pairwise") 
+corrplot(cor.mat.perennial, method="number", tl.col = "black", is.corr = TRUE,
+         col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
+         title = "Perennial Species")
+
+grass.2 = grass
+colnames(grass.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(grass.2)[24] = "Precipitation"
+
+cor.mat.grass = cor(grass.2[,c(12:19,24)],use = "pairwise") 
+corrplot(cor.mat.grass, method="number", tl.col = "black", is.corr = TRUE,
+         col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
+         title = "Grass Species")
+
+forb.2 = forb
+colnames(forb.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(forb.2)[24] = "Precipitation"
+
+cor.mat.forb = cor(forb.2[,c(12:19,24)],use = "pairwise") 
+corrplot(cor.mat.forb, method="number", tl.col = "black", is.corr = TRUE,
+         col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
+         title = "Forb Species")
 
 #### determining best parameter combination to generate 1000 trees ####
 # bag fraction of 0.50 and 0.75, step.size of 25 and 50, tc = 10, 
@@ -249,6 +279,8 @@ ggPD_boot(all.data.map,list.4.preds=all.data.map.prerun, col.line="#769370",
                             booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
                             alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
 
+ggPD(all.data.map, col.line="#769370", common.scale = FALSE, y.label = "Percent Cover Change")
+
 # output individual plots as 3x3
 # output all plots as one 6x6
 
@@ -350,6 +382,8 @@ ggPD_boot(annual.no.site.map,list.4.preds=annual.prerun, col.line="#979461",
                                booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
                                alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
 
+ggPD(annual.no.site.map, col.line="#979461", common.scale = FALSE, y.label = "Percent Cover Change")
+
 annual.no.site.map$gbm.call$predictor.names = c("leafN.mg.g","height.m","rootN.mg.g","SLA_m2.kg","root.depth_m","RTD.g.cm3","SRL_m.g","rootDiam.mm", "precip")
 colnames(annual.no.site.map$gbm.call$dataframe)[12:19] = c("leafN.mg.g","height.m","rootN.mg.g","SLA_m2.kg","root.depth_m","RTD.g.cm3","SRL_m.g","rootDiam.mm")
 colnames(annual.no.site.map$gbm.call$dataframe)[24] = "precip"
@@ -436,6 +470,9 @@ ggPD_boot(perennial.data.map,predictor = "SLA",list.4.preds=perennial.prerun, co
 ggPD_boot(perennial.data.map,list.4.preds=perennial.prerun, col.line="#F1C646",
                                   booted.preds=perennial.boot$function.preds, cex.line=1, col.ci="#F1C646",
                                   alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
+ggPD(perennial.data.map, col.line="#F1C646", common.scale = FALSE, y.label = "Percent Cover Change")
+
 
 # investigation of interactions
 gbm.interactions(perennial.data.map)$rank.list
@@ -529,6 +566,8 @@ ggPD_boot(grass.map,list.4.preds=grass.prerun, col.line="#6E687E",
                               booted.preds=grass.boot$function.preds, cex.line=1, col.ci="#6E687E",
                               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
 
+ggPD(grass.map, col.line="#6E687E", common.scale = FALSE, y.label = "Percent Cover Change")
+
 # investigation of interactions
 gbm.interactions(grass.map)$rank.list
 ggInteract_list(grass.map)
@@ -616,6 +655,9 @@ ggPD_boot(forb.map,list.4.preds=forb.prerun, col.line="#F17236",
                              booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
                              alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
 
+ggPD(forb.map, col.line="#F17236", common.scale = FALSE, y.label = "Percent Cover Change")
+
+
 # investigation of interactions
 forb.map$contributions$var = c("height.m","leafN.mg.g","SLA_m2.kg","RTD.g.cm3","SRL_m.g",
                                "root.depth_m","rootDiam.mm","precip", "rootN.mg.g")
@@ -662,3 +704,154 @@ ggInteract_2D(gbm.object = forb.map, x="height.m",y="leafN.mg.g",col.gradient = 
 
 
 
+
+#### Table S1 ####
+mean(all.data$leafN.mg.g, na.rm = TRUE)
+mean(all.data$height.m, na.rm = TRUE)
+mean(all.data$rootN.mg.g, na.rm = TRUE)
+mean(all.data$SLA_m2.kg, na.rm = TRUE)
+mean(all.data$root.depth_m, na.rm = TRUE)
+mean(all.data$RTD.g.cm3, na.rm = TRUE)
+mean(all.data$SRL_m.g, na.rm = TRUE)
+mean(all.data$rootDiam.mm, na.rm = TRUE)
+mean(all.data$precip, na.rm = TRUE)
+
+sd(all.data$leafN.mg.g, na.rm = TRUE)
+sd(all.data$height.m, na.rm = TRUE)
+sd(all.data$rootN.mg.g, na.rm = TRUE)
+sd(all.data$SLA_m2.kg, na.rm = TRUE)
+sd(all.data$root.depth_m, na.rm = TRUE)
+sd(all.data$RTD.g.cm3, na.rm = TRUE)
+sd(all.data$SRL_m.g, na.rm = TRUE)
+sd(all.data$rootDiam.mm, na.rm = TRUE)
+sd(all.data$precip, na.rm = TRUE)
+
+range(all.data$leafN.mg.g, na.rm = TRUE)
+range(all.data$height.m, na.rm = TRUE)
+range(all.data$rootN.mg.g, na.rm = TRUE)
+range(all.data$SLA_m2.kg, na.rm = TRUE)
+range(all.data$root.depth_m, na.rm = TRUE)
+range(all.data$RTD.g.cm3, na.rm = TRUE)
+range(all.data$SRL_m.g, na.rm = TRUE)
+range(all.data$rootDiam.mm, na.rm = TRUE)
+range(all.data$precip, na.rm = TRUE)
+
+sum(is.na(all.data$leafN.mg.g))/616*100
+sum(is.na(all.data$height.m))/616*100
+sum(is.na(all.data$rootN.mg.g))/616*100
+sum(is.na(all.data$SLA_m2.kg))/616*100
+sum(is.na(all.data$root.depth_m))/616*100
+sum(is.na(all.data$RTD.g.cm3))/616*100
+sum(is.na(all.data$SRL_m.g))/616*100
+sum(is.na(all.data$rootDiam.mm))/616*100
+sum(is.na(all.data$precip))/616*100
+
+mean(annual.data$leafN.mg.g, na.rm = TRUE)
+mean(annual.data$height.m, na.rm = TRUE)
+mean(annual.data$rootN.mg.g, na.rm = TRUE)
+mean(annual.data$SLA_m2.kg, na.rm = TRUE)
+mean(annual.data$root.depth_m, na.rm = TRUE)
+mean(annual.data$RTD.g.cm3, na.rm = TRUE)
+mean(annual.data$SRL_m.g, na.rm = TRUE)
+mean(annual.data$rootDiam.mm, na.rm = TRUE)
+
+sd(annual.data$leafN.mg.g, na.rm = TRUE)
+sd(annual.data$height.m, na.rm = TRUE)
+sd(annual.data$rootN.mg.g, na.rm = TRUE)
+sd(annual.data$SLA_m2.kg, na.rm = TRUE)
+sd(annual.data$root.depth_m, na.rm = TRUE)
+sd(annual.data$RTD.g.cm3, na.rm = TRUE)
+sd(annual.data$SRL_m.g, na.rm = TRUE)
+sd(annual.data$rootDiam.mm, na.rm = TRUE)
+sd(annual.data$precip, na.rm = TRUE)
+
+range(annual.data$leafN.mg.g, na.rm = TRUE)
+range(annual.data$height.m, na.rm = TRUE)
+range(annual.data$rootN.mg.g, na.rm = TRUE)
+range(annual.data$SLA_m2.kg, na.rm = TRUE)
+range(annual.data$root.depth_m, na.rm = TRUE)
+range(annual.data$RTD.g.cm3, na.rm = TRUE)
+range(annual.data$SRL_m.g, na.rm = TRUE)
+range(annual.data$rootDiam.mm, na.rm = TRUE)
+range(annual.data$precip, na.rm = TRUE)
+
+mean(perennial.data$leafN.mg.g, na.rm = TRUE)
+mean(perennial.data$height.m, na.rm = TRUE)
+mean(perennial.data$rootN.mg.g, na.rm = TRUE)
+mean(perennial.data$SLA_m2.kg, na.rm = TRUE)
+mean(perennial.data$root.depth_m, na.rm = TRUE)
+mean(perennial.data$RTD.g.cm3, na.rm = TRUE)
+mean(perennial.data$SRL_m.g, na.rm = TRUE)
+mean(perennial.data$rootDiam.mm, na.rm = TRUE)
+
+sd(perennial.data$leafN.mg.g, na.rm = TRUE)
+sd(perennial.data$height.m, na.rm = TRUE)
+sd(perennial.data$rootN.mg.g, na.rm = TRUE)
+sd(perennial.data$SLA_m2.kg, na.rm = TRUE)
+sd(perennial.data$root.depth_m, na.rm = TRUE)
+sd(perennial.data$RTD.g.cm3, na.rm = TRUE)
+sd(perennial.data$SRL_m.g, na.rm = TRUE)
+sd(perennial.data$rootDiam.mm, na.rm = TRUE)
+
+range(perennial.data$leafN.mg.g, na.rm = TRUE)
+range(perennial.data$height.m, na.rm = TRUE)
+range(perennial.data$rootN.mg.g, na.rm = TRUE)
+range(perennial.data$SLA_m2.kg, na.rm = TRUE)
+range(perennial.data$root.depth_m, na.rm = TRUE)
+range(perennial.data$RTD.g.cm3, na.rm = TRUE)
+range(perennial.data$SRL_m.g, na.rm = TRUE)
+range(perennial.data$rootDiam.mm, na.rm = TRUE)
+
+mean(grass$leafN.mg.g, na.rm = TRUE)
+mean(grass$height.m, na.rm = TRUE)
+mean(grass$rootN.mg.g, na.rm = TRUE)
+mean(grass$SLA_m2.kg, na.rm = TRUE)
+mean(grass$root.depth_m, na.rm = TRUE)
+mean(grass$RTD.g.cm3, na.rm = TRUE)
+mean(grass$SRL_m.g, na.rm = TRUE)
+mean(grass$rootDiam.mm, na.rm = TRUE)
+
+sd(grass$leafN.mg.g, na.rm = TRUE)
+sd(grass$height.m, na.rm = TRUE)
+sd(grass$rootN.mg.g, na.rm = TRUE)
+sd(grass$SLA_m2.kg, na.rm = TRUE)
+sd(grass$root.depth_m, na.rm = TRUE)
+sd(grass$RTD.g.cm3, na.rm = TRUE)
+sd(grass$SRL_m.g, na.rm = TRUE)
+sd(grass$rootDiam.mm, na.rm = TRUE)
+
+range(grass$leafN.mg.g, na.rm = TRUE)
+range(grass$height.m, na.rm = TRUE)
+range(grass$rootN.mg.g, na.rm = TRUE)
+range(grass$SLA_m2.kg, na.rm = TRUE)
+range(grass$root.depth_m, na.rm = TRUE)
+range(grass$RTD.g.cm3, na.rm = TRUE)
+range(grass$SRL_m.g, na.rm = TRUE)
+range(grass$rootDiam.mm, na.rm = TRUE)
+
+mean(forb$leafN.mg.g, na.rm = TRUE)
+mean(forb$height.m, na.rm = TRUE)
+mean(forb$rootN.mg.g, na.rm = TRUE)
+mean(forb$SLA_m2.kg, na.rm = TRUE)
+mean(forb$root.depth_m, na.rm = TRUE)
+mean(forb$RTD.g.cm3, na.rm = TRUE)
+mean(forb$SRL_m.g, na.rm = TRUE)
+mean(forb$rootDiam.mm, na.rm = TRUE)
+
+sd(forb$leafN.mg.g, na.rm = TRUE)
+sd(forb$height.m, na.rm = TRUE)
+sd(forb$rootN.mg.g, na.rm = TRUE)
+sd(forb$SLA_m2.kg, na.rm = TRUE)
+sd(forb$root.depth_m, na.rm = TRUE)
+sd(forb$RTD.g.cm3, na.rm = TRUE)
+sd(forb$SRL_m.g, na.rm = TRUE)
+sd(forb$rootDiam.mm, na.rm = TRUE)
+
+range(forb$leafN.mg.g, na.rm = TRUE)
+range(forb$height.m, na.rm = TRUE)
+range(forb$rootN.mg.g, na.rm = TRUE)
+range(forb$SLA_m2.kg, na.rm = TRUE)
+range(forb$root.depth_m, na.rm = TRUE)
+range(forb$RTD.g.cm3, na.rm = TRUE)
+range(forb$SRL_m.g, na.rm = TRUE)
+range(forb$rootDiam.mm, na.rm = TRUE)
