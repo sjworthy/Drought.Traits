@@ -9,7 +9,7 @@ library(cowplot)
 library(corrplot)
 library(treezy)
 
-load("final.analysis.wo.outlier.environment.RData")
+# load("final.analysis.wo.outlier.environment.RData")
 
 #### read in all the data frames needs for the analyses ####
 
@@ -59,59 +59,70 @@ forb.data.otl.rm$site.id = as.numeric(as.factor(forb.data.otl.rm$site_code))
 Site.info = read.csv("./Raw.Data/Site_Elev-Disturb.csv")
 site.info.map = Site.info[,c(2,13)]
 
+# drought severity index
+
+dsi = read.csv("./Formatted.Data/site.drt.dev.index.csv", row.names = 1)
+
+# merge MAP and DSI
+
+enviro.data = left_join(site.info.map,dsi, by = "site_code")
+
 # override original data names so can use same code
-all.data = merge(all.data.otl.rm, site.info.map, by="site_code")
-annual.data = merge(annual.data.otl.rm, site.info.map, by="site_code")
-perennial.data = merge(perennial.data.otl.rm, site.info.map, by="site_code")
-grass = merge(grass.data.otl.rm, site.info.map, by="site_code")
-forb = merge(forb.data.otl.rm, site.info.map, by="site_code")
-
-
+all.data = left_join(all.data.otl.rm, enviro.data, by="site_code")
+annual.data = left_join(annual.data.otl.rm, enviro.data, by="site_code")
+perennial.data = left_join(perennial.data.otl.rm, enviro.data, by="site_code")
+grass = left_join(grass.data.otl.rm, enviro.data, by="site_code")
+forb = left_join(forb.data.otl.rm, enviro.data, by="site_code")
 
 #### testing for correlation among traits ####
 
 # all.data
 all.data.2 = all.data
 colnames(all.data.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
-colnames(all.data.2)[24] = "Precipitation"
+colnames(all.data.2)[24] = "MAP"
+colnames(all.data.2)[25] = "DSI"
 
-cor.mat.all = cor(all.data.2[,c(12:19,24)],use = "pairwise") 
+cor.mat.all = cor(all.data.2[,c(12:19,24,25)],use = "pairwise") 
 corrplot(cor.mat.all, method="number",tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
          title = "All Species")
 
 annual.data.2 = annual.data
 colnames(annual.data.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
-colnames(annual.data.2)[24] = "Precipitation"
+colnames(annual.data.2)[24] = "MAP"
+colnames(annual.data.2)[25] = "DSI"
 
-cor.mat.annual = cor(annual.data.2[,c(12:19,24)],use = "pairwise") 
+cor.mat.annual = cor(annual.data.2[,c(12:19,24,25)],use = "pairwise") 
 corrplot(cor.mat.annual, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
          title = "Annual Species")
 
 perennial.data.2 = perennial.data
 colnames(perennial.data.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
-colnames(perennial.data.2)[24] = "Precipitation"
+colnames(perennial.data.2)[24] = "MAP"
+colnames(perennial.data.2)[25] = "DSI"
 
-cor.mat.perennial = cor(perennial.data.2[,c(12:19,24)],use = "pairwise") 
+cor.mat.perennial = cor(perennial.data.2[,c(12:19,24,25)],use = "pairwise") 
 corrplot(cor.mat.perennial, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
          title = "Perennial Species")
 
 grass.2 = grass
 colnames(grass.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
-colnames(grass.2)[24] = "Precipitation"
+colnames(grass.2)[24] = "MAP"
+colnames(grass.2)[25] = "DSI"
 
-cor.mat.grass = cor(grass.2[,c(12:19,24)],use = "pairwise") 
+cor.mat.grass = cor(grass.2[,c(12:19,24,25)],use = "pairwise") 
 corrplot(cor.mat.grass, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
          title = "Grass Species")
 
 forb.2 = forb
 colnames(forb.2)[12:19] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
-colnames(forb.2)[24] = "Precipitation"
+colnames(forb.2)[24] = "MAP"
+colnames(forb.2)[25] = "DSI"
 
-cor.mat.forb = cor(forb.2[,c(12:19,24)],use = "pairwise") 
+cor.mat.forb = cor(forb.2[,c(12:19,24,25)],use = "pairwise") 
 corrplot(cor.mat.forb, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black",
          title = "Forb Species")
@@ -124,25 +135,76 @@ all.data.map=gbm.step(data=all.data, gbm.x = c(12:19,24), gbm.y=10,
                       bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(all.data.map)
 
+all.data.map.dsi=gbm.step(data=all.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                      family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(all.data.map.dsi)
+
+all.data.dsi=gbm.step(data=all.data, gbm.x = c(12:19,25), gbm.y=10,
+                          family = "gaussian", tree.complexity = 10, learning.rate = 0.0001,
+                          bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(all.data.dsi)
+
 annual.data.map=gbm.step(data=annual.data, gbm.x = c(12:19,24), gbm.y=10,
                          family = "gaussian", tree.complexity = 9, learning.rate = 0.001,
                          bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(annual.data.map)
+
+annual.data.map.dsi=gbm.step(data=annual.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                         family = "gaussian", tree.complexity = 9, learning.rate = 0.001,
+                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(annual.data.map.dsi)
+
+annual.data.dsi=gbm.step(data=annual.data, gbm.x = c(12:19,25), gbm.y=10,
+                             family = "gaussian", tree.complexity = 3, learning.rate = 0.001,
+                             bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(annual.data.dsi)
 
 perennial.data.map=gbm.step(data=perennial.data, gbm.x = c(12:19,24), gbm.y=10,
                             family = "gaussian", tree.complexity = 10, learning.rate = 0.00005,
                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(perennial.data.map)
 
+perennial.data.map.dsi=gbm.step(data=perennial.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                            family = "gaussian", tree.complexity = 9, learning.rate = 0.0001,
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(perennial.data.map.dsi)
+
+perennial.data.dsi=gbm.step(data=perennial.data, gbm.x = c(12:19,25), gbm.y=10,
+                                family = "gaussian", tree.complexity = 9, learning.rate = 0.00005,
+                                bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(perennial.data.dsi)
+
 grass.data.map=gbm.step(data=grass, gbm.x = c(12:19,24), gbm.y=10,
                         family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(grass.data.map)
 
+grass.data.map.dsi=gbm.step(data=grass, gbm.x = c(12:19,24,25), gbm.y=10,
+                        family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                        bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(grass.data.map.dsi)
+
+grass.data.dsi=gbm.step(data=grass, gbm.x = c(12:19,25), gbm.y=10,
+                            family = "gaussian", tree.complexity = 4, learning.rate = 0.0005,
+                            bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(grass.data.dsi)
+
 forb.data.map=gbm.step(data=forb, gbm.x = c(12:19,24), gbm.y=10,
                        family = "gaussian", tree.complexity = 9, learning.rate = 0.0005,
                        bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(forb.data.map)
+
+forb.data.map.dsi=gbm.step(data=forb, gbm.x = c(12:19,24,25), gbm.y=10,
+                       family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                       bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(forb.data.map.dsi)
+
+forb.data.dsi=gbm.step(data=forb, gbm.x = c(12:19,25), gbm.y=10,
+                           family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                           bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(forb.data.dsi)
+
 
 #### determining best tree complexity to use ####
 
@@ -151,8 +213,8 @@ ggPerformance(forb.data.map)
 # all variables
 R2Obs.all.variables <- list()
 importancePred.all.variables <- list()
-nreps <- 10 #number of simulations
-for (tcomp in 2:10) {
+nreps <- 3 #number of simulations
+for (tcomp in 1:10) {
   R2Obs.all.variables[[tcomp]] <- numeric(nreps)
   importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:9),
                                                              ncol = nreps))
@@ -161,13 +223,13 @@ for (tcomp in 2:10) {
       cat(paste("Starting tc =", tcomp, "\n"))
     }
     
-    BRT.all.variables <- gbm.step(data=forb,
-                                  gbm.x = c(12:19,24),
+    BRT.all.variables <- gbm.step(data=perennial.data,
+                                  gbm.x = c(12:19,25),
                                   gbm.y = 10,
                                   family = "gaussian",
                                   tree.complexity = tcomp,
-                                  learning.rate = 0.0005,
-                                  bag.fraction = 0.75,
+                                  learning.rate = 0.00005,
+                                  bag.fraction = 0.5,
                                   n.trees = 50,
                                   step.size = 50,
                                   plot.main=F, plot.folds=F)
@@ -225,6 +287,20 @@ all.data.map=gbm.step(data=all.data, gbm.x = c(12:19,24), gbm.y=10,
 
 ggPerformance(all.data.map)
 # 1350 trees Per.Expl = 8.23%
+
+all.data.map.dsi=gbm.step(data=all.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                      family = "gaussian", tree.complexity = 4, learning.rate = 0.0001,
+                      bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(all.data.map.dsi)
+# 1000 trees Per.Expl = 1.11%
+
+all.data.dsi=gbm.step(data=all.data, gbm.x = c(12:19,25), gbm.y=10,
+                          family = "gaussian", tree.complexity = 6, learning.rate = 0.0001,
+                          bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(all.data.dsi)
+# 1000 trees Per.Expl = 1.40%
 
 1-(all.data.map$self.statistics$mean.resid/all.data.map$self.statistics$mean.null) # R2
 
@@ -337,6 +413,21 @@ annual.no.site.map=gbm.step(data=annual.data, gbm.x = c(12:19,24), gbm.y=10,
 ggPerformance(annual.no.site.map)
 # 1100 trees Per.Expl = 14.43%
 
+annual.map.dsi=gbm.step(data=annual.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                            family = "gaussian", tree.complexity = 2, learning.rate = 0.001,
+                            bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(annual.map.dsi)
+# 1000 trees Per.Expl = 13.26%
+
+annual.dsi=gbm.step(data=annual.data, gbm.x = c(12:19,25), gbm.y=10,
+                        family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
+                        bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(annual.dsi)
+# 1100 trees Per.Expl = 9.99%
+
+
 1-(annual.no.site.map$self.statistics$mean.resid/annual.no.site.map$self.statistics$mean.null) # R2
 
 annual.no.site.map$contributions$var = c("SLA","SRL","Height","LeafN","Rooting Depth",
@@ -432,6 +523,23 @@ perennial.data.map=gbm.step(data=perennial.data, gbm.x = c(12:19,24), gbm.y=10,
 
 ggPerformance(perennial.data.map)
 # 1000 trees Per.Expl = 0.69%
+
+perennial.data.map.dsi=gbm.step(data=perennial.data, gbm.x = c(12:19,24,25), gbm.y=10,
+                            family = "gaussian", tree.complexity = 6, learning.rate = 0.0001,
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+
+
+ggPerformance(perennial.data.map.dsi)
+# 1000 trees Per.Expl = 1.60%
+
+perennial.data.dsi=gbm.step(data=perennial.data, gbm.x = c(12:19,25), gbm.y=10,
+                                family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
+                                bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+
+
+ggPerformance(perennial.data.dsi)
+# 1000 trees Per.Expl = 1.60%
+
 1-(perennial.data.map$self.statistics$mean.resid/perennial.data.map$self.statistics$mean.null) # R2
 
 perennial.data.map$contributions$var = c("Height","SRL","SLA","Root Diameter","LeafN",
@@ -526,6 +634,18 @@ grass.map=gbm.step(data=grass, gbm.x = c(12:19,24), gbm.y=10,
 ggPerformance(grass.map)
 # 1000 trees Per.Expl = 6.26%
 
+grass.map.dsi=gbm.step(data=grass, gbm.x = c(12:19,24,25), gbm.y=10,
+                   family = "gaussian", tree.complexity = 3, learning.rate = 0.0005,
+                   bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(grass.map.dsi)
+# 1450 trees Per.Expl = 10.43%
+
+grass.dsi=gbm.step(data=grass, gbm.x = c(12:19,25), gbm.y=10,
+                       family = "gaussian", tree.complexity = 2, learning.rate = 0.0005,
+                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(grass.dsi)
+# 1125 trees Per.Expl = 7.12%
+
 
 1-(grass.map$self.statistics$mean.resid/grass.map$self.statistics$mean.null) # R2
 
@@ -615,6 +735,22 @@ forb.map=gbm.step(data=forb, gbm.x = c(12:19,24), gbm.y=10,
 
 ggPerformance(forb.map)
 # 1900 trees Per.Expl = 12.94%
+
+forb.map.dsi=gbm.step(data=forb, gbm.x = c(12:19,24,25), gbm.y=10,
+                  family = "gaussian", tree.complexity = 3, learning.rate = 0.0005,
+                  bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(forb.map.dsi)
+# 1100 trees Per.Expl = 8.59%
+
+forb.dsi=gbm.step(data=forb, gbm.x = c(12:19,25), gbm.y=10,
+                      family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
+                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(forb.dsi)
+# 1100 trees Per.Expl = 8.59%
+
+
 
 1-(forb.map$self.statistics$mean.resid/forb.map$self.statistics$mean.null) # R2
 forb.map$contributions$var = c("Height","LeafN","SLA","RTD","SRL","Rooting Depth","Root Diameter","Precipitation", "RootN")
