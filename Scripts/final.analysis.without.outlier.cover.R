@@ -294,6 +294,8 @@ all.data.map.dsi=gbm.step(data=all.data, gbm.x = c(12:19,24,25), gbm.y=10,
 
 ggPerformance(all.data.map.dsi)
 # 1000 trees Per.Expl = 1.11%
+ggInfluence(all.data.map.dsi)
+ggPD(all.data.map.dsi, common.scale = FALSE, y.label = "Percent Cover Change")
 
 all.data.dsi=gbm.step(data=all.data, gbm.x = c(12:19,25), gbm.y=10,
                           family = "gaussian", tree.complexity = 6, learning.rate = 0.0001,
@@ -419,6 +421,9 @@ annual.map.dsi=gbm.step(data=annual.data, gbm.x = c(12:19,24,25), gbm.y=10,
 
 ggPerformance(annual.map.dsi)
 # 1000 trees Per.Expl = 13.26%
+ggInfluence(annual.map.dsi)
+ggPD(annual.map.dsi, common.scale = FALSE, y.label = "Percent Cover Change")
+
 
 annual.dsi=gbm.step(data=annual.data, gbm.x = c(12:19,25), gbm.y=10,
                         family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
@@ -531,6 +536,9 @@ perennial.data.map.dsi=gbm.step(data=perennial.data, gbm.x = c(12:19,24,25), gbm
 
 ggPerformance(perennial.data.map.dsi)
 # 1000 trees Per.Expl = 1.60%
+ggInfluence(perennial.data.map.dsi)
+ggPD(perennial.data.map.dsi, common.scale = FALSE, y.label = "Percent Cover Change")
+
 
 perennial.data.dsi=gbm.step(data=perennial.data, gbm.x = c(12:19,25), gbm.y=10,
                                 family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
@@ -639,6 +647,9 @@ grass.map.dsi=gbm.step(data=grass, gbm.x = c(12:19,24,25), gbm.y=10,
                    bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(grass.map.dsi)
 # 1450 trees Per.Expl = 10.43%
+ggInfluence(grass.map.dsi)
+ggPD(grass.map.dsi, common.scale = FALSE, y.label = "Percent Cover Change")
+
 
 grass.dsi=gbm.step(data=grass, gbm.x = c(12:19,25), gbm.y=10,
                        family = "gaussian", tree.complexity = 2, learning.rate = 0.0005,
@@ -742,6 +753,9 @@ forb.map.dsi=gbm.step(data=forb, gbm.x = c(12:19,24,25), gbm.y=10,
 
 ggPerformance(forb.map.dsi)
 # 1100 trees Per.Expl = 8.59%
+ggInfluence(forb.map.dsi)
+ggPD(forb.map.dsi, common.scale = FALSE, y.label = "Percent Cover Change")
+
 
 forb.dsi=gbm.step(data=forb, gbm.x = c(12:19,25), gbm.y=10,
                       family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
@@ -851,6 +865,7 @@ mean(all.data$RTD.g.cm3, na.rm = TRUE)
 mean(all.data$SRL_m.g, na.rm = TRUE)
 mean(all.data$rootDiam.mm, na.rm = TRUE)
 mean(all.data$precip, na.rm = TRUE)
+mean(all.data$mean.cover.response)
 
 sd(all.data$leafN.mg.g, na.rm = TRUE)
 sd(all.data$height.m, na.rm = TRUE)
@@ -861,6 +876,7 @@ sd(all.data$RTD.g.cm3, na.rm = TRUE)
 sd(all.data$SRL_m.g, na.rm = TRUE)
 sd(all.data$rootDiam.mm, na.rm = TRUE)
 sd(all.data$precip, na.rm = TRUE)
+sd(all.data$mean.cover.response)
 
 range(all.data$leafN.mg.g, na.rm = TRUE)
 range(all.data$height.m, na.rm = TRUE)
@@ -871,6 +887,7 @@ range(all.data$RTD.g.cm3, na.rm = TRUE)
 range(all.data$SRL_m.g, na.rm = TRUE)
 range(all.data$rootDiam.mm, na.rm = TRUE)
 range(all.data$precip, na.rm = TRUE)
+range(all.data$mean.cover.response)
 
 sum(is.na(all.data$leafN.mg.g))/616*100
 sum(is.na(all.data$height.m))/616*100
@@ -881,6 +898,7 @@ sum(is.na(all.data$RTD.g.cm3))/616*100
 sum(is.na(all.data$SRL_m.g))/616*100
 sum(is.na(all.data$rootDiam.mm))/616*100
 sum(is.na(all.data$precip))/616*100
+sum(is.na(all.data$mean.cover.response))/616*100
 
 mean(annual.data$leafN.mg.g, na.rm = TRUE)
 mean(annual.data$height.m, na.rm = TRUE)
@@ -890,6 +908,9 @@ mean(annual.data$root.depth_m, na.rm = TRUE)
 mean(annual.data$RTD.g.cm3, na.rm = TRUE)
 mean(annual.data$SRL_m.g, na.rm = TRUE)
 mean(annual.data$rootDiam.mm, na.rm = TRUE)
+mean(annual.data$rootDiam.mm, na.rm = TRUE)
+mean(annual.data$precip, na.rm = TRUE)
+mean(annual.data$mean.cover.response, na.rm = TRUE)
 
 sd(annual.data$leafN.mg.g, na.rm = TRUE)
 sd(annual.data$height.m, na.rm = TRUE)
@@ -900,6 +921,8 @@ sd(annual.data$RTD.g.cm3, na.rm = TRUE)
 sd(annual.data$SRL_m.g, na.rm = TRUE)
 sd(annual.data$rootDiam.mm, na.rm = TRUE)
 sd(annual.data$precip, na.rm = TRUE)
+sd(annual.data$precip, na.rm = TRUE)
+sd(annual.data$mean.cover.response, na.rm = TRUE)
 
 range(annual.data$leafN.mg.g, na.rm = TRUE)
 range(annual.data$height.m, na.rm = TRUE)
@@ -910,6 +933,8 @@ range(annual.data$RTD.g.cm3, na.rm = TRUE)
 range(annual.data$SRL_m.g, na.rm = TRUE)
 range(annual.data$rootDiam.mm, na.rm = TRUE)
 range(annual.data$precip, na.rm = TRUE)
+range(annual.data$precip, na.rm = TRUE)
+range(annual.data$mean.cover.response, na.rm = TRUE)
 
 mean(perennial.data$leafN.mg.g, na.rm = TRUE)
 mean(perennial.data$height.m, na.rm = TRUE)
@@ -919,6 +944,8 @@ mean(perennial.data$root.depth_m, na.rm = TRUE)
 mean(perennial.data$RTD.g.cm3, na.rm = TRUE)
 mean(perennial.data$SRL_m.g, na.rm = TRUE)
 mean(perennial.data$rootDiam.mm, na.rm = TRUE)
+mean(perennial.data$precip, na.rm = TRUE)
+mean(perennial.data$mean.cover.response, na.rm = TRUE)
 
 sd(perennial.data$leafN.mg.g, na.rm = TRUE)
 sd(perennial.data$height.m, na.rm = TRUE)
@@ -928,6 +955,8 @@ sd(perennial.data$root.depth_m, na.rm = TRUE)
 sd(perennial.data$RTD.g.cm3, na.rm = TRUE)
 sd(perennial.data$SRL_m.g, na.rm = TRUE)
 sd(perennial.data$rootDiam.mm, na.rm = TRUE)
+sd(perennial.data$precip, na.rm = TRUE)
+sd(perennial.data$mean.cover.response, na.rm = TRUE)
 
 range(perennial.data$leafN.mg.g, na.rm = TRUE)
 range(perennial.data$height.m, na.rm = TRUE)
@@ -937,6 +966,9 @@ range(perennial.data$root.depth_m, na.rm = TRUE)
 range(perennial.data$RTD.g.cm3, na.rm = TRUE)
 range(perennial.data$SRL_m.g, na.rm = TRUE)
 range(perennial.data$rootDiam.mm, na.rm = TRUE)
+range(perennial.data$precip, na.rm = TRUE)
+range(perennial.data$mean.cover.response, na.rm = TRUE)
+
 
 mean(grass$leafN.mg.g, na.rm = TRUE)
 mean(grass$height.m, na.rm = TRUE)
@@ -946,6 +978,8 @@ mean(grass$root.depth_m, na.rm = TRUE)
 mean(grass$RTD.g.cm3, na.rm = TRUE)
 mean(grass$SRL_m.g, na.rm = TRUE)
 mean(grass$rootDiam.mm, na.rm = TRUE)
+mean(grass$precip, na.rm = TRUE)
+mean(grass$mean.cover.response, na.rm = TRUE)
 
 sd(grass$leafN.mg.g, na.rm = TRUE)
 sd(grass$height.m, na.rm = TRUE)
@@ -955,6 +989,8 @@ sd(grass$root.depth_m, na.rm = TRUE)
 sd(grass$RTD.g.cm3, na.rm = TRUE)
 sd(grass$SRL_m.g, na.rm = TRUE)
 sd(grass$rootDiam.mm, na.rm = TRUE)
+sd(grass$precip, na.rm = TRUE)
+sd(grass$mean.cover.response, na.rm = TRUE)
 
 range(grass$leafN.mg.g, na.rm = TRUE)
 range(grass$height.m, na.rm = TRUE)
@@ -964,6 +1000,8 @@ range(grass$root.depth_m, na.rm = TRUE)
 range(grass$RTD.g.cm3, na.rm = TRUE)
 range(grass$SRL_m.g, na.rm = TRUE)
 range(grass$rootDiam.mm, na.rm = TRUE)
+range(grass$precip, na.rm = TRUE)
+range(grass$mean.cover.response, na.rm = TRUE)
 
 mean(forb$leafN.mg.g, na.rm = TRUE)
 mean(forb$height.m, na.rm = TRUE)
@@ -973,6 +1011,9 @@ mean(forb$root.depth_m, na.rm = TRUE)
 mean(forb$RTD.g.cm3, na.rm = TRUE)
 mean(forb$SRL_m.g, na.rm = TRUE)
 mean(forb$rootDiam.mm, na.rm = TRUE)
+mean(forb$precip, na.rm = TRUE)
+mean(forb$mean.cover.response, na.rm = TRUE)
+
 
 sd(forb$leafN.mg.g, na.rm = TRUE)
 sd(forb$height.m, na.rm = TRUE)
@@ -982,6 +1023,8 @@ sd(forb$root.depth_m, na.rm = TRUE)
 sd(forb$RTD.g.cm3, na.rm = TRUE)
 sd(forb$SRL_m.g, na.rm = TRUE)
 sd(forb$rootDiam.mm, na.rm = TRUE)
+sd(forb$precip, na.rm = TRUE)
+sd(forb$mean.cover.response, na.rm = TRUE)
 
 range(forb$leafN.mg.g, na.rm = TRUE)
 range(forb$height.m, na.rm = TRUE)
@@ -991,3 +1034,5 @@ range(forb$root.depth_m, na.rm = TRUE)
 range(forb$RTD.g.cm3, na.rm = TRUE)
 range(forb$SRL_m.g, na.rm = TRUE)
 range(forb$rootDiam.mm, na.rm = TRUE)
+range(forb$precip, na.rm = TRUE)
+range(forb$mean.cover.response, na.rm = TRUE)
