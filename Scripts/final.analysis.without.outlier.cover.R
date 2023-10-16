@@ -9,6 +9,9 @@ library(cowplot)
 library(corrplot)
 library(treezy)
 
+# Modified ggPD_boot function to make y-axis the same for all plots.
+# edited function is script: ggPD_boot_edit.R
+
 # load("final.analysis.wo.outlier.environment.RData")
 
 #### read in all the data frames needs for the analyses ####
@@ -278,6 +281,10 @@ text(x= 1:length(R2Obs.all.variables), y= 0.77, labels=TukeyLetters)
 # grass tc = 2
 # forb tc = 3
 
+
+#### Read in saved R project ####
+#load("final.analysis.wo.outlier.environment.RData")
+
 #### all data without woody ####
 # load("./Results/ctrl.v.drt.yr1/all.data.no.woody.output.RData") 
 
@@ -343,13 +350,33 @@ ggPD_boot(all.data.map,predictor = "Height",list.4.preds=all.data.map.prerun, co
                          booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
                          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,
           y.label = "Percent Cover Change")
+# same y-limits
+ggPD_boot_test(all.data.map,predictor = "Height",list.4.preds=all.data.map.prerun, col.line="#769370",
+          booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,
+          y.label = "Percent Cover Change")
+
 ggPD_boot(all.data.map,predictor = "LeafN",list.4.preds=all.data.map.prerun, col.line="#769370",
           booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-limits
+ggPD_boot_test(all.data.map,predictor = "LeafN",list.4.preds=all.data.map.prerun, col.line="#769370",
+          booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(all.data.map,predictor = "SLA",list.4.preds=all.data.map.prerun, col.line="#769370",
           booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-limits
+ggPD_boot_test(all.data.map,predictor = "SLA",list.4.preds=all.data.map.prerun, col.line="#769370",
+          booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(all.data.map,predictor = "Root Diameter",list.4.preds=all.data.map.prerun, col.line="#769370",
+          booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-limits
+ggPD_boot_test(all.data.map,predictor = "Root Diameter",list.4.preds=all.data.map.prerun, col.line="#769370",
           booted.preds=all.data.map.boot$function.preds, cex.line=1, col.ci="#769370",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
 
@@ -396,9 +423,9 @@ ggInteract_3D(all.data.map, x = 6, y = 4, z.range = c(-2.0, 0.30))
 ggInteract_3D(all.data.map, x = 4, y = 2, z.range = c(-1.5, 0.75))
 ggInteract_3D(all.data.map, x = 2, y = 1, z.range = c(-2, 0.85))
 
-ggInteract_2D(gbm.object = all.data.map, x="RTD.g.cm3",y="height.m",col.gradient = c("white","#769370"),
+ggInteract_2D(gbm.object = all.data.map, x="height.m",y="RTD.g.cm3",col.gradient = c("white","#769370"),
               show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
-              col.contour = "#254376",show.axis = T,legend = T, x.label = "RTD", y.label = "Height",
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "Height", y.label = "RTD",
               z.range = c(-1, 0.28),z.label = "% Cover Change")
 
 # output in landscape at 4 x 6
@@ -464,13 +491,32 @@ colnames(annual.no.site.map$gbm.call$dataframe)[24] = "Precipitation"
 ggPD_boot(annual.no.site.map,predictor = "SLA",list.4.preds=annual.prerun, col.line="#979461",
                            booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
                            alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+# same y-axis
+ggPD_boot_test(annual.no.site.map,predictor = "SLA",list.4.preds=annual.prerun, col.line="#979461",
+          booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
 ggPD_boot(annual.no.site.map,predictor = "SRL",list.4.preds=annual.prerun, col.line="#979461",
           booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(annual.no.site.map,predictor = "SRL",list.4.preds=annual.prerun, col.line="#979461",
+          booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(annual.no.site.map,predictor = "Height",list.4.preds=annual.prerun, col.line="#979461",
           booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(annual.no.site.map,predictor = "Height",list.4.preds=annual.prerun, col.line="#979461",
+          booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(annual.no.site.map,predictor = "LeafN",list.4.preds=annual.prerun, col.line="#979461",
+          booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(annual.no.site.map,predictor = "LeafN",list.4.preds=annual.prerun, col.line="#979461",
           booted.preds=annual.boot$function.preds, cex.line=1, col.ci="#979461",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
 
@@ -575,10 +621,24 @@ colnames(perennial.data.map$gbm.call$dataframe)[24] = "Precipitation"
 ggPD_boot(perennial.data.map,predictor = "Height",list.4.preds=perennial.prerun, col.line="#F1C646",
                               booted.preds=perennial.boot$function.preds, cex.line=1, col.ci="#F1C646",
                               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+# same y-axis
+ggPD_boot_test(perennial.data.map,predictor = "Height",list.4.preds=perennial.prerun, col.line="#F1C646",
+          booted.preds=perennial.boot$function.preds, cex.line=1, col.ci="#F1C646",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
 ggPD_boot(perennial.data.map,predictor = "SRL",list.4.preds=perennial.prerun, col.line="#F1C646",
           booted.preds=perennial.boot$function.preds, cex.line=1, col.ci="#F1C646",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(perennial.data.map,predictor = "SRL",list.4.preds=perennial.prerun, col.line="#F1C646",
+          booted.preds=perennial.boot$function.preds, cex.line=1, col.ci="#F1C646",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(perennial.data.map,predictor = "SLA",list.4.preds=perennial.prerun, col.line="#F1C646",
+          booted.preds=perennial.boot$function.preds, cex.line=1, col.ci="#F1C646",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(perennial.data.map,predictor = "SLA",list.4.preds=perennial.prerun, col.line="#F1C646",
           booted.preds=perennial.boot$function.preds, cex.line=1, col.ci="#F1C646",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
 
@@ -626,9 +686,9 @@ ggInteract_boot_hist(data = Interact_boot_perennial, column = 3,obs = 0.02, bind
 ggInteract_boot_hist(data = Interact_boot_perennial, column = 4,obs = 0.02, bindwidth = 0.1) # non-significant
 ggInteract_boot_hist(data = Interact_boot_perennial, column = 5,obs = 0.01, bindwidth = 0.1) # non-significant
 
-ggInteract_2D(gbm.object = perennial.data.map,x="SRL_m.g",y="height.m",col.gradient = c("white","#F1C646"),
+ggInteract_2D(gbm.object = perennial.data.map,x="height.m",y="SRL_m.g",col.gradient = c("white","#F1C646"),
               show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
-              col.contour = "#254376",show.axis = T,legend = T, x.label = "SRL", y.label = "Height",
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "Height", y.label = "SRL",
               z.range = c(-0.3, 0), z.label = "% Cover Change")
 
 #save(perennial.data.map, perennial.prerun, perennial.boot, file = "./Results/ctrl.v.drt.yr1/perennial.data.output.RData")
@@ -686,10 +746,24 @@ colnames(grass.map$gbm.call$dataframe)[24] = "Precipitation"
 ggPD_boot(grass.map,predictor = "Root Diameter",list.4.preds=grass.prerun, col.line="#6E687E",
                           booted.preds=grass.boot$function.preds, cex.line=1, col.ci="#6E687E",
                           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+# same y-axis
+ggPD_boot_test(grass.map,predictor = "Root Diameter",list.4.preds=grass.prerun, col.line="#6E687E",
+          booted.preds=grass.boot$function.preds, cex.line=1, col.ci="#6E687E",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
 ggPD_boot(grass.map,predictor = "SLA",list.4.preds=grass.prerun, col.line="#6E687E",
           booted.preds=grass.boot$function.preds, cex.line=1, col.ci="#6E687E",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(grass.map,predictor = "SLA",list.4.preds=grass.prerun, col.line="#6E687E",
+          booted.preds=grass.boot$function.preds, cex.line=1, col.ci="#6E687E",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(grass.map,predictor = "Rooting Depth",list.4.preds=grass.prerun, col.line="#6E687E",
+          booted.preds=grass.boot$function.preds, cex.line=1, col.ci="#6E687E",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(grass.map,predictor = "Rooting Depth",list.4.preds=grass.prerun, col.line="#6E687E",
           booted.preds=grass.boot$function.preds, cex.line=1, col.ci="#6E687E",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
 
@@ -791,15 +865,35 @@ colnames(forb.map$gbm.call$dataframe)[24] = "Precipitation"
 ggPD_boot(forb.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
                          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
                          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
 ggPD_boot(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
           booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
           booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 ggPD_boot(forb.map,predictor = "RTD",list.4.preds=forb.prerun, col.line="#F17236",
           booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
           alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "RTD",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
 
 ggPD_boot(forb.map,list.4.preds=forb.prerun, col.line="#F17236",
                              booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
