@@ -111,7 +111,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                   axis.line.y = element_line(size = 0.1), 
                   axis.line.x = element_line(size = 0.1))
           if (common.scale == T) {
-            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.3))
+            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.8))
           }
         }
         if (type.ci == "lines") {
@@ -140,7 +140,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                               color = "#EBEBEB")
           }
           if (common.scale == T) {
-            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.3))
+            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.8))
           }
         }
         if (type.ci == "ribbon") {
@@ -165,7 +165,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                               color = "#EBEBEB")
           }
           if (common.scale == T) {
-            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.3))
+            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.8))
           }
         }
       }
@@ -228,7 +228,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                   color = "#EBEBEB")
         }
         if (common.scale == T) {
-          ggPD <- ggPD + ylim(c(-2, 2.3))
+          ggPD <- ggPD + ylim(c(-2, 2.8))
         }
       }
       if (type.ci == "ribbon") {
@@ -253,7 +253,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                   color = "#EBEBEB")
         }
         if (common.scale == T) {
-          ggPD <- ggPD + ylim(c(-2, 2.3))
+          ggPD <- ggPD + ylim(c(-2, 2.8))
         }
       }
       list(ggPD = ggPD)

@@ -30,6 +30,10 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$leafN.mg.g[which(trait.data.4$leafN.mg.g <Tmin | trait.data.4$leafN.mg.g > Tmax)])
 # removed leafN 58.30000, 67.58333
+# percent removed 
+table(is.na(trait.data.4$leafN.mg.g))
+561-180
+2/381*100 #0.52%
 
 hist(trait.data.4$height.m)
 boxplot(trait.data.4$height.m)
@@ -39,6 +43,10 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$height.m[which(trait.data.4$height.m <Tmin | trait.data.4$height.m > Tmax)])
 # removed height 1.996670 - 4.572000
+# percent removed 
+table(is.na(trait.data.4$height.m))
+561-64
+8/497*100 #1.61%
 
 hist(trait.data.4$rootN.mg.g)
 boxplot(trait.data.4$rootN.mg.g)
@@ -48,6 +56,10 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$rootN.mg.g[which(trait.data.4$rootN.mg.g <Tmin | trait.data.4$rootN.mg.g > Tmax)])
 # remove rootN 33.34667 - 39.26274
+# percent removed 
+table(is.na(trait.data.4$rootN.mg.g))
+561-374
+3/187*100 #1.60%
 
 hist(trait.data.4$SLA_m2.kg)
 boxplot(trait.data.4$SLA_m2.kg)
@@ -57,6 +69,9 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$SLA_m2.kg[which(trait.data.4$SLA_m2.kg <Tmin | trait.data.4$SLA_m2.kg > Tmax)])
 # remove SLA 57.70000 - 98.20000
+# percent removed 
+table(is.na(trait.data.4$SLA_m2.kg))
+10/561*100 #1.78%
 
 hist(trait.data.4$root.depth_m)
 boxplot(trait.data.4$root.depth_m)
@@ -66,6 +81,10 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$root.depth_m[which(trait.data.4$root.depth_m <Tmin | trait.data.4$root.depth_m > Tmax)])
 # remove depth 2.426850 - 3.300000
+# percent removed 
+table(is.na(trait.data.4$root.depth_m))
+561-238
+9/323*100 #2.79%
 
 hist(trait.data.4$RTD.g.cm3)
 boxplot(trait.data.4$RTD.g.cm3)
@@ -75,6 +94,10 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$RTD.g.cm3[which(trait.data.4$RTD.g.cm3 <Tmin | trait.data.4$RTD.g.cm3 > Tmax)])
 # remove RTD 0.7450000 - 0.9167417
+# percent removed 
+table(is.na(trait.data.4$RTD.g.cm3))
+561-331
+3/230*100 #1.30%
 
 hist(trait.data.4$SRL_m.g)
 boxplot(trait.data.4$SRL_m.g)
@@ -84,6 +107,10 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$SRL_m.g[which(trait.data.4$SRL_m.g <Tmin | trait.data.4$SRL_m.g > Tmax)])
 # remove SRL 601.5858 - 929.9185
+# percent removed 
+table(is.na(trait.data.4$SRL_m.g))
+561-280
+6/281*100 #2.14%
 
 hist(trait.data.4$rootDiam.mm)
 boxplot(trait.data.4$rootDiam.mm)
@@ -93,6 +120,10 @@ Tmin = mean-(3*std)
 Tmax = mean+(3*std)
 sort(trait.data.4$rootDiam.mm[which(trait.data.4$rootDiam.mm <Tmin | trait.data.4$rootDiam.mm > Tmax)])
 # remove diam 1.330000 - 2.015308
+# percent removed 
+table(is.na(trait.data.4$rootDiam.mm))
+561-271
+8/290*100 #2.75%
 
 #### read in new trait data without outliers and cover data ####
 
