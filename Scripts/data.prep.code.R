@@ -1,3 +1,7 @@
+# In this code:
+# Prepping cover data from the initial IDE dataset
+# querying the AusTraits database
+
 library(Taxonstand)
 library(tidyverse)
 library(stringr)
@@ -123,80 +127,39 @@ control.3 = control.2 %>%
   summarise(sum.ctrl.cover = sum(max_cover),
             mean.ctrl.cover = mean(max_cover)) 
 
-
 # merge data frames together
 # match up site code, taxon and treatment years, but put NA if not a match
 
 cover.data=merge(control.3, drought.3, by=c("site_code","Taxon","n_treat_years"),all = TRUE)
 # make NA = 0 
 
-cover.data.2=cover.data
+# subset for only treatment year = 1
 
-cover.data.2[is.na(cover.data.2)] = 0
+cover.trt.y1=subset(cover.data, cover.data$n_treat_years == 1)
+cover.trt.y1 = cover.trt.y1[,c(1,2,5,7)]
+
+# Only keeping species if present in both control and drought plots
+
+nrow(cover.trt.y1) # 1560, 1030 species
+table(is.na(cover.trt.y1$mean.ctrl.cover)) # 224 NA
+table(is.na(cover.trt.y1$mean.drt.cover)) # 328 NA
+
+cover.trt.y1.2 = na.omit(cover.trt.y1) # 1008 observations, 682 species
+# 343 species lost, 33%
 
 # calculate cover change
 
-cover.data.2$sum.cover.response = cover.data.2$sum.drt.cover-cover.data.2$sum.ctrl.cover
-cover.data.2$mean.cover.response = cover.data.2$mean.drt.cover-cover.data.2$mean.ctrl.cover
+cover.trt.y1.2$mean.cover.response = cover.trt.y1.2$mean.drt.cover-cover.trt.y1.2$mean.ctrl.cover
 
-# write.csv(cover.data.2, file = "cover.response.all.csv")
-
-# subset for only treatment year = 1
-
-cover.trt.y1=subset(cover.data.2, cover.data.2$n_treat_years == 1)
-
-# write.csv(cover.trt.y1, file = "cover.response.trt.y1.csv")
+#write.csv(cover.trt.y1.2, file = "./New.dfs/cover.response.trt.y1.csv")
 
 # get final species list for traits
 
-trait.species=as.data.frame(unique(cover.trt.y1$Taxon))
+trait.species=as.data.frame(unique(cover.trt.y1.2$Taxon))
 
 # write.csv(trait.species, file="trait.species.trt.yr1.csv")
 
-# subset for other treatment years
-
-cover.response.all=read.csv("./Formatted.Data/cover.response.all.csv")
-
-cover.trt.y2=subset(cover.response.all, cover.response.all$n_treat_years == 2)
-cover.trt.y3=subset(cover.response.all, cover.response.all$n_treat_years == 3)
-cover.trt.y4=subset(cover.response.all, cover.response.all$n_treat_years == 4)
-cover.trt.y5=subset(cover.response.all, cover.response.all$n_treat_years == 5)
-cover.trt.y6=subset(cover.response.all, cover.response.all$n_treat_years == 6)
-cover.trt.y7=subset(cover.response.all, cover.response.all$n_treat_years == 7)
-cover.trt.y8=subset(cover.response.all, cover.response.all$n_treat_years == 8)
-
-write.csv(cover.trt.y2, file="./Formatted.Data/cover.trt.y2.csv")
-write.csv(cover.trt.y3, file="./Formatted.Data/cover.trt.y3.csv")
-write.csv(cover.trt.y4, file="./Formatted.Data/cover.trt.y4.csv")
-write.csv(cover.trt.y5, file="./Formatted.Data/cover.trt.y5.csv")
-write.csv(cover.trt.y6, file="./Formatted.Data/cover.trt.y6.csv")
-write.csv(cover.trt.y7, file="./Formatted.Data/cover.trt.y7.csv")
-write.csv(cover.trt.y8, file="./Formatted.Data/cover.trt.y8.csv")
-
-# get trait species for other year
-
-trait.species.trt.2=as.data.frame(unique(cover.trt.y2$Taxon))
-trait.species.trt.3=as.data.frame(unique(cover.trt.y3$Taxon))
-trait.species.trt.4=as.data.frame(unique(cover.trt.y4$Taxon))
-trait.species.trt.5=as.data.frame(unique(cover.trt.y5$Taxon))
-trait.species.trt.6=as.data.frame(unique(cover.trt.y6$Taxon))
-trait.species.trt.7=as.data.frame(unique(cover.trt.y7$Taxon))
-trait.species.trt.8=as.data.frame(unique(cover.trt.y8$Taxon))
-
-# get number of trt years for each site
-
-trt.yrs.site = as.data.frame(unclass(table(cover.response.all$site_code, cover.response.all$n_treat_years)))
-
-write.csv(trt.yrs.site, file="./Formatted.Data/trt.years.per.site.csv")
-
-# species metadata
-data.3=data.2[,c(1,4,12,13,16,17,18)]
-
-data.4=unique(data.3)
-
-write.csv(data.4, file="./Formatted.Data/species.metadata.csv")
-
-#### Austraits ####
+#### AusTraits ####
 
 install.packages("remotes")
 remotes::install_github("traitecoevo/austraits", dependencies = TRUE, upgrade = "ask")
@@ -209,63 +172,23 @@ austraits.2=readRDS("austraits-4.1.0.rds")
 taxon.df=as.data.frame(unique(austraits.2$traits$taxon_name))
 
 # read in species names
-setwd("/Users/sjworthy/Documents/GitHub/Drought.Traits/Formatted.Data")
+setwd("/Users/sjworthy/Documents/GitHub/Drought.Traits/New.dfs")
 
-cover.response.all=read.csv("cover.response.all.csv")
-cover.species=as.data.frame(unique(cover.response.all$Taxon))
+cover.response=read.csv("cover.trt.y1.2.csv")
+cover.species=as.data.frame(unique(cover.response$Taxon))
 
-cover.species.list=as.vector(cover.species$`unique(cover.response.all$Taxon)`)
+cover.species.list=as.vector(cover.species$`unique(cover.response$Taxon)`)
 cover.species.list.2=str_to_sentence(cover.species.list)
 
 austraits.subset <- extract_taxa(austraits.2, taxon_name = cover.species.list.2)
-austraits.traits <- extract_trait(austraits.subset, c("leaf_area","leaf_C_per_dry_mass",
-                                                      "leaf_dry_matter_content","leaf_N_per_dry_mass",
-                                                      "leaf_thickness","plant_height","root_C_per_dry_mass",
-                                                      "root_diameter","root_N_per_dry_mass","root_shoot_ratio",
-                                                      "root_specific_root_length","seed_dry_mass",
+austraits.traits <- extract_trait(austraits.subset, c("leaf_N_per_dry_mass","plant_height",
+                                                      "root_diameter","root_N_per_dry_mass",
+                                                      "root_specific_root_length",
                                                       "leaf_mass_per_area"))
 austraits.subset.traits=austraits.traits$traits
-write.csv(austraits.subset.traits, file="AusTraits.subset.traits.csv")
+
+# write.csv(austraits.subset.traits, file="AusTraits.subset.traits.csv")
 
 
-
-
-#### Drought Severity Index ####
-# need average drought severity index for each site
-
-yr1.ppt=read.csv("./Raw.Data/cover_ppt_2023-05-10.csv")
-
-# ppt.1 column is the amount of ppt that fell in the plot in the 365 days prior
-# to biomass collection
-# map column is the mean annual precipitation at the site
-
-drt.trt=read.csv("./Raw.Data/Site_Elev-Disturb.csv")
-drt.trt.2 = drt.trt[,c(2,25)]
-
-# drought_trt column has the targeted % water removal for the site
-
-# formula: 
-# 1. precip.drt = amount ppt received*% targeted removal (as decimal)
-# 2. (precip.drt - MAP)/MAP
-
-# merge drt.trt with yr1.ppt
-
-all.drt.data = merge(yr1.ppt, drt.trt.2, by = c("site_code"))
-
-# turn drought_trt into decimal
-all.drt.data$drought_trt_dec = as.numeric(all.drt.data$drought_trt)/100
-
-all.drt.data$precip.drt = all.drt.data$ppt.1*all.drt.data$drought_trt_dec
-all.drt.data$drt.sev.index = (all.drt.data$precip.dr - all.drt.data$map)/all.drt.data$map
-
-# slim dataset to match our cover data
-
-all.drt.data.2 = subset(all.drt.data, all.drt.data$n_treat_years == 1)
-
-# get the mean drt.sev.index for each site
-
-site.drt.sev.index = all.drt.data.2 %>%
-  group_by(site_code) %>%
-  reframe(mean.drt.sev.index = mean(drt.sev.index, na.rm = TRUE))
-
-# write.csv(site.drt.sev.index, "./Formatted.Data/site.drt.dev.index.csv")
+write.csv(trait.data$Taxon, file = "trait.taxa.test.csv")
+write.csv(unique(cover.trt.y1.2$Taxon), file = "cover.taxa.test.csv")

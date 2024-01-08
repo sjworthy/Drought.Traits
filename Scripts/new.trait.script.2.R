@@ -15,15 +15,15 @@ library(treezy)
 #### read in all the data frames needs for the analyses ####
 
 # all data
-all.data = read.csv("./Formatted.Data/Ctrl.v.drt.yr1.data/all.data.copy.2.csv", row.names = 1) # 628 data points
+all.data = read.csv("./New.dfs/all.data.csv", row.names = 1) # 628 data points
 # annual data
-annual.data = read.csv("./Formatted.Data/Ctrl.v.drt.yr1.data/annual.data.copy.2.csv", row.names = 1) # 126 data points
+annual.data = read.csv("./New.dfs/annual.data.csv", row.names = 1) # 126 data points
 # all perennial data
-perennial.data = read.csv("./Formatted.Data/Ctrl.v.drt.yr1.data/perennial.data.copy.csv", row.names = 1) # 487 data points
+perennial.data = read.csv("./New.dfs/perennial.data.csv", row.names = 1) # 487 data points
 # grass
-grass = read.csv("./Formatted.Data/Ctrl.v.drt.yr1.data/grass.copy.2.csv", row.names = 1) # 230 data points
+grass = read.csv("./New.dfs/grass.csv", row.names = 1) # 230 data points
 # forbs
-forb = read.csv("./Formatted.Data/Ctrl.v.drt.yr1.data/forb.copy.2.csv", row.names = 1) # 320 data points
+forb = read.csv("./New.dfs/forb.csv", row.names = 1) # 320 data points
 
 #### Testing for outliers in all data ####
 
@@ -1054,3 +1054,8 @@ range(forb$SRL_m.g, na.rm = TRUE)
 range(forb$rootDiam.mm, na.rm = TRUE)
 range(forb$precip, na.rm = TRUE)
 range(forb$mean.cover.response, na.rm = TRUE)
+
+table(perennial.data$functional_group)
+# 230 forbs, 180 grasses
+table(annual.data$functional_group)
+# 76 forbs, 39 grasses
