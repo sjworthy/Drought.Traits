@@ -155,11 +155,32 @@ annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL") # 126 
 perennial.data = subset(all.data.ls, all.data.ls$local_lifespan == "PERENNIAL") 
 # 487 data points of 294 species
 
+table(all.data.ls$functional_group)
+# 320 forb, 24 graminoid, 230 grass, 54 legume
+
 grass = subset(all.data.ls, all.data.ls$functional_group == "GRASS") 
 # 230 data points of 129 species
 
+table(grass$local_lifespan)
+# 41 annuals, 187 perennials
+
 forb = subset(all.data.ls, all.data.ls$functional_group == "FORB")
 # 320 data points of 201 species
+
+# grasses and graminoids
+graminoid = subset(all.data.ls, all.data.ls$functional_group %in% c("GRASS","GRAMINOID"))
+
+# grass.annuals
+grass.annual = subset(grass, grass$local_lifespan == "ANNUAL")
+# 41 data points
+
+# grass.perennial
+grass.perennial = subset(grass, grass$local_lifespan == "PERENNIAL")
+# 187 data points
+
+graminoid.perennial = subset(graminoid, graminoid$local_lifespan == "PERENNIAL")
+# 210 data points 
+# graminoid annual is same as grass.annual since all graminoids were perennials
 
 #### write out the files ####
 
@@ -168,6 +189,11 @@ forb = subset(all.data.ls, all.data.ls$functional_group == "FORB")
 #write.csv(forb, file = "./New.dfs/forb.csv")
 #write.csv(grass, file = "./New.dfs/grass.csv")
 #write.csv(perennial.data, file = "./New.dfs/perennial.data.csv")
+#write.csv(graminoid, file = "./New.dfs/graminoid.data.csv")
+#write.csv(grass.annual, file = "./New.dfs/grass.annual.data.csv")
+#write.csv(grass.perennial, file = "./New.dfs/grass.perennial.data.csv")
+#write.csv(graminoid.perennial, file = "./New.dfs/graminoid.perennial.data.csv")
+
 
 
 

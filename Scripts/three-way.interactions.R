@@ -47,3 +47,5 @@ search.index <- ((n.preds^2) + 1) - rank(cross.tab, ties.method = "first")
 
 n.important <- max(2,round(0.1 * ((n.preds^2)/2),0))
 
+
+

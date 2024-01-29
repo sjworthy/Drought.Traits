@@ -24,6 +24,14 @@ perennial.data = read.csv("./New.dfs/perennial.data.csv", row.names = 1) # 487 d
 grass = read.csv("./New.dfs/grass.csv", row.names = 1) # 230 data points
 # forbs
 forb = read.csv("./New.dfs/forb.csv", row.names = 1) # 320 data points
+# graminoids
+graminoids = read.csv("./New.dfs/graminoid.data.csv", row.names = 1) # 254 data points
+# grass annuals
+grass.annual = read.csv("./New.dfs/grass.annual.data.csv", row.names = 1) # 41 data points
+# grass perennial
+grass.perennial = read.csv("./New.dfs/grass.perennial.data.csv", row.names = 1) # 187 data points
+# graminoid perennial
+graminoid.perennial = read.csv("./New.dfs/graminoid.perennial.data.csv", row.names = 1) # 210 data points
 
 #### Testing for outliers in all data ####
 
@@ -46,6 +54,14 @@ grass.data.otl.rm = subset(grass, grass$mean.cover.response >-19.39496 & grass$m
 # lose 9 data points, lose 5 species
 forb.data.otl.rm = subset(forb, forb$mean.cover.response >-19.39496 & forb$mean.cover.response < 21.33332)
 # lose 6 data points, lose 2 species
+graminoid.data.otl.rm = subset(graminoids, graminoids$mean.cover.response >-19.39496 & graminoids$mean.cover.response < 21.33332)
+# lose 10 data points, lose 6 species
+grass.annual.data.otl.rm = subset(grass.annual, grass.annual$mean.cover.response >-19.39496 & grass.annual$mean.cover.response < 21.33332)
+# lose 2 data points, lose 1 species
+grass.perennial.data.otl.rm = subset(grass.perennial, grass.perennial$mean.cover.response >-19.39496 & grass.perennial$mean.cover.response < 21.33332)
+# lose 7 data points, lose 4 species
+graminoid.perennial.data.otl.rm = subset(graminoid.perennial, graminoid.perennial$mean.cover.response >-19.39496 & graminoid.perennial$mean.cover.response < 21.33332)
+# lose 8 data points, lose 5 species
 
 #### change site code to numeric, continuous vector ####
 all.data.otl.rm$site.id = as.numeric(as.factor(all.data.otl.rm$site_code))
@@ -53,6 +69,10 @@ annual.data.otl.rm$site.id = as.numeric(as.factor(annual.data.otl.rm$site_code))
 perennial.data.otl.rm$site.id = as.numeric(as.factor(perennial.data.otl.rm$site_code))
 grass.data.otl.rm$site.id = as.numeric(as.factor(grass.data.otl.rm$site_code))
 forb.data.otl.rm$site.id = as.numeric(as.factor(forb.data.otl.rm$site_code))
+graminoid.data.otl.rm$site.id = as.numeric(as.factor(graminoid.data.otl.rm$site_code))
+grass.annual.data.otl.rm$site.id = as.numeric(as.factor(grass.annual.data.otl.rm$site_code))
+grass.perennial.data.otl.rm$site.id = as.numeric(as.factor(grass.perennial.data.otl.rm$site_code))
+graminoid.perennial.data.otl.rm$site.id = as.numeric(as.factor(graminoid.perennial.data.otl.rm$site_code))
 
 #### merge with environmental data ####
 # mean annual precipitation data (MAP)
@@ -74,6 +94,10 @@ annual.data = left_join(annual.data.otl.rm, enviro.data, by="site_code")
 perennial.data = left_join(perennial.data.otl.rm, enviro.data, by="site_code")
 grass = left_join(grass.data.otl.rm, enviro.data, by="site_code")
 forb = left_join(forb.data.otl.rm, enviro.data, by="site_code")
+graminoid = left_join(graminoid.data.otl.rm, enviro.data, by="site_code")
+grass.annual = left_join(grass.annual.data.otl.rm, enviro.data, by="site_code")
+grass.perennial = left_join(grass.perennial.data.otl.rm, enviro.data, by="site_code")
+graminoid.perennial = left_join(graminoid.perennial.data.otl.rm, enviro.data, by="site_code")
 
 #### testing for correlation among traits ####
 
@@ -201,6 +225,26 @@ forb.data.dsi=gbm.step(data=forb, gbm.x = c(12:19,25), gbm.y=10,
                        bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(forb.data.dsi)
 
+graminoid.data.map=gbm.step(data=graminoid, gbm.x = c(8:15,20), gbm.y=6,
+                       family = "gaussian", tree.complexity = 9, learning.rate = 0.0001,
+                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(graminoid.data.map)
+
+grass.annual.data.map=gbm.step(data=grass.annual, gbm.x = c(8:15,20), gbm.y=6,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.005,
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(grass.annual.data.map)
+# data set too small
+
+grass.perennial.data.map=gbm.step(data=grass.perennial, gbm.x = c(8:15,20), gbm.y=6,
+                               family = "gaussian", tree.complexity = 9, learning.rate = 0.0005,
+                               bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(grass.perennial.data.map)
+
+graminoid.perennial.data.map=gbm.step(data=graminoid.perennial, gbm.x = c(8:15,20), gbm.y=6,
+                                  family = "gaussian", tree.complexity = 9, learning.rate = 0.0001,
+                                  bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(graminoid.perennial.data.map)
 
 #### determining best tree complexity to use ####
 
@@ -210,7 +254,7 @@ ggPerformance(forb.data.dsi)
 R2Obs.all.variables <- list()
 importancePred.all.variables <- list()
 nreps <- 3 #number of simulations
-for (tcomp in 1:10) {
+for (tcomp in 2:10) {
   R2Obs.all.variables[[tcomp]] <- numeric(nreps)
   importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:9),
                                                              ncol = nreps))
@@ -219,13 +263,13 @@ for (tcomp in 1:10) {
       cat(paste("Starting tc =", tcomp, "\n"))
     }
     
-    BRT.all.variables <- gbm.step(data=grass,
-                                  gbm.x = c(12:19,24),
-                                  gbm.y = 10,
+    BRT.all.variables <- gbm.step(data=graminoid.perennial,
+                                  gbm.x = c(8:15,20),
+                                  gbm.y = 6,
                                   family = "gaussian",
                                   tree.complexity = tcomp,
                                   learning.rate = 0.0001,
-                                  bag.fraction = 0.50,
+                                  bag.fraction = 0.75,
                                   n.trees = 50,
                                   step.size = 50,
                                   plot.main=F, plot.folds=F)
@@ -253,9 +297,9 @@ for (i in 1:length(R2Obs.all.variables)) {
          angle = 90, code = 3, length = 0.1)
 }
 
-tcFactor <- as.factor(rep(1:3, each=nreps))
+tcFactor <- as.factor(rep(1:6, each=nreps))
 R2Vector <- unlist(R2Obs.all.variables)
-model <- lm(R2Vector~tcFactor)
+model <- lm(R2Vector[1:18]~tcFactor)
 TukeyModel<-glht(model, linfct = mcp(tcFactor="Tukey"))
 TukeyLetters <- cld(TukeyModel)$mcletters$Letters
 
@@ -877,6 +921,193 @@ ggInteract_2D(gbm.object = forb.map, x="height.m",y="leafN.mg.g",col.gradient = 
               z.range = c(-1.5, 1.5), z.label = "% Cover Change")
 
 
+
+#### Graminoid ####
+
+graminoid.map=gbm.step(data=graminoid, gbm.x = c(8:15,20), gbm.y=6,
+                  family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
+                  bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(graminoid.map)
+# 1050 trees Per.Expl = 0.84%
+
+1-(graminoid.map$self.statistics$mean.resid/graminoid.map$self.statistics$mean.null) # R2
+
+graminoid.map$contributions$var = c("Root Diameter","Rooting Depth","SLA","LeafN","Height","RTD","SRL","RootN","Precipitation")
+graminoid.influence.plot = ggInfluence(graminoid.map, main = "Graminoids (n = 244)", 
+                                  col.bar = c("#F17236","#F17236","#F17236","gray70",
+                                              "gray70","gray70","gray70","gray70","gray70"), col.signif = "#B50200")
+ggInfluence(graminoid.map)
+
+ggPD(graminoid.map, rug = T) # partial dependency plots
+ggPDfit(forb.map)
+gbm.plot(graminoid.map, common.scale = FALSE)
+gbm.plot.fits(forb.map)
+
+graminoid.prerun<- plot.gbm.4list(graminoid.map)
+graminoid.map$contributions$var = c("rootDiam.mm","root.depth_m","SLA_m2.kg","leafN.mg.g","height.m","RTD.g.cm3","SRL_m.g",
+                               "rootN.mg.g","precip")
+graminoid.boot <- gbm.bootstrap.functions(graminoid.map, list.predictors=graminoid.prerun, n.reps=1000)
+
+graminoid.map$contributions$var = c("Root Diameter","Rooting Depth","SLA","LeafN","Height","RTD","SRL","RootN","Precipitation")
+graminoid.map$gbm.call$predictor.names = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter","Precipitation")
+colnames(graminoid.map$gbm.call$dataframe)[8:15] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(graminoid.map$gbm.call$dataframe)[20] = "Precipitation"
+
+ggPD_boot(graminoid.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
+ggPD_boot(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
+ggPD_boot(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
+ggPD_boot(graminoid.map,list.4.preds=graminoid.prerun, col.line="#F17236",
+          booted.preds=graminoid.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
+ggPD(graminoid.map, col.line="#F17236", common.scale = FALSE, y.label = "Percent Cover Change")
+
+
+#### Grass.Perennial ####
+
+grass.perennial.map=gbm.step(data=grass.perennial, gbm.x = c(8:15,20), gbm.y=6,
+                       family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
+                       bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(grass.perennial.map)
+# 2400 trees Per.Expl = 7.91%
+
+1-(grass.perennial.map$self.statistics$mean.resid/grass.perennial.map$self.statistics$mean.null) # R2
+
+grass.perennial.map$contributions$var = c("Root Diameter","Rooting Depth","SLA","LeafN","Height","RTD","SRL","RootN","Precipitation")
+graminoid.influence.plot = ggInfluence(grass.perennial.map, main = "Graminoids (n = 244)", 
+                                       col.bar = c("#F17236","#F17236","#F17236","gray70",
+                                                   "gray70","gray70","gray70","gray70","gray70"), col.signif = "#B50200")
+ggInfluence(grass.perennial.map)
+
+ggPD(graminoid.map, rug = T) # partial dependency plots
+ggPDfit(grass.perennial.map)
+gbm.plot(grass.perennial.map, common.scale = FALSE)
+gbm.plot.fits(grass.perennial.map)
+
+grass.perennial.prerun<- plot.gbm.4list(grass.perennial.map)
+grass.perennial.map$contributions$var = c("rootDiam.mm","root.depth_m","SLA_m2.kg","leafN.mg.g","height.m","RTD.g.cm3","SRL_m.g",
+                                    "rootN.mg.g","precip")
+grass.perennial.boot <- gbm.bootstrap.functions(grass.perennial.map, list.predictors=grass.perennial.prerun, n.reps=1000)
+
+graminoid.map$contributions$var = c("Root Diameter","Rooting Depth","SLA","LeafN","Height","RTD","SRL","RootN","Precipitation")
+graminoid.map$gbm.call$predictor.names = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter","Precipitation")
+colnames(graminoid.map$gbm.call$dataframe)[8:15] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(graminoid.map$gbm.call$dataframe)[20] = "Precipitation"
+
+ggPD_boot(graminoid.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
+ggPD_boot(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
+ggPD_boot(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
+ggPD_boot(grass.perennial.map,list.4.preds=grass.perennial.prerun, col.line="#F17236",
+          booted.preds=grass.perennial.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
+ggPD(grass.perennial.map, col.line="#F17236", common.scale = FALSE, y.label = "Percent Cover Change")
+
+#### Graminoid.Perennial ####
+
+graminoid.perennial.map=gbm.step(data=graminoid.perennial, gbm.x = c(8:15,20), gbm.y=6,
+                             family = "gaussian", tree.complexity = 1, learning.rate = 0.0001,
+                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(graminoid.perennial.map)
+# 1000 trees Per.Expl = 0.81%
+
+1-(grass.perennial.map$self.statistics$mean.resid/grass.perennial.map$self.statistics$mean.null) # R2
+
+grass.perennial.map$contributions$var = c("Root Diameter","Rooting Depth","SLA","LeafN","Height","RTD","SRL","RootN","Precipitation")
+graminoid.influence.plot = ggInfluence(grass.perennial.map, main = "Graminoids (n = 244)", 
+                                       col.bar = c("#F17236","#F17236","#F17236","gray70",
+                                                   "gray70","gray70","gray70","gray70","gray70"), col.signif = "#B50200")
+ggInfluence(graminoid.perennial.map)
+
+ggPD(graminoid.map, rug = T) # partial dependency plots
+ggPDfit(grass.perennial.map)
+gbm.plot(grass.perennial.map, common.scale = FALSE)
+gbm.plot.fits(grass.perennial.map)
+
+grass.perennial.prerun<- plot.gbm.4list(grass.perennial.map)
+grass.perennial.map$contributions$var = c("rootDiam.mm","root.depth_m","SLA_m2.kg","leafN.mg.g","height.m","RTD.g.cm3","SRL_m.g",
+                                          "rootN.mg.g","precip")
+grass.perennial.boot <- gbm.bootstrap.functions(grass.perennial.map, list.predictors=grass.perennial.prerun, n.reps=1000)
+
+graminoid.map$contributions$var = c("Root Diameter","Rooting Depth","SLA","LeafN","Height","RTD","SRL","RootN","Precipitation")
+graminoid.map$gbm.call$predictor.names = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter","Precipitation")
+colnames(graminoid.map$gbm.call$dataframe)[8:15] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD","SRL","Root Diameter")
+colnames(graminoid.map$gbm.call$dataframe)[20] = "Precipitation"
+
+ggPD_boot(graminoid.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "Height",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
+ggPD_boot(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "LeafN",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
+ggPD_boot(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
+          booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+# same y-axis
+ggPD_boot_test(forb.map,predictor = "SLA",list.4.preds=forb.prerun, col.line="#F17236",
+               booted.preds=forb.boot$function.preds, cex.line=1, col.ci="#F17236",
+               alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "")
+
+ggPD_boot(grass.perennial.map,list.4.preds=grass.perennial.prerun, col.line="#F17236",
+          booted.preds=grass.perennial.boot$function.preds, cex.line=1, col.ci="#F17236",
+          alpha.dot=0.2,type.ci = "ribbon",alpha.ci= 0.3,rug = T,y.label = "Percent Cover Change")
+
+ggPD(grass.perennial.map, col.line="#F17236", common.scale = FALSE, y.label = "Percent Cover Change")
 
 #### Table S1 ####
 mean(all.data$leafN.mg.g, na.rm = TRUE)
