@@ -159,6 +159,67 @@ trait.species=as.data.frame(unique(cover.trt.y1.2$Taxon))
 
 # write.csv(trait.species, file="trait.species.trt.yr1.csv")
 
+#### for comparing drought-control before to drought-control after ####
+
+before = data.2 %>%
+  filter(n_treat_years == 0)
+# plots with before data
+
+before.1 = before %>%
+  group_by(site_code, Taxon, year, block, plot,trt) %>%
+  summarize(max_cover = max_cover)
+
+before.2 = pivot_wider(before.1, names_from = trt, values_from = max_cover)
+
+before.3 = before.2 %>%
+  group_by(site_code, Taxon) %>%
+  reframe(mean.before.control = mean(Control, na.rm = TRUE),
+          mean.before.drought = mean(Drought, na.rm = TRUE),
+          before.cover.response = mean.before.drought - mean.before.control)
+
+before.4 = before.3 %>%
+  filter(!is.na(before.cover.response))
+# 950 data points for 685 taxa, from 73 sites
+
+after = data.2 %>%
+  filter(n_treat_years == 1)
+# plots with after data for year 1
+
+after.1 = after %>%
+  group_by(site_code, Taxon, year, block, plot, trt) %>%
+  summarize(mean_cover = mean(max_cover))
+# had to take mean here before some site have multiple measurements for same taxa in same trt in same block and plot
+
+after.2 = pivot_wider(after.1, names_from = trt, values_from = mean_cover)
+ 
+after.3 = after.2 %>%
+  group_by(site_code, Taxon) %>%
+  reframe(mean.after.control = mean(Control, na.rm = TRUE),
+          mean.after.drought = mean(Drought, na.rm = TRUE),
+          after.cover.response = mean.after.drought - mean.after.control)
+
+after.4 = after.3 %>%
+  filter(!is.na(after.cover.response))
+# 1020 data points for 694 taxa, from 81 sites
+
+
+# merge before and after together
+
+all.data = full_join(after.4,before.4)
+
+# remove taxa that don't have data for before and after
+
+all.data.2 = all.data %>%
+  filter(!is.na(before.cover.response),
+         !is.na(after.cover.response))
+# 660 data points for 474 taxa, from  68 sites
+
+# difference between after and before
+all.data.3 = all.data.2 %>%
+  mutate(cover.change = after.cover.response - before.cover.response)
+
+write.csv(all.data.3, file = "./New.dfs/BACI.data.csv")
+
 #### AusTraits ####
 
 install.packages("remotes")
