@@ -24,7 +24,7 @@ data.2=subset(data, !(data$Taxon %in% c("ADESMIA SP.(eea.br)","AGOSERIS SP.(OREA
                                 "ANTHOXANTHUM  SP.(LCSOUTH.CL)","ARISTIDA SP.","ASTER SP.(BFL.US)","ASTER SP.1(MILPARINKA.AU)",
                                 "ASTER SP.7(QUILPIE.AU)","ASTRAGALUS  SP.(LCSOUTH.CL)","ASTRAGALUS SP.(LCNORTH.CL)",
                                 "ATRIPLEX SP","ATRIPLEX SP.(MILPARINKA.AU)","AUSTROSTIPA SP.(JILPANGER.AU)","AVENA SP.",
-                                "AXONOPUS SP.(BIVENSARM.US)","BACCHARIS SP.(chacra.ar)","BOTHRIOCHLOA SP.(NAPOSTA.AR)",
+                                "AXONOPUS SP.(BIVENSARM.US)","BACCHARIS SP.(chacra.ar)","BIDENS Bidens","BOTHRIOCHLOA SP.(NAPOSTA.AR)",
                                 "BRACHYCOME SP.","BROMUS SP.","BRYOPHYTE","BRYOPHYTE SP.(CHACRA.AR)","BRYOPHYTE SP.(KERNB.CA)",
                                 "BRYOPHYTE SP.(KERNNU.CA)","BRYOPHYTE SP.(LYGRAINT.NO)","BRYOPHYTE SP.(lygraold.no)",
                                 "BRYOPHYTE SP.1(LYGRAINT.NO)","BRYOPHYTE SP.1(lygraold.no)","BRYOPHYTE SP.2(LYGRAINT.NO)",
@@ -51,7 +51,7 @@ data.2=subset(data, !(data$Taxon %in% c("ADESMIA SP.(eea.br)","AGOSERIS SP.(OREA
                                 "JUNELLIA SP.(CHACRA.AR)","LATHYRUS SP.(BROOKDALE.CA)","LEONTODON SP.","LEPIDIUM SP.(NNSS.US)","LESQUERELLA SP.",
                                 "LEUCOCORYNE SP1.(QDTNORTH.CL)","LEUCOCORYNE SP2.(QDTNORTH.CL)","LICHEN ","LICHEN","LICHEN SP.(LYGRAINT.NO)","LICHEN SP.(lygraold.no)",
                                 "LICHEN SP.1(lygraold.no)","LINUM SP.(BFL.US)","LITHOPHRAGMA SP.(OREAA.US)","LITHOPHRAGMA SP.(OREAC.US)","LOLIUM SP.(CHACRA.AR)",
-                                "LOMATIUM SP.(OREAA.US)","LOMATIUM SP.(OREAC.US)","LOTUS","LOTUS SP.","LUZULA SP.","LUZULA SP.(FALLS.AU)","MADIA SP.(OREAC.US)",
+                                "LOMATIUM SP.(OREAA.US)","LOMATIUM SP.(OREAC.US)","LOTUS","LOTUS ","LOTUS SP.","LUZULA SP.","LUZULA SP.(FALLS.AU)","MADIA SP.(OREAC.US)",
                                 "MALVA SP.","MALVA SP.(SCRUZL.US)","MELILOTUS SP.(ESW.CA)","MINURIA SP.(credoj.au)","MINURIA SP.(CREDOM.AU)","MONTIA SP.(OREAA.US)",
                                 "MONTIA SP.(OREAC.US)","OLEARIA SP.","OPHIOGLOSSUM SP.(JILPANGER.AU)","OXALIS  SP.(LCSOUTH.CL)","OXALIS SP.(LCNORTH.CL)",
                                 "OXALIS SP.(QDTNORTH.CL)","OXALIS SP.(qdtsouth.cl)","PAEPALANTHUS SP.GUARIBAS.BR","PANICUM SP.(SLP.US)","PASPALUM SP.",
@@ -87,6 +87,13 @@ data.2=subset(data, !(data$Taxon %in% c("ADESMIA SP.(eea.br)","AGOSERIS SP.(OREA
                                 "UNKNOWN SP3.(LCNORTH.CL)","UNKNOWN VIOLACEAE  SP.(LCSOUTH.CL)","UNKNOWN WEED(COWIDRT.CA)","UTRICULARIA SP.(GUARIBAS.BR)",
                                 "VERNONIA SP.(PURDUE.US)","VERONICA SP.(OREAA.US)","VICIA SP.","VIOLA sp.","VIOLA SP.","VIOLA SP.(ayora.es)","VIOLA SP.(OREAC.US)",
                                 "WAHLENBERGIA SP.","XYRIS SP.","XYRIS SP.GUARIBAS.BR","ACALYPHA SP.(SLP.US)","ATRIPLEX SP.","LASERPITIUM SP.")))
+
+which(data.2$Taxon == "CROTON potsii")
+data.2[19480,13] = "CROTON POTTSII"
+which(data.2$Taxon == "GOODENIA CYLCOPTERA")
+data.2[c(7936,7950,7953,11914,11934,12671,12690,12708,12715,29342,29345,29358,29376),13] = "GOODENIA CYCLOPTERA"
+which(data.2$Taxon == "LYTHRUM HYSSOPIFOLIUM")
+data.2[c(23264,23320,23616,23627),13] = "LYTHRUM HYSSOPIFOLIA"
 
 # get taxon list
 taxon.2=as.data.frame(table(data.2$Taxon))
@@ -175,11 +182,11 @@ before.3 = before.2 %>%
   group_by(site_code, Taxon) %>%
   reframe(mean.before.control = mean(Control, na.rm = TRUE),
           mean.before.drought = mean(Drought, na.rm = TRUE),
-          before.cover.response = mean.before.drought - mean.before.control)
-
-before.4 = before.3 %>%
-  filter(!is.na(before.cover.response))
-# 950 data points for 685 taxa, from 73 sites
+          before.cover.response = mean.before.drought - mean.before.control) %>%
+  mutate(mean.before.control.0 = replace_na(mean.before.control,0),
+         mean.before.drought.0 = replace_na(mean.before.drought,0),
+         before.cover.response.0 = mean.before.drought.0-mean.before.control.0)
+# 1418 data points for 975 taxa, from 73 sites
 
 after = data.2 %>%
   filter(n_treat_years == 1)
@@ -196,29 +203,88 @@ after.3 = after.2 %>%
   group_by(site_code, Taxon) %>%
   reframe(mean.after.control = mean(Control, na.rm = TRUE),
           mean.after.drought = mean(Drought, na.rm = TRUE),
-          after.cover.response = mean.after.drought - mean.after.control)
-
-after.4 = after.3 %>%
-  filter(!is.na(after.cover.response))
-# 1020 data points for 694 taxa, from 81 sites
-
+          after.cover.response = mean.after.drought - mean.after.control) %>%
+  mutate(mean.after.control.0 = replace_na(mean.after.control,0),
+         mean.after.drought.0 = replace_na(mean.after.drought,0),
+         after.cover.response.0 = mean.after.drought.0-mean.after.control.0)
+# 1575 data points for 1045 taxa, from 81 sites
 
 # merge before and after together
 
-all.data = full_join(after.4,before.4)
+all.data = full_join(after.3,before.3)
+# 1278 unique species
+# no after.cover.response for 415 individuals
+# no before.cover.response for 572 individuals
 
 # remove taxa that don't have data for before and after
 
 all.data.2 = all.data %>%
-  filter(!is.na(before.cover.response),
-         !is.na(after.cover.response))
-# 660 data points for 474 taxa, from  68 sites
+  filter(!is.na(before.cover.response.0),
+         !is.na(after.cover.response.0))
+# 1003 data points for 706 taxa, from  68 sites
+# lose 987 individuals from 572 species and 18 sites
 
 # difference between after and before
 all.data.3 = all.data.2 %>%
-  mutate(cover.change = after.cover.response - before.cover.response)
+  mutate(cover.change = after.cover.response.0 - before.cover.response.0)
 
-write.csv(all.data.3, file = "./New.dfs/BACI.data.csv")
+# write.csv(all.data.3, file = "./New.dfs/BACI.data.with.0.csv")
+
+#### for comparing control-control, drought-drought ####
+# BACI design of (drought.after - drought.before)-(control.after-control.before)
+
+before = data.2 %>%
+  filter(n_treat_years == 0)
+# plots with before data
+
+before.1 = before %>%
+  group_by(site_code, Taxon, year, block, plot,trt) %>%
+  summarize(max_cover = max_cover)
+
+before.2 = pivot_wider(before.1, names_from = trt, values_from = max_cover)
+
+before.3 = before.2 %>%
+  group_by(site_code, Taxon) %>%
+  reframe(mean.before.control = mean(Control, na.rm = TRUE),
+          mean.before.drought = mean(Drought, na.rm = TRUE)) %>%
+  mutate(mean.before.control.0 = replace_na(mean.before.control,0),
+         mean.before.drought.0 = replace_na(mean.before.drought,0))
+# 1416 data points for 973 taxa, from 73 sites
+
+after = data.2 %>%
+  filter(n_treat_years == 1)
+# plots with after data for year 1
+
+after.1 = after %>%
+  group_by(site_code, Taxon, year, block, plot, trt) %>%
+  summarize(mean_cover = mean(max_cover))
+# had to take mean here before some site have multiple measurements for same taxa in same trt in same block and plot
+
+after.2 = pivot_wider(after.1, names_from = trt, values_from = mean_cover)
+
+after.3 = after.2 %>%
+  group_by(site_code, Taxon) %>%
+  reframe(mean.after.control = mean(Control, na.rm = TRUE),
+          mean.after.drought = mean(Drought, na.rm = TRUE)) %>%
+  mutate(mean.after.control.0 = replace_na(mean.after.control,0),
+         mean.after.drought.0 = replace_na(mean.after.drought,0))
+# 1575 data points for 1045 taxa, from 81 sites
+
+# merge before and after together
+
+all.data = full_join(after.3,before.3)
+# 1988 observations, 1274 species, 86 sites
+
+all.data.2 = all.data[,c(1,2,5,6,9,10)]
+all.data.2[is.na(all.data.2)] = 0
+# some species in only after but not before and some in only before but not after
+
+all.data.2 = all.data.2 %>%
+  mutate(drought.after.before = mean.after.drought.0 - mean.before.drought.0,
+         control.after.before = mean.after.control.0 - mean.before.control.0,
+         cover.change = drought.after.before - control.after.before)
+
+#write.csv(all.data.2, file = "./New.dfs/BACI.data.final.csv")
 
 #### AusTraits ####
 
@@ -250,6 +316,27 @@ austraits.subset.traits=austraits.traits$traits
 
 # write.csv(austraits.subset.traits, file="AusTraits.subset.traits.csv")
 
+new.species = read.csv("./new.species.traits.csv")
+new.species.list=as.vector(new.species$Taxon)
+new.species.list.2=str_to_sentence(new.species.list)
 
-write.csv(trait.data$Taxon, file = "trait.taxa.test.csv")
-write.csv(unique(cover.trt.y1.2$Taxon), file = "cover.taxa.test.csv")
+
+austraits.subset.2 <- extract_taxa(austraits.2, taxon_name = new.species.list.2)
+austraits.traits <- extract_trait(austraits.subset.2, c("leaf_N_per_dry_mass","plant_height",
+                                                      "root_N_per_dry_mass","leaf_mass_per_area",
+                                                      "root_specific_root_length",
+                                                      "root_diameter"))
+
+#write.csv(austraits.traits$traits, file = "new.species.austraits.csv")
+
+#### get functional group and life_form information for new BACI species ####
+
+new.species = read.csv("./New.dfs/BACI.species.list.csv", row.names = 1)
+colnames(new.species)="Taxon"
+data=read.csv("./Raw.Data/IDE_cover_2023-01-02.csv") %>%
+  select(Taxon,local_lifeform,functional_group)
+
+species.merge = left_join(new.species,data, by = "Taxon")
+species.merge.2 = unique(species.merge)
+
+write.csv(species.merge.2, file = "./New.dfs/new.species.info.csv")

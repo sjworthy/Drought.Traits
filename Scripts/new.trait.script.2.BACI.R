@@ -1,7 +1,6 @@
 # Redoing analyses with response data using BACI method
 # two response variable 
 # 1. (control after-drought after) - (control before - drought before)
-# 2. drought after - drought before - separate code
 
 # Use the same data files just removing outlier cover change tested for in All Data
 
@@ -93,7 +92,7 @@ colnames(all.data.2)[10:17] = c("LeafN","Height","RootN","SLA","Rooting Depth","
 colnames(all.data.2)[22] = "Precipitation"
 colnames(all.data.2)[23] = "DSI"
 
-cor.mat.all = cor(all.data.2[,c(10:17,22)],use = "pairwise") 
+cor.mat.all = cor(all.data.2[,c(10:17,22,23)],use = "pairwise") 
 corrplot(cor.mat.all, method="number",tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black")
 
@@ -102,7 +101,7 @@ colnames(annual.data.2)[10:17] = c("LeafN","Height","RootN","SLA","Rooting Depth
 colnames(annual.data.2)[22] = "Precipitation"
 colnames(annual.data.2)[23] = "DSI"
 
-cor.mat.annual = cor(annual.data.2[,c(10:17,22)],use = "pairwise") 
+cor.mat.annual = cor(annual.data.2[,c(10:17,22,23)],use = "pairwise") 
 corrplot(cor.mat.annual, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black")
 
@@ -111,7 +110,7 @@ colnames(perennial.data.2)[10:17] = c("LeafN","Height","RootN","SLA","Rooting De
 colnames(perennial.data.2)[22] = "Precipitation"
 colnames(perennial.data.2)[23] = "DSI"
 
-cor.mat.perennial = cor(perennial.data.2[,c(10:17,22)],use = "pairwise") 
+cor.mat.perennial = cor(perennial.data.2[,c(10:17,22,23)],use = "pairwise") 
 corrplot(cor.mat.perennial, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black")
 
@@ -120,7 +119,7 @@ colnames(grass.2)[10:17] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD
 colnames(grass.2)[22] = "Precipitation"
 colnames(grass.2)[23] = "DSI"
 
-cor.mat.grass = cor(grass.2[,c(10:17,22)],use = "pairwise") 
+cor.mat.grass = cor(grass.2[,c(10:17,22,23)],use = "pairwise") 
 corrplot(cor.mat.grass, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black")
 
@@ -129,7 +128,7 @@ colnames(forb.2)[10:17] = c("LeafN","Height","RootN","SLA","Rooting Depth","RTD"
 colnames(forb.2)[22] = "Precipitation"
 colnames(forb.2)[23] = "DSI"
 
-cor.mat.forb = cor(forb.2[,c(10:17,22)],use = "pairwise") 
+cor.mat.forb = cor(forb.2[,c(10:17,22,23)],use = "pairwise") 
 corrplot(cor.mat.forb, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black")
 
@@ -138,7 +137,7 @@ colnames(grass.perennial.2)[10:17] = c("LeafN","Height","RootN","SLA","Rooting D
 colnames(grass.perennial.2)[22] = "Precipitation"
 colnames(grass.perennial.2)[23] = "DSI"
 
-cor.mat.grass.perennial = cor(grass.perennial.2[,c(10:17,22)],use = "pairwise") 
+cor.mat.grass.perennial = cor(grass.perennial.2[,c(10:17,22,23)],use = "pairwise") 
 corrplot(cor.mat.grass.perennial, method="number", tl.col = "black", is.corr = TRUE,
          col.lim = c(-1,1), col = COL2('BrBG', 200), addgrid.col = "black")
 
@@ -150,30 +149,90 @@ all.data.map=gbm.step(data=all.data, gbm.x = c(10:17,22), gbm.y=9,
                       bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(all.data.map)
 
+all.data.map.dsi=gbm.step(data=all.data, gbm.x = c(10:17,22,23), gbm.y=9,
+                      family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(all.data.map.dsi)
+
+all.data.dsi=gbm.step(data=all.data, gbm.x = c(10:17,23), gbm.y=9,
+                          family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                          bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(all.data.dsi)
+
 annual.data.map=gbm.step(data=annual.data, gbm.x = c(10:17,22), gbm.y=9,
                          family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                          bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(annual.data.map)
+
+annual.data.map.dsi=gbm.step(data=annual.data, gbm.x = c(10:17,22,23), gbm.y=9,
+                         family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(annual.data.map.dsi)
+
+annual.data.dsi=gbm.step(data=annual.data, gbm.x = c(10:17,23), gbm.y=9,
+                             family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                             bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(annual.data.dsi)
 
 perennial.data.map=gbm.step(data=perennial.data, gbm.x = c(10:17,22), gbm.y=9,
                             family = "gaussian", tree.complexity = 9, learning.rate = 0.001,
                             bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(perennial.data.map)
 
+perennial.data.map.dsi=gbm.step(data=perennial.data, gbm.x = c(10:17,22,23), gbm.y=9,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(perennial.data.map.dsi)
+
+perennial.data.dsi=gbm.step(data=perennial.data, gbm.x = c(10:17,23), gbm.y=9,
+                                family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                                bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(perennial.data.dsi)
+
 grass.data.map=gbm.step(data=grass, gbm.x = c(10:17,22), gbm.y=9,
                         family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                         bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(grass.data.map)
+
+grass.data.map.dsi=gbm.step(data=grass, gbm.x = c(10:17,22,23), gbm.y=9,
+                        family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                        bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(grass.data.map.dsi)
+
+grass.data.dsi=gbm.step(data=grass, gbm.x = c(10:17,23), gbm.y=9,
+                            family = "gaussian", tree.complexity = 10, learning.rate = 0.0005,
+                            bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(grass.data.dsi)
 
 forb.data.map=gbm.step(data=forb, gbm.x = c(10:17,22), gbm.y=9,
                        family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                        bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
 ggPerformance(forb.data.map)
 
+forb.data.map.dsi=gbm.step(data=forb, gbm.x = c(10:17,22,23), gbm.y=9,
+                       family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                       bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(forb.data.map.dsi)
+
+forb.data.dsi=gbm.step(data=forb, gbm.x = c(10:17,23), gbm.y=9,
+                           family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                           bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(forb.data.dsi)
+
 grass.perennial.data.map=gbm.step(data=grass.perennial, gbm.x = c(10:17,22), gbm.y=9,
                                   family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
                                   bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
 ggPerformance(grass.perennial.data.map)
+
+grass.perennial.data.map.dsi=gbm.step(data=grass.perennial, gbm.x = c(10:17,22,23), gbm.y=9,
+                                  family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                                  bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(grass.perennial.data.map.dsi)
+
+grass.perennial.data.dsi=gbm.step(data=grass.perennial, gbm.x = c(10:17,23), gbm.y=9,
+                                      family = "gaussian", tree.complexity = 10, learning.rate = 0.001,
+                                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(grass.perennial.data.dsi)
 
 #### determining best tree complexity to use ####
 
@@ -182,8 +241,8 @@ ggPerformance(grass.perennial.data.map)
 # all variables
 R2Obs.all.variables <- list()
 importancePred.all.variables <- list()
-nreps <- 5 #number of simulations
-for (tcomp in 3:10) {
+nreps <- 10 #number of simulations
+for (tcomp in 2:10) {
   R2Obs.all.variables[[tcomp]] <- numeric(nreps)
   importancePred.all.variables[[tcomp]] <- data.frame(matrix(NA, nrow = length(1:9),
                                                              ncol = nreps))
@@ -192,15 +251,15 @@ for (tcomp in 3:10) {
       cat(paste("Starting tc =", tcomp, "\n"))
     }
     
-    BRT.all.variables <- gbm.step(data=perennial.data,
-                                  gbm.x = c(10:17,22),
+    BRT.all.variables <- gbm.step(data=grass.perennial,
+                                  gbm.x = c(10:17,23),
                                   gbm.y = 9,
                                   family = "gaussian",
                                   tree.complexity = tcomp,
                                   learning.rate = 0.001,
-                                  bag.fraction = 0.75,
+                                  bag.fraction = 0.50,
                                   n.trees = 50,
-                                  step.size = 25,
+                                  step.size = 50,
                                   plot.main=F, plot.folds=F)
     
     
@@ -226,7 +285,7 @@ for (i in 1:length(R2Obs.all.variables)) {
          angle = 90, code = 3, length = 0.1)
 }
 
-tcFactor <- as.factor(rep(3:10, each=nreps))
+tcFactor <- as.factor(rep(2:6, each=nreps))
 R2Vector <- unlist(R2Obs.all.variables)
 model <- lm(R2Vector~tcFactor)
 TukeyModel<-glht(model, linfct = mcp(tcFactor="Tukey"))
@@ -241,12 +300,29 @@ text(x= 1:length(R2Obs.all.variables), y=77, labels=TukeyLetters)
 
 # selected the lowest tc value that did not show significant differences 
 # compared to the largest tc value
+# with just map
 # all.data tc = 3
 # annual tc = 1
 # perennial tree tc = 1
 # grass tc = 2
 # forb tc = 4
 # grass.perennial = 2
+
+# with map and dsi
+# all.data tc = 4
+# annual tc = 1 (tc 1-6)
+# perennial tree tc = 1
+# grass tc = 3
+# forb tc = 4
+# grass.perennial = 1
+
+# with just dsi
+# all.data tc = 3
+# annual tc = 1
+# perennial tree tc = 1
+# grass tc = 1
+# forb tc = 5
+# grass.perennial = 1
 
 #### all data without woody ####
 all.data.map=gbm.step(data=all.data, gbm.x = c(10:17,22), gbm.y=9,
@@ -256,6 +332,20 @@ all.data.map=gbm.step(data=all.data, gbm.x = c(10:17,22), gbm.y=9,
 ggPerformance(all.data.map)
 # 4050 trees Per.Expl = 29.99%
 
+all.data.map.dsi=gbm.step(data=all.data, gbm.x = c(10:17,22,23), gbm.y=9,
+                      family = "gaussian", tree.complexity = 4, learning.rate = 0.001,
+                      bag.fraction = 0.5, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(all.data.map.dsi)
+# 2150 trees Per.Expl = 23.50%
+
+all.data.dsi=gbm.step(data=all.data, gbm.x = c(10:17,23), gbm.y=9,
+                          family = "gaussian", tree.complexity = 3, learning.rate = 0.001,
+                          bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(all.data.dsi)
+# 1500 trees Per.Expl = 23.50%
+
 
 all.data.map$contributions$var = c("LeafN","Height","Root Diameter","Precipitation", 
                                    "RTD","SLA","Rooting Depth","SRL","RootN")
@@ -264,12 +354,19 @@ all.data.influence.plot = ggInfluence(all.data.map, main = "All Species (n = 612
                                                   "gray70","gray70","gray70","gray70","gray70"), 
                                       col.signif = "#B50200")
 
+all.data.influence.plot = ggInfluence(all.data.map.dsi, main = "All Species (n = 612)", 
+                                      col.bar = c("#769370","#769370","gray70","gray70",
+                                                  "gray70","gray70","gray70","gray70","gray70","gray70"), 
+                                      col.signif = "#B50200")
+
 # saved as pdf from device (4 x 4)
 
 ggPD(all.data.map, rug = T, common.scale = FALSE) # partial dependency plots
 ggPD(all.data.map, predictor = "height.m",rug = T, smooth = TRUE)
 ggPDfit(all.data.map)
 gbm.plot(all.data.map,common.scale = FALSE, rug = TRUE)
+gbm.plot(all.data.map.dsi,common.scale = FALSE, rug = TRUE)
+
 gbm.plot.fits(all.data.map)
 
 gg_partial_plot(all.data.map,
@@ -376,6 +473,55 @@ ggInteract_2D(gbm.object = all.data.map, x="SLA_m2.kg",y="RTD.g.cm3",col.gradien
               col.contour = "#254376",show.axis = T,legend = T, x.label = "SLA_m2.kg", y.label = "RTD.g.cm3",
               z.range = c(-2.5, 4), z.label = "% Cover Change")
 
+ggInteract_list(all.data.map.dsi, index = T)
+# SLA x height.m 46.59
+# root.depth x SLA 24.01
+# rootDiam x height.m 16.24
+# height x leafN 8.24
+# SLA x leafN 6.95
+
+# bootstrap interactions
+
+# Randomization of the response to test significance of the three strongest interactions. Note, the parameters need to be the same as your BRT model
+Interact_boot_brt2.all<-ggInteract_boot(c('SLA_m2.kg','height.m'),c('root.depth_m','SLA_m2.kg'),
+                                        c('rootDiam.mm','height.m'),c('height.m','leafN.mg.g'),
+                                        c('SLA_m2.kg','leafN.mg.g'),
+                                        nboots = 500, data=all.data, predictors =  c(10:17,22,23), 
+                                        response="cover.change",
+                                        family = "gaussian", tc = 4, lr = 0.001, bf= 0.50, global.env=F)
+
+# Significance histogram p-value<0.05)
+ggInteract_boot_hist(data = Interact_boot_brt2.all, column = 2,obs = 46.59) # significant
+# larger SLA x taller height
+ggInteract_boot_hist(data = Interact_boot_brt2.all, column = 3,obs = 24.01) # significant
+# higher SLA x lower rooting depth
+ggInteract_boot_hist(data = Interact_boot_brt2.all, column = 4,obs = 16.24) # significant
+# higher height x lower rooting depth
+ggInteract_boot_hist(data = Interact_boot_brt2.all, column = 5,obs = 8.24) # significant
+# higher leafN x taller height
+ggInteract_boot_hist(data = Interact_boot_brt2.all, column = 6,obs = 6.95) # significant
+# higher SLA x higher RTD
+
+ggInteract_2D(gbm.object = all.data.map.dsi, x="SLA_m2.kg",y="height.m",col.gradient = c("white","#979461"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "SLA_m2.kg", y.label = "height.m",
+              z.range = c(-2, 4), z.label = "% Cover Change")
+ggInteract_2D(gbm.object = all.data.map.dsi, x="SLA_m2.kg",y="root.depth_m",col.gradient = c("white","#979461"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "SLA_m2.kg", y.label = "root.depth_m",
+              z.range = c(-2, 2.5), z.label = "% Cover Change")
+ggInteract_2D(gbm.object = all.data.map.dsi, x="rootDiam.mm",y="height.m",col.gradient = c("white","#979461"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "rootDiam.mm", y.label = "height.m",
+              z.range = c(-3, 0), z.label = "% Cover Change")
+ggInteract_2D(gbm.object = all.data.map.dsi, x="leafN.mg.g",y="height.m",col.gradient = c("white","#979461"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "leafN.mg.g", y.label = "height.m",
+              z.range = c(-2.5, 1), z.label = "% Cover Change")
+ggInteract_2D(gbm.object = all.data.map.dsi, x="leafN.mg.g",y="SLA_m2.kg",col.gradient = c("white","#979461"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "leafN.mg.g", y.label = "SLA_m2.kg",
+              z.range = c(-2, 3), z.label = "% Cover Change")
 
 #### annual data ####
 annual.no.site.map=gbm.step(data=annual.data, gbm.x = c(10:17,22), gbm.y=9,
@@ -385,6 +531,21 @@ annual.no.site.map=gbm.step(data=annual.data, gbm.x = c(10:17,22), gbm.y=9,
 ggPerformance(annual.no.site.map)
 # 1050 trees Per.Expl = 12.03%
 
+
+annual.no.site.map.dsi=gbm.step(data=annual.data, gbm.x = c(10:17,22,23), gbm.y=9,
+                            family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
+                            bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(annual.no.site.map.dsi)
+# 1400 trees Per.Expl = 8.80%
+
+annual.no.site.dsi=gbm.step(data=annual.data, gbm.x = c(10:17,23), gbm.y=9,
+                                family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
+                                bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(annual.no.site.dsi)
+# 1500 trees Per.Expl = 10.19%
+
 annual.no.site.map$contributions$var = c("SLA","Height","SRL","Precipitation","LeafN","Rooting Depth",
                                          "RTD","Root Diameter", "RootN")
 annual.influence.plot = ggInfluence(annual.no.site.map, main = "Annuals (n = 124)", 
@@ -392,9 +553,16 @@ annual.influence.plot = ggInfluence(annual.no.site.map, main = "Annuals (n = 124
                                                 "gray70","gray70","gray70","gray70","gray70"),
                                     col.signif = "#B50200")
 
+annual.influence.plot = ggInfluence(annual.no.site.map.dsi, main = "Annuals (n = 124)", 
+                                    col.bar = c("#979461","#979461","#979461","#979461",
+                                                "gray70","gray70","gray70","gray70","gray70","gray70"),
+                                    col.signif = "#B50200")
+
 ggPD(annual.no.site.map, rug = T) # partial dependency plots
 ggPDfit(annual.no.site.map)
 gbm.plot(annual.no.site.map, common.scale = FALSE)
+gbm.plot(annual.no.site.map.dsi, common.scale = FALSE)
+
 gbm.plot.fits(annual.no.site.map)
 
 annual.prerun<- plot.gbm.4list(annual.no.site.map)
@@ -505,6 +673,22 @@ perennial.data.map=gbm.step(data=perennial.data, gbm.x = c(10:17,22), gbm.y=9,
 ggPerformance(perennial.data.map)
 # 2350 trees Per.Expl = 9.19%
 
+perennial.data.map.dsi=gbm.step(data=perennial.data, gbm.x = c(10:17,22,23), gbm.y=9,
+                            family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
+                            bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+
+ggPerformance(perennial.data.map.dsi)
+# 2000 trees Per.Expl = 4.78%
+
+perennial.data.dsi=gbm.step(data=perennial.data, gbm.x = c(10:17,23), gbm.y=9,
+                                family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
+                                bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+
+ggPerformance(perennial.data.dsi)
+# 1700 trees Per.Expl = 7.09%
+
 
 perennial.data.map$contributions$var = c("Height","LeafN","SLA","Precipitation","Root Diameter",
                                          "SRL","Rooting Depth","RTD","RootN")
@@ -512,9 +696,18 @@ perennial.influence.plot = ggInfluence(perennial.data.map, main = "Perennials (n
                                        col.bar = c("#F1C646","#F1C646","#F1C646","gray70",
                                                    "gray70","gray70","gray70","gray70","gray70"), col.signif = "#B50200")
 
+
+perennial.influence.plot = ggInfluence(perennial.data.map.dsi, main = "Perennials (n = 474)", 
+                                       col.bar = c("#F1C646","#F1C646","gray70","gray70",
+                                                   "gray70","gray70","gray70","gray70","gray70","gray70"
+                                                   ), col.signif = "#B50200")
+
+
 ggPD(perennial.data.map, rug = T) # partial dependency plots
 ggPDfit(perennial.data.map)
 gbm.plot(perennial.data.map, common.scale = FALSE)
+gbm.plot(perennial.data.map.dsi, common.scale = FALSE)
+
 gbm.plot.fits(perennial.data.map)
 
 perennial.prerun<- plot.gbm.4list(perennial.data.map)
@@ -607,16 +800,37 @@ grass.map=gbm.step(data=grass, gbm.x = c(10:17,22), gbm.y=9,
 ggPerformance(grass.map)
 # 1150 trees Per.Expl = 14.87%
 
+grass.map.dsi=gbm.step(data=grass, gbm.x = c(10:17,22,23), gbm.y=9,
+                   family = "gaussian", tree.complexity = 3, learning.rate = 0.001,
+                   bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 25)
+ggPerformance(grass.map.dsi)
+# 1175 trees Per.Expl = 16.87%
+
+grass.dsi=gbm.step(data=grass, gbm.x = c(10:17,23), gbm.y=9,
+                       family = "gaussian", tree.complexity = 1, learning.rate = 0.0005,
+                       bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+ggPerformance(grass.dsi)
+# 1150 trees Per.Expl = 6.57%
+
 grass.map$contributions$var = c("Root Diameter","Rooting Depth","SLA",
                                 "LeafN","Height","SRL","RTD","RootN", "Precipitation")
 grass.influence.plot = ggInfluence(grass.map, main = "Grasses (n = 221)", 
                                    col.bar = c("#6E687E","#6E687E","#6E687E","gray70",
                                                "gray70","gray70","gray70","gray70","gray70"), col.signif = "#B50200")
+
+grass.influence.plot = ggInfluence(grass.map.dsi, main = "Grasses (n = 221)", 
+                                   col.bar = c("#6E687E","#6E687E","#6E687E","gray70",
+                                               "gray70","gray70","gray70","gray70","gray70","gray70"
+                                               ), col.signif = "#B50200")
+
+
 ggInfluence(grass.map)
 
 ggPD(grass.map, rug = T) # partial dependency plots
 ggPDfit(grass.map)
 gbm.plot(grass.map, common.scale = FALSE)
+gbm.plot(grass.map.dsi, common.scale = FALSE)
+
 gbm.plot.fits(grass.map)
 
 grass.prerun<- plot.gbm.4list(grass.map)
@@ -671,7 +885,7 @@ ggInteract_list(grass.map)
 # Randomization of the response to test significance of the three strongest interactions. Note, the parameters need to be the same as your BRT model
 Interact_boot_brt2.grass<-ggInteract_boot(c('SLA_m2.kg','height.m'),c('precip','SLA_m2.kg'),
                                         c('rootN.mg.g','height.m '),c('RTD.g.cm3','SLA_m2.kg'),
-                                        nboots = 500, data=all.data, predictors =  c(10:17,22), 
+                                        nboots = 500, data=grass, predictors =  c(10:17,22), 
                                         response="cover.change",
                                         family = "gaussian", tc = 2, lr = 0.001, bf= 0.50, global.env=F)
 
@@ -701,6 +915,38 @@ ggInteract_2D(gbm.object = grass.map, x="rootN.mg.g",y="height.m",col.gradient =
               z.range = c(-1.5, 1.5), z.label = "% Cover Change")
 
 
+ggInteract_list(grass.map.dsi)
+# precip x SLA 6.13
+# rootN x height 4.54
+# SLA x height 3.39
+# RTD x SLA 1.80
+# DSI x precip 1.72
+
+# bootstrap interactions
+
+# Randomization of the response to test significance of the three strongest interactions. Note, the parameters need to be the same as your BRT model
+Interact_boot_brt2.grass<-ggInteract_boot(c('precip','SLA_m2.kg'),c('rootN.mg.g ','SLA_m2.kg'),
+                                          c('SLA_m2.kg','height.m '),c('RTD.g.cm3','SLA_m2.kg'),
+                                          c('mean.drt.sev.index','precip'),
+                                          nboots = 500, data=grass, predictors =  c(10:17,22,23), 
+                                          response="cover.change",
+                                          family = "gaussian", tc = 3, lr = 0.001, bf= 0.50, global.env=F)
+
+# Significance histogram p-value<0.05)
+ggInteract_boot_hist(data = Interact_boot_brt2.grass, column = 2,obs = 6.13) # significant
+# larger SLA x more precip
+ggInteract_boot_hist(data = Interact_boot_brt2.grass, column = 3,obs = 4.54) # non-significant
+ggInteract_boot_hist(data = Interact_boot_brt2.grass, column = 4,obs = 3.39) # non-significant
+ggInteract_boot_hist(data = Interact_boot_brt2.grass, column = 5,obs = 1.80) # non-significant
+ggInteract_boot_hist(data = Interact_boot_brt2.grass, column = 6,obs = 1.80) # non-significant
+
+
+
+ggInteract_2D(gbm.object = grass.map.dsi, x="SLA_m2.kg",y="precip",col.gradient = c("white","#979461"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "SLA_m2.kg", y.label = "precip",
+              z.range = c(-1, 2.5), z.label = "% Cover Change")
+
 #### Forb ####
 forb.map=gbm.step(data=forb, gbm.x = c(10:17,22), gbm.y=9,
                   family = "gaussian", tree.complexity = 4, learning.rate = 0.001,
@@ -709,15 +955,38 @@ forb.map=gbm.step(data=forb, gbm.x = c(10:17,22), gbm.y=9,
 ggPerformance(forb.map)
 # 1150 trees Per.Expl = 26.33%
 
+forb.map.dsi=gbm.step(data=forb, gbm.x = c(10:17,22,23), gbm.y=9,
+                  family = "gaussian", tree.complexity = 4, learning.rate = 0.001,
+                  bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(forb.map.dsi)
+# 1200 trees Per.Expl = 27.89%
+
+forb.dsi=gbm.step(data=forb, gbm.x = c(10:17,23), gbm.y=9,
+                      family = "gaussian", tree.complexity = 5, learning.rate = 0.001,
+                      bag.fraction = 0.75, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(forb.dsi)
+# 1000 trees Per.Expl = 26.05%
+
+
 forb.map$contributions$var = c("Height","LeafN","SLA","Root Diameter","Precipitation","SRL","RTD","Rooting Depth", "RootN")
 forb.influence.plot = ggInfluence(forb.map, main = "Forbs (n = 314)", 
                                   col.bar = c("#F17236","#F17236","#F17236","#F17236",
                                               "gray70","gray70","gray70","gray70","gray70"), col.signif = "#B50200")
+forb.influence.plot = ggInfluence(forb.map.dsi, main = "Forbs (n = 314)", 
+                                  col.bar = c("#F17236","#F17236","#F17236","gray70",
+                                              "gray70","gray70","gray70","gray70","gray70","gray70"
+                                              ), col.signif = "#B50200")
+
+
+
 ggInfluence(forb.map)
 
 ggPD(forb.map, rug = T) # partial dependency plots
 ggPDfit(forb.map)
 gbm.plot(forb.map, common.scale = FALSE)
+gbm.plot(forb.map.dsi, common.scale = FALSE)
 gbm.plot.fits(forb.map)
 
 forb.prerun<- plot.gbm.4list(forb.map)
@@ -806,6 +1075,78 @@ ggInteract_2D(gbm.object = forb.map, x="root.depth_m",y="SLA_m2.kg",col.gradient
               col.contour = "#254376",show.axis = T,legend = T, x.label = "root.depth_m", y.label = "SLA_m2.kg",
               z.range = c(-3, 0.5), z.label = "% Cover Change")
 
+ggInteract_list(forb.map.dsi)
+# rootDiam x SLA 38.12
+# root.depth x SLA 9.96
+# SLA x leafN 9.42
+# DSI x rootDiam 5.34
+# precip x rootDiam 5.01
+
+# bootstrap interactions
+# Randomization of the response to test significance of the three strongest interactions. Note, the parameters need to be the same as your BRT model
+
+Interact_boot_forb<-ggInteract_boot(c('rootDiam.mm','SLA_m2.kg'),c('root.depth_m ','SLA_m2.kg'),
+                                    c('SLA_m2.kg','leafN.mg.g'),c('mean.drt.sev.index','rootDiam.mm'),
+                                    c('precip','rootDiam.mm'),
+                                    nboots = 500, data=forb, predictors =  c(10:17,22,23), 
+                                    response="cover.change",
+                                    family = "gaussian", tc = 4, lr = 0.001, bf= 0.75, global.env=F)
+
+# Significance histogram p-value<0.05)
+ggInteract_boot_hist(data = Interact_boot_forb, column = 2,obs = 38.12) # significant
+# higher SLA x lower root Diam
+ggInteract_boot_hist(data = Interact_boot_forb, column = 3,obs = 9.96) # significant
+# higher SLA x higher rootong depth
+ggInteract_boot_hist(data = Interact_boot_forb, column = 4,obs = 9.42) # non-significant
+ggInteract_boot_hist(data = Interact_boot_forb, column = 5,obs = 5.34) # non-significant
+ggInteract_boot_hist(data = Interact_boot_forb, column = 6,obs = 5.01) # non-significant
+
+
+ggInteract_2D(gbm.object = forb.map, x="rootDiam.mm",y="SLA_m2.kg",col.gradient = c("white","#F17236"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "rootDiam.mm", y.label = "SLA_m2.kg",
+              z.range = c(-3.5, 1), z.label = "% Cover Change")
+ggInteract_2D(gbm.object = forb.map, x="root.depth_m",y="SLA_m2.kg",col.gradient = c("white","#F17236"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "root.depth_m", y.label = "SLA_m2.kg",
+              z.range = c(-3, 0.5), z.label = "% Cover Change")
+
+
+
+ggInteract_list(forb.map.dsi)
+# rootDiam x SLA 27.19
+# root.depth x SLA 11.20
+# rootDiam x leafN 6.18
+# precip x rootDiam 6.07
+
+# bootstrap interactions
+# Randomization of the response to test significance of the three strongest interactions. Note, the parameters need to be the same as your BRT model
+
+Interact_boot_forb<-ggInteract_boot(c('rootDiam.mm','SLA_m2.kg'),c('root.depth_m ','SLA_m2.kg'),
+                                    c('rootDiam.mm','leafN.mg.g'),c('precip','rootDiam.mm'),
+                                    nboots = 500, data=forb, predictors =  c(10:17,22,23), 
+                                    response="cover.change",
+                                    family = "gaussian", tc = 4, lr = 0.001, bf= 0.75, global.env=F)
+
+# Significance histogram p-value<0.05)
+ggInteract_boot_hist(data = Interact_boot_forb, column = 2,obs = 27.19) # significant
+# higher SLA x lower root Diam
+ggInteract_boot_hist(data = Interact_boot_forb, column = 3,obs = 11.20) # significant
+# higher SLA x higher rootong depth
+ggInteract_boot_hist(data = Interact_boot_forb, column = 4,obs = 6.18) # non-significant
+ggInteract_boot_hist(data = Interact_boot_forb, column = 5,obs = 6.07) # non-significant
+
+ggInteract_2D(gbm.object = forb.map.dsi, x="rootDiam.mm",y="SLA_m2.kg",col.gradient = c("white","#F17236"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "rootDiam.mm", y.label = "SLA_m2.kg",
+              z.range = c(-3.5, 1), z.label = "% Cover Change")
+
+ggInteract_2D(gbm.object = forb.map.dsi, x="root.depth_m",y="SLA_m2.kg",col.gradient = c("white","#F17236"),
+              show.dot = T,col.dot = "grey20",alpha.dot = 0.5,cex.dot = 0.2,label.contour = T,
+              col.contour = "#254376",show.axis = T,legend = T, x.label = "root.depth_m", y.label = "SLA_m2.kg",
+              z.range = c(-3.5, 0), z.label = "% Cover Change")
+
+
 #### Grass.Perennial ####
 
 grass.perennial.map=gbm.step(data=grass.perennial, gbm.x = c(10:17,22), gbm.y=9,
@@ -815,16 +1156,38 @@ grass.perennial.map=gbm.step(data=grass.perennial, gbm.x = c(10:17,22), gbm.y=9,
 ggPerformance(grass.perennial.map)
 # 1250 trees Per.Expl = 14.00%
 
+grass.perennial.map.dsi=gbm.step(data=grass.perennial, gbm.x = c(10:17,22,23), gbm.y=9,
+                             family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
+                             bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 25)
+
+ggPerformance(grass.perennial.map.dsi)
+# 1925 trees Per.Expl = 14.22%
+
+grass.perennial.dsi=gbm.step(data=grass.perennial, gbm.x = c(10:17,23), gbm.y=9,
+                                 family = "gaussian", tree.complexity = 1, learning.rate = 0.001,
+                                 bag.fraction = 0.50, n.trees = 50, verbose = TRUE, step.size = 50)
+
+ggPerformance(grass.perennial.dsi)
+# 1200 trees Per.Expl = 9.64%
 
 grass.perennial.map$contributions$var = c("Root Diameter","Rooting Depth","SLA","LeafN","Height","RTD","SRL","RootN","Precipitation")
-graminoid.influence.plot = ggInfluence(grass.perennial.map, main = "Graminoids (n = 244)", 
+grass.influence.plot = ggInfluence(grass.perennial.map, main = "Graminoids (n = 244)", 
                                        col.bar = c("#F17236","#F17236","gray70","gray70",
                                                    "gray70","gray70","gray70","gray70","gray70"), col.signif = "#B50200")
+
+grass.influence.plot = ggInfluence(grass.perennial.map.dsi, main = "Graminoids (n = 244)", 
+                                   col.bar = c("#F17236","#F17236","gray70","gray70","gray70",
+                                               "gray70","gray70","gray70","gray70","gray70"),
+                                   col.signif = "#B50200")
+
 ggInfluence(grass.perennial.map)
 
 ggPD(graminoid.map, rug = T) # partial dependency plots
 ggPDfit(grass.perennial.map)
 gbm.plot(grass.perennial.map, common.scale = FALSE)
+
+gbm.plot(grass.perennial.map.dsi, common.scale = FALSE)
+
 gbm.plot.fits(grass.perennial.map)
 
 grass.perennial.prerun<- plot.gbm.4list(grass.perennial.map)

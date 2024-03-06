@@ -13,6 +13,10 @@ trait.data.2 = trait.data[,c(1,7,8,10,12,14,15,18,20,27:29)]
 trait.data.3 = subset(trait.data.2, !trait.data.2$functional_group == "WOODY")
 trait.data.3 = subset(trait.data.3, !trait.data.3$local_lifeform == "TREE")
 
+# BACI analysis:
+# 244 new species, 29 removed because TREE or WOODY, 1 FERN removed, 4 CACTUS removed
+# 210 total new species added (if traits available)
+
 # subset for species with SLA
 trait.data.4 = subset(trait.data.3, trait.data.3$SLA_m2.kg > 0 ) # 558 taxon
 
