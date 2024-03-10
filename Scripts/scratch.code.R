@@ -22,17 +22,20 @@ drt.trt.2 = drt.trt[,c(2,25)]
 
 all.drt.data = merge(yr1.ppt, drt.trt.2, by = c("site_code"))
 
+all.drt.data = all.drt.data %>%
+  filter(trt == "Drought") # just want drought plots since they had targeted removal
+
 # turn drought_trt into decimal
 all.drt.data$drought_trt_dec = as.numeric(all.drt.data$drought_trt)/100
 
 all.drt.data$precip.drt = all.drt.data$ppt.1*all.drt.data$drought_trt_dec
 all.drt.data$drt.sev.index = (all.drt.data$precip.dr - all.drt.data$map)/all.drt.data$map
 
-# slim dataset to match our cover data
+# slim dataset to plots with 1 year of drought
 
 all.drt.data.2 = subset(all.drt.data, all.drt.data$n_treat_years == 1)
 
-# get the mean drt.sev.index for each site
+# get the mean drt.sev.index for each site, this is just mean of drought plots
 
 site.drt.sev.index = all.drt.data.2 %>%
   group_by(site_code) %>%

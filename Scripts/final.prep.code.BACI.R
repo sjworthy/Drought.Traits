@@ -147,106 +147,45 @@ all.data = merge(cover.data, trait.data.new, by="Taxon")
 # need to read out data and fix the lifespan to particular sites since 
 # some species have different lifespan at different sites
 
-all.data.ls = read.csv("./New.dfs/all.data.response.0.lifespan.csv", row.names = 1)
+all.data.ls = read.csv("./New.dfs/BACI.all.data.metadata.csv", row.names = 1)
 table(all.data.ls$local_lifespan)
-# 487 perennial, 126 annual
+# 890 perennial, 292 annual
 
-annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL") # 126 data points
-# 126 data points from 80 species
+annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL")
+# 292 data points from 168 species
 
 perennial.data = subset(all.data.ls, all.data.ls$local_lifespan == "PERENNIAL") 
-# 487 data points of 294 species
+# 692 data points of 500 species
 
 table(all.data.ls$functional_group)
-# 320 forb, 24 graminoid, 230 grass, 54 legume
+# 675 forb, 47 graminoid, 392 grass, 120 legume
 
 grass = subset(all.data.ls, all.data.ls$functional_group == "GRASS") 
-# 230 data points of 129 species
+# 392 data points of 196 species
 
 table(grass$local_lifespan)
-# 41 annuals, 187 perennials
+# 73 annuals, 310 perennials
 
 forb = subset(all.data.ls, all.data.ls$functional_group == "FORB")
-# 320 data points of 201 species
-
-# grasses and graminoids
-graminoid = subset(all.data.ls, all.data.ls$functional_group %in% c("GRASS","GRAMINOID"))
+# 675 data points of 400 species
 
 # grass.annuals
 grass.annual = subset(grass, grass$local_lifespan == "ANNUAL")
-# 41 data points
+# 73 data points of 33 species
 
 # grass.perennial
 grass.perennial = subset(grass, grass$local_lifespan == "PERENNIAL")
-# 187 data points
-
-graminoid.perennial = subset(graminoid, graminoid$local_lifespan == "PERENNIAL")
-# 210 data points 
-# graminoid annual is same as grass.annual since all graminoids were perennials
-
-#### merge trait data and BACI cover data ####
-
-trait.data.new = read.csv("./New.dfs/traits.no.woody.SLA.no.outlier.csv", row.names = 1)
-cover.data = read.csv("./New.dfs/BACI.data.csv", row.names = 1)
-
-# subset trait data for only species in cover data
-
-subset.traits = subset(trait.data.new, trait.data.new$Taxon %in% cover.data$Taxon)
-
-# merge trait data and cover data
-
-all.data = merge(cover.data, subset.traits, by="Taxon") 
-# 275 species from 407 data points from 65 sites
-
-# write.csv(all.data, file = "./New.dfs/BACI.all.data.response.0.csv")
-
-# split by lifeform and functional group
-
-all.data.ls = read.csv("./New.dfs/BACI.all.data.response.0.lifespan.csv", row.names = 1)
-table(all.data.ls$local_lifespan)
-# 321 perennial, 79 annual
-
-annual.data = subset(all.data.ls, all.data.ls$local_lifespan == "ANNUAL")
-# 79 data points from 56 species
-
-perennial.data = subset(all.data.ls, all.data.ls$local_lifespan == "PERENNIAL") 
-# 321 data points of 212 species
-
-table(all.data.ls$functional_group)
-# 201 forb, 15 graminoid, 160 grass, 31 legume
-
-grass = subset(all.data.ls, all.data.ls$functional_group == "GRASS") 
-# 160 data points of 105 species
-
-table(grass$local_lifespan)
-# 31 annuals, 127 perennials
-
-forb = subset(all.data.ls, all.data.ls$functional_group == "FORB")
-# 201 data points of 135 species
-
-# grass.perennial
-grass.perennial = subset(grass, grass$local_lifespan == "PERENNIAL")
-# 127 data points of 82 species
+# 310 data points of 159 species
 
 #### write out the files ####
 
-#write.csv(all.data, file = "./New.dfs/all.data.csv")
-#write.csv(annual.data, file = "./New.dfs/annual.data.csv")
-#write.csv(forb, file = "./New.dfs/forb.csv")
-#write.csv(grass, file = "./New.dfs/grass.csv")
-#write.csv(perennial.data, file = "./New.dfs/perennial.data.csv")
-#write.csv(graminoid, file = "./New.dfs/graminoid.data.csv")
-#write.csv(grass.annual, file = "./New.dfs/grass.annual.data.csv")
-#write.csv(grass.perennial, file = "./New.dfs/grass.perennial.data.csv")
-#write.csv(graminoid.perennial, file = "./New.dfs/graminoid.perennial.data.csv")
-
-#write.csv(all.data, file = "./New.dfs/all.data.BACI.csv")
-#write.csv(annual.data, file = "./New.dfs/annual.data.BACI.csv")
-#write.csv(forb, file = "./New.dfs/forb.BACI.csv")
-#write.csv(grass, file = "./New.dfs/grass.BACI.csv")
-#write.csv(perennial.data, file = "./New.dfs/perennial.data.BACI.csv")
-#write.csv(grass.perennial, file = "./New.dfs/grass.perennial.data.BACI.csv")
-
+#write.csv(all.data, file = "./New.dfs/BACI.all.data.csv")
+#write.csv(annual.data, file = "./New.dfs/BACI.annual.data.csv")
+#write.csv(forb, file = "./New.dfs/BACI.forb.csv")
+#write.csv(grass, file = "./New.dfs/BACI.grass.csv")
+#write.csv(perennial.data, file = "./New.dfs/BACI.perennial.data.csv")
+#write.csv(grass.perennial, file = "./New.dfs/BACI.grass.perennial.csv")
+#write.csv(grass.annual, file = "./New.dfs/BACI.grass.annual.csv")
 
 
 
