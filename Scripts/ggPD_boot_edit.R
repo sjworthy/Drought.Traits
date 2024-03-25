@@ -107,11 +107,12 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                                                        2], 1), "%)", sep = "")) + theme_bw() + 
             theme(panel.grid.minor = element_line(linetype = "blank"), 
                   panel.grid.major = element_line(linetype = "blank"), 
-                  axis.text.x = element_text(size = 6), axis.title.x = element_text(size = 10), 
+                  axis.text.x = element_text(size = 12), axis.title.x = element_text(size = 15), 
+                  axis.text.y = element_text(size = 12), axis.title.y = element_text(size = 15),
                   axis.line.y = element_line(size = 0.1), 
                   axis.line.x = element_line(size = 0.1))
           if (common.scale == T) {
-            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.8))
+            ggPD[[i]] <- ggPD[[i]] + ylim(c(2, 2))
           }
         }
         if (type.ci == "lines") {
@@ -126,7 +127,10 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                                                                                                                            2], 1), "%)", sep = "")) + theme_bw() + 
             theme(panel.grid.minor = element_line(linetype = "blank"), 
                   panel.grid.major = element_line(linetype = "blank"), 
-                  axis.title.x = element_text(size = 10), 
+                  axis.title.x = element_text(size = 15), 
+                  axis.title.y = element_text(size = 15),
+                  axis.text.x = element_text(size = 12),
+                  axis.text.y = element_text(size = 12),
                   axis.line.y = element_line(size = 0.1), 
                   axis.line.x = element_line(size = 0.1))
           if (smooth == T) {
@@ -140,7 +144,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                               color = "#EBEBEB")
           }
           if (common.scale == T) {
-            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.8))
+            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2))
           }
         }
         if (type.ci == "ribbon") {
@@ -152,7 +156,11 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                        round(gbm.object$contributions[i, 2], 1), 
                                        "%)", sep = "")) + theme_bw() + theme(panel.grid.minor = element_line(linetype = "blank"), 
                                                                              panel.grid.major = element_line(linetype = "blank"), 
-                                                                             axis.title.x = element_text(size = 10), axis.line.y = element_line(size = 0.1), 
+                                                                             axis.title.x = element_text(size = 15), 
+                                                                             axis.title.y = element_text(size = 15),
+                                                                             axis.text.x = element_text(size = 12),
+                                                                             axis.text.y = element_text(size = 12),
+                                                                             axis.line.y = element_line(size = 0.1), 
                                                                              axis.line.x = element_line(size = 0.1))
           if (smooth == T) {
             ggPD[[i]] <- ggPD[[i]] + geom_smooth(data = fittedFunc[[i]], 
@@ -165,7 +173,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                               color = "#EBEBEB")
           }
           if (common.scale == T) {
-            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2.8))
+            ggPD[[i]] <- ggPD[[i]] + ylim(c(-2, 2))
           }
         }
       }
@@ -199,7 +207,8 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
           xlab(paste(var.name, "  (", round(gbm.object$contributions[predictor, 
                                                                      2], 1), "%)", sep = "")) + theme_bw() + theme(panel.grid.minor = element_line(linetype = "blank"), 
                                                                                                                    panel.grid.major = element_line(linetype = "blank"), 
-                                                                                                                   axis.text.x = element_text(size = 6), axis.title.x = element_text(size = 10), 
+                                                                                                                   axis.text.x = element_text(size = 12), axis.title.x = element_text(size = 15), 
+                                                                                                                   axis.text.y = element_text(size = 12), axis.title.y = element_text(size = 15),
                                                                                                                    axis.line.y = element_line(size = 0.1), axis.line.x = element_line(size = 0.1))
         if (common.scale == T) {
           ggPD <- ggPD + ylim(c(ymin, ymax))
@@ -216,7 +225,11 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                      round(gbm.object$contributions[predictor, 2], 
                                            1), "%)", sep = "")) + theme_bw() + theme(panel.grid.minor = element_line(linetype = "blank"), 
                                                                                      panel.grid.major = element_line(linetype = "blank"), 
-                                                                                     axis.title.x = element_text(size = 10), axis.line.y = element_line(size = 0.1), 
+                                                                                     axis.title.x = element_text(size = 15), 
+                                                                                     axis.title.y = element_text(size = 15),
+                                                                                     axis.text.x = element_text(size = 12),
+                                                                                     axis.text.y = element_text(size = 12),
+                                                                                     axis.line.y = element_line(size = 0.1), 
                                                                                      axis.line.x = element_line(size = 0.1))
         if (smooth == T) {
           ggPD <- ggPD + geom_smooth(span = span, size = 0.3, 
@@ -228,7 +241,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                   color = "#EBEBEB")
         }
         if (common.scale == T) {
-          ggPD <- ggPD + ylim(c(-2, 2.8))
+          ggPD <- ggPD + ylim(c(-2, 2))
         }
       }
       if (type.ci == "ribbon") {
@@ -240,7 +253,11 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                      round(gbm.object$contributions[predictor, 2], 
                                            1), "%)", sep = "")) + theme_bw() + theme(panel.grid.minor = element_line(linetype = "blank"), 
                                                                                      panel.grid.major = element_line(linetype = "blank"), 
-                                                                                     axis.title.x = element_text(size = 10), axis.line.y = element_line(size = 0.1), 
+                                                                                     axis.title.x = element_text(size = 15), 
+                                                                                     axis.title.y = element_text(size = 15),
+                                                                                     axis.text.x = element_text(size = 12),
+                                                                                     axis.text.y = element_text(size = 12),
+                                                                                     axis.line.y = element_line(size = 0.1), 
                                                                                      axis.line.x = element_line(size = 0.1))
         if (smooth == T) {
           ggPD <- ggPD + geom_smooth(data = fittedFunc, 
@@ -253,7 +270,7 @@ function(gbm.object, predictor = NULL, n.plots = length(pred.names),
                                   color = "#EBEBEB")
         }
         if (common.scale == T) {
-          ggPD <- ggPD + ylim(c(-2, 2.8))
+          ggPD <- ggPD + ylim(c(-2, 2))
         }
       }
       list(ggPD = ggPD)
